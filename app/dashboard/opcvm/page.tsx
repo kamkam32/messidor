@@ -31,6 +31,8 @@ import { SearchIcon } from '@chakra-ui/icons'
 import { createClient } from '@/lib/supabase/client'
 import type { Fund } from '@/lib/types/fund.types'
 
+export const dynamic = 'force-dynamic'
+
 export default function OPCVMPage() {
   const [funds, setFunds] = useState<Fund[]>([])
   const [loading, setLoading] = useState(true)

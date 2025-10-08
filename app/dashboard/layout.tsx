@@ -1,6 +1,8 @@
 import { Box, Flex } from '@chakra-ui/react'
 import Sidebar from '@/components/dashboard/Sidebar'
 
+export const dynamic = 'force-dynamic'
+
 export default function DashboardLayout({
   children,
 }: {

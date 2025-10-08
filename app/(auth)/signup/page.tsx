@@ -19,6 +19,8 @@ import {
   SimpleGrid,
 } from '@chakra-ui/react'
 
+export const dynamic = 'force-dynamic'
+
 export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
