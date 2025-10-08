@@ -5,6 +5,7 @@ import NextLink from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { FiHome, FiTrendingUp, FiBarChart2, FiSliders, FiLogOut } from 'react-icons/fi'
 import { createClient } from '@/lib/supabase/client'
+import Image from 'next/image'
 
 const menuItems = [
   { name: 'Tableau de bord', href: '/dashboard', icon: FiHome },
@@ -42,12 +43,14 @@ export default function Sidebar() {
         <Box>
           {/* Logo */}
           <Box p={6} borderBottom="1px" borderColor="gray.200">
-            <Text fontSize="2xl" fontWeight="bold" color="brand.800">
-              Messidor
-            </Text>
-            <Text fontSize="sm" color="gray.600">
-              Patrimoine
-            </Text>
+            <Image
+              src="/images/logomessidor.jpg"
+              alt="Messidor Patrimoine"
+              width={120}
+              height={40}
+              style={{ objectFit: 'contain' }}
+              priority
+            />
           </Box>
 
           {/* Menu Items */}

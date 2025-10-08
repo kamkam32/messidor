@@ -109,8 +109,10 @@ export default function Home() {
                 Découvrir nos solutions
               </Button>
               <Button
-                as={NextLink}
-                href="/contact"
+                as="a"
+                href="https://calendly.com/kamil-messidor"
+                target="_blank"
+                rel="noopener noreferrer"
                 size="lg"
                 variant="outline"
                 color="white"
@@ -241,7 +243,7 @@ export default function Home() {
           <Stack spacing={12}>
             <Stack spacing={4} textAlign="center">
               <Heading as="h2" size="xl">
-                Pourquoi Choisir Messidor Patrimoine ?
+                Pourquoi choisir Messidor Patrimoine ?
               </Heading>
               <Text fontSize="lg" color="gray.600">
                 Un partenaire de confiance pour vos investissements au Maroc
@@ -444,33 +446,29 @@ export default function Home() {
       </Box>
 
       {/* CTA Section */}
-      <Box py={20} bg="gray.50">
-        <Container maxW="container.xl">
-          <Stack
-            spacing={6}
-            bg="brand.800"
-            p={12}
-            rounded="xl"
-            textAlign="center"
-            align="center"
+      <Box py={20} bg="brand.800">
+        <Stack
+          spacing={6}
+          textAlign="center"
+          align="center"
+          px={{ base: 8, md: 12 }}
+        >
+          <Heading as="h2" size="xl" color="white">
+            Prêt à optimiser votre patrimoine ?
+          </Heading>
+          <Text fontSize="lg" color="whiteAlpha.900" maxW="2xl">
+            Contactez-nous dès aujourd'hui pour une consultation personnalisée et découvrez
+            comment nous pouvons vous aider à atteindre vos objectifs financiers.
+          </Text>
+          <Button
+            as={NextLink}
+            href="/contact"
+            size="lg"
+            colorScheme="accent"
           >
-            <Heading as="h2" size="xl" color="white">
-              Prêt à Optimiser Votre Patrimoine ?
-            </Heading>
-            <Text fontSize="lg" color="whiteAlpha.900" maxW="2xl">
-              Contactez-nous dès aujourd'hui pour une consultation personnalisée et découvrez
-              comment nous pouvons vous aider à atteindre vos objectifs financiers.
-            </Text>
-            <Button
-              as={NextLink}
-              href="/contact"
-              size="lg"
-              colorScheme="accent"
-            >
-              Contactez-nous
-            </Button>
-          </Stack>
-        </Container>
+            Contactez-nous
+          </Button>
+        </Stack>
       </Box>
     </Box>
   )

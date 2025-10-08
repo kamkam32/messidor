@@ -10,6 +10,8 @@ import {
   Container,
 } from '@chakra-ui/react'
 import NextLink from 'next/link'
+import Image from 'next/image'
+import { usePathname } from 'next/navigation'
 
 const links = [
   { name: 'Accueil', href: '/' },
@@ -18,6 +20,8 @@ const links = [
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
+  const pathname = usePathname()
+  const isHomePage = pathname === '/'
 
   useEffect(() => {
     const handleScroll = () => {
@@ -49,13 +53,24 @@ export default function Navbar() {
             <Link
               as={NextLink}
               href="/"
-              fontSize="2xl"
-              fontWeight="bold"
-              color={scrolled ? 'brand.800' : 'white'}
-              _hover={{ textDecoration: 'none', color: scrolled ? 'accent.600' : 'accent.300' }}
-              transition="color 0.3s"
+              fontSize={isHomePage ? "2xl" : undefined}
+              fontWeight={isHomePage ? "bold" : undefined}
+              color={isHomePage ? (scrolled ? 'brand.800' : 'white') : undefined}
+              _hover={{ textDecoration: 'none', color: isHomePage ? (scrolled ? 'accent.600' : 'accent.300') : undefined }}
+              transition="all 0.3s"
             >
-              Messidor Patrimoine
+              {isHomePage ? (
+                'Messidor Patrimoine'
+              ) : (
+                <Image
+                  src="/images/logomessidor.jpg"
+                  alt="Messidor Patrimoine"
+                  width={180}
+                  height={60}
+                  style={{ objectFit: 'contain' }}
+                  priority
+                />
+              )}
             </Link>
             <HStack as="nav" spacing={6} display={{ base: 'none', md: 'flex' }}>
               {links.map((link) => (

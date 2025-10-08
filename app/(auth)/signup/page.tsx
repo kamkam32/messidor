@@ -16,11 +16,8 @@ import {
   Heading,
   Text,
   useToast,
-  Divider,
-  HStack,
   SimpleGrid,
 } from '@chakra-ui/react'
-import { FcGoogle } from 'react-icons/fc'
 
 export default function SignupPage() {
   const [email, setEmail] = useState('')
@@ -29,7 +26,6 @@ export default function SignupPage() {
   const [lastName, setLastName] = useState('')
   const [phone, setPhone] = useState('')
   const [loading, setLoading] = useState(false)
-  const [googleLoading, setGoogleLoading] = useState(false)
   const router = useRouter()
   const toast = useToast()
   const supabase = createClient()
@@ -71,28 +67,6 @@ export default function SignupPage() {
       })
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handleGoogleSignup = async () => {
-    setGoogleLoading(true)
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/dashboard`,
-        },
-      })
-
-      if (error) throw error
-    } catch (err: any) {
-      toast({
-        title: 'Erreur d\'inscription',
-        description: err.message || 'Une erreur est survenue',
-        status: 'error',
-        duration: 5000,
-      })
-      setGoogleLoading(false)
     }
   }
 
@@ -151,30 +125,6 @@ export default function SignupPage() {
               <Text color="gray.600" fontSize="lg">
                 Rejoignez Messidor Patrimoine
               </Text>
-            </VStack>
-
-            <VStack spacing={4}>
-              <Button
-                w="full"
-                size="lg"
-                variant="outline"
-                leftIcon={<FcGoogle size={24} />}
-                onClick={handleGoogleSignup}
-                isLoading={googleLoading}
-                loadingText="Connexion..."
-                borderColor="gray.300"
-                _hover={{ bg: 'gray.50' }}
-              >
-                Continuer avec Google
-              </Button>
-
-              <HStack w="full">
-                <Divider />
-                <Text fontSize="sm" color="gray.500" whiteSpace="nowrap" px={2}>
-                  ou par email
-                </Text>
-                <Divider />
-              </HStack>
             </VStack>
 
             <form onSubmit={handleSignup}>
