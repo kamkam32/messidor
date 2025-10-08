@@ -57,8 +57,8 @@ export default function Home() {
       {/* Hero Section */}
       <Box position="relative" h="100vh" overflow="hidden">
         {/* Video Background */}
-        <MotionBox
-          as="video"
+        <Box
+          as={motion.video}
           autoPlay
           loop
           muted
@@ -74,7 +74,7 @@ export default function Home() {
           style={{ scale: heroScale }}
         >
           <source src="https://bjiwkxqjovdnheotagtr.supabase.co/storage/v1/object/public/video/2314024-uhd_3840_2160_24fps(3)(1).mp4" type="video/mp4" />
-        </MotionBox>
+        </Box>
 
         {/* Dark Overlay */}
         <MotionBox
@@ -299,7 +299,7 @@ export default function Home() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.3 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
-                  whileHover={{ y: -8, shadow: "xl" }}
+                  whileHover={{ y: -8 }}
                 >
                   <Flex
                     w={16}
