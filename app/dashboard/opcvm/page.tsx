@@ -39,7 +39,7 @@ export default function OPCVMPage() {
   const [filterRisk, setFilterRisk] = useState<string>('all')
   const [filterCompany, setFilterCompany] = useState<string>('all')
   const [sortBy, setSortBy] = useState<string>('name')
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
   const toast = useToast()
 
   const fetchFunds = useCallback(async () => {

@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import { Box, VStack, Flex, Text, Icon, Button } from '@chakra-ui/react'
 import NextLink from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -17,7 +18,7 @@ const menuItems = [
 export default function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
