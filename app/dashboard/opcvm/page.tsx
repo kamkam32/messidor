@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import {
   Box,
   Heading,
@@ -15,7 +15,6 @@ import {
   Stat,
   StatLabel,
   StatNumber,
-  StatHelpText,
   StatArrow,
   Divider,
   Skeleton,
@@ -43,11 +42,7 @@ export default function OPCVMPage() {
   const supabase = createClient()
   const toast = useToast()
 
-  useEffect(() => {
-    fetchFunds()
-  }, [])
-
-  const fetchFunds = async () => {
+  const fetchFunds = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('funds')
@@ -59,7 +54,7 @@ export default function OPCVMPage() {
       if (error) throw error
 
       setFunds(data || [])
-    } catch (err: any) {
+    } catch {
       toast({
         title: 'Erreur',
         description: 'Impossible de charger les fonds OPCVM',
@@ -69,7 +64,11 @@ export default function OPCVMPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [supabase, toast])
+
+  useEffect(() => {
+    fetchFunds()
+  }, [fetchFunds])
 
   const formatPercent = (value: number | null) => {
     if (value === null || value === undefined) return 'N/A'
@@ -83,19 +82,19 @@ export default function OPCVMPage() {
 
   // Extract unique values for filters
   const classifications = useMemo(() => {
-    return Array.from(new Set(funds.map(f => f.classification).filter(Boolean)))
+    return Array.from(new Set(funds.map(f => f.classification).filter((c): c is string => Boolean(c))))
   }, [funds])
 
   const companies = useMemo(() => {
-    return Array.from(new Set(funds.map(f => f.management_company).filter(Boolean))).sort()
+    return Array.from(new Set(funds.map(f => f.management_company).filter((c): c is string => Boolean(c)))).sort()
   }, [funds])
 
   // Filter and sort funds
   const filteredFunds = useMemo(() => {
-    let result = funds.filter(fund => {
+    const result = funds.filter(fund => {
       const matchesSearch = searchQuery === '' ||
         fund.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        fund.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        fund.code?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         fund.management_company?.toLowerCase().includes(searchQuery.toLowerCase())
 
       const matchesClassification = filterClassification === 'all' || fund.classification === filterClassification

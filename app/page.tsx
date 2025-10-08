@@ -89,7 +89,7 @@ export default function Home() {
               lineHeight="1.1"
               letterSpacing="tight"
             >
-              Bâtissez un patrimoine d'exception
+              Bâtissez un patrimoine d&apos;exception
             </Heading>
             <Text fontSize={{ base: '2xl', md: '3xl' }} fontWeight="300" lineHeight="1.5" maxW="4xl">
               Messidor Patrimoine vous accompagne dans la construction et la préservation de votre richesse avec une expertise sur-mesure du marché financier marocain.
@@ -136,11 +136,11 @@ export default function Home() {
             <Stack spacing={8}>
               <Stack spacing={5}>
                 <Heading as="h2" fontSize={{ base: '4xl', md: '5xl' }} lineHeight="1.2" fontWeight="500">
-                  L'offre la plus complète du marché marocain
+                  L&apos;offre la plus complète du marché marocain
                 </Heading>
                 <Text fontSize={{ base: 'lg', md: 'xl' }} color="gray.600" lineHeight="1.8" fontWeight="300">
                   Simplifiez la gestion de votre patrimoine avec notre approche sur-mesure,
-                  conçue pour vous offrir une expérience client d'excellence et des solutions
+                  conçue pour vous offrir une expérience client d&apos;excellence et des solutions
                   adaptées au marché financier marocain.
                 </Text>
               </Stack>
@@ -182,7 +182,7 @@ export default function Home() {
                     flexShrink={0}
                   />
                   <Text fontSize="lg" color="gray.700">
-                    Conseils indépendants sans conflit d'intérêt
+                    Conseils indépendants sans conflit d&apos;intérêt
                   </Text>
                 </Flex>
                 <Flex align="start" gap={4}>
@@ -368,8 +368,8 @@ export default function Home() {
                     transition="all 0.5s ease"
                     _groupHover={{ opacity: 1, transform: 'translateY(0)' }}
                   >
-                    Fort de plus de 20 ans d'expérience dans la banque privée internationale (HSBC Private Bank, UBS Wealth Management, BMCI Groupe BNP Paribas), Tarik Belghazi fonde en 2013 Belghazi Family Office.
-                    Diplômé de KEDGE Business School en Finance et gestion financière, il accompagne une clientèle internationale dans leurs stratégies patrimoniales, la gouvernance familiale et l'organisation successorale, avec une approche unique : créer de la richesse avec et pour les personnes.
+                    Fort de plus de 20 ans d&apos;expérience dans la banque privée internationale (HSBC Private Bank, UBS Wealth Management, BMCI Groupe BNP Paribas), Tarik Belghazi fonde en 2013 Belghazi Family Office.
+                    Diplômé de KEDGE Business School en Finance et gestion financière, il accompagne une clientèle internationale dans leurs stratégies patrimoniales, la gouvernance familiale et l&apos;organisation successorale, avec une approche unique : créer de la richesse avec et pour les personnes.
                   </Text>
                 </Stack>
               </Box>

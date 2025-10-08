@@ -33,7 +33,7 @@ export interface Fund {
   performance_fees: number | null
   inception_date: string | null
   is_active: boolean
-  documents: any
+  documents: Record<string, unknown> | null
   created_at: string
   updated_at: string
 }

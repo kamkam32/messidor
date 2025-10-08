@@ -40,7 +40,7 @@ export default function SimulateurPage() {
     <Box>
       <Box mb={8}>
         <Heading size="xl" mb={2}>
-          Simulateur d'investissement
+          Simulateur d&apos;investissement
         </Heading>
         <Text color="gray.600" fontSize="lg">
           Estimez le rendement potentiel de vos investissements
@@ -137,7 +137,7 @@ export default function SimulateurPage() {
                 </>
               ) : (
                 <Text color="gray.500" textAlign="center">
-                  Remplissez le formulaire et cliquez sur "Calculer" pour voir
+                  Remplissez le formulaire et cliquez sur &quot;Calculer&quot; pour voir
                   les résultats
                 </Text>
               )}
