@@ -9,6 +9,13 @@ export type Json =
 export type UserRole = 'user' | 'admin'
 export type FundType = 'OPCVM' | 'OPCI'
 export type LegalNature = 'SICAV' | 'FCP'
+export type PropertyType = 'apartment' | 'house' | 'commercial' | 'land' | 'other'
+export type PropertyStatus = 'available' | 'rented' | 'sold' | 'maintenance'
+export type LeaseStatus = 'active' | 'expired' | 'terminated' | 'pending'
+export type PaymentType = 'rent' | 'deposit' | 'charges' | 'other'
+export type PaymentStatus = 'pending' | 'paid' | 'late' | 'cancelled'
+export type PaymentMethod = 'cash' | 'check' | 'bank_transfer' | 'card' | 'other'
+export type DocumentCategory = 'lease' | 'identity' | 'insurance' | 'invoice' | 'other'
 
 export interface Database {
   public: {
