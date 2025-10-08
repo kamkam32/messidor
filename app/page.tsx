@@ -49,6 +49,7 @@ export default function Home() {
           loop
           muted
           playsInline
+          preload="auto"
           position="absolute"
           top="0"
           left="0"
@@ -57,7 +58,7 @@ export default function Home() {
           objectFit="cover"
           zIndex="0"
         >
-          <source src="/videos/hero.mp4" type="video/mp4" />
+          <source src="https://bjiwkxqjovdnheotagtr.supabase.co/storage/v1/object/public/video/2314024-uhd_3840_2160_24fps(3)(1).mp4" type="video/mp4" />
         </Box>
 
         {/* Dark Overlay */}
