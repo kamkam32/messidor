@@ -13,6 +13,12 @@ import {
 } from '@chakra-ui/react'
 import { FaChartLine, FaShieldAlt, FaUsers, FaHandshake } from 'react-icons/fa'
 import NextLink from 'next/link'
+import { motion, useScroll, useTransform } from 'framer-motion'
+import { useRef } from 'react'
+
+const MotionBox = motion(Box)
+const MotionStack = motion(Stack)
+const MotionFlex = motion(Flex)
 
 const features = [
   {
@@ -38,12 +44,20 @@ const features = [
 ]
 
 export default function Home() {
+  const heroRef = useRef(null)
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"]
+  })
+  const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.3])
+  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.1])
+
   return (
-    <Box flex="1">
+    <Box flex="1" ref={heroRef}>
       {/* Hero Section */}
       <Box position="relative" h="100vh" overflow="hidden">
         {/* Video Background */}
-        <Box
+        <MotionBox
           as="video"
           autoPlay
           loop
@@ -57,12 +71,13 @@ export default function Home() {
           h="100%"
           objectFit="cover"
           zIndex="0"
+          style={{ scale: heroScale }}
         >
           <source src="https://bjiwkxqjovdnheotagtr.supabase.co/storage/v1/object/public/video/2314024-uhd_3840_2160_24fps(3)(1).mp4" type="video/mp4" />
-        </Box>
+        </MotionBox>
 
         {/* Dark Overlay */}
-        <Box
+        <MotionBox
           position="absolute"
           top="0"
           left="0"
@@ -70,6 +85,7 @@ export default function Home() {
           h="100%"
           bg="blackAlpha.600"
           zIndex="1"
+          style={{ opacity: heroOpacity }}
         />
 
         {/* Content */}
@@ -82,7 +98,16 @@ export default function Home() {
           alignItems="center"
           justifyContent="center"
         >
-          <Stack spacing={10} maxW="5xl" color="white" textAlign="center" align="center">
+          <MotionStack
+            spacing={10}
+            maxW="5xl"
+            color="white"
+            textAlign="center"
+            align="center"
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.2 }}
+          >
             <Heading
               as="h1"
               fontSize={{ base: '5xl', md: '7xl', lg: '8xl' }}
@@ -128,7 +153,7 @@ export default function Home() {
                 Prendre rendez-vous
               </Button>
             </Stack>
-          </Stack>
+          </MotionStack>
         </Container>
       </Box>
 
@@ -136,7 +161,13 @@ export default function Home() {
       <Box py={{ base: 20, md: 24 }} bg="white">
         <Container maxW="container.xl">
           <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={16} alignItems="center">
-            <Stack spacing={8}>
+            <MotionStack
+              spacing={8}
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.6 }}
+            >
               <Stack spacing={5}>
                 <Heading as="h2" fontSize={{ base: '4xl', md: '5xl' }} lineHeight="1.2" fontWeight="500">
                   L&apos;offre la plus complète du marché marocain
@@ -214,14 +245,18 @@ export default function Home() {
                   Découvrir nos solutions
                 </Button>
               </Box>
-            </Stack>
+            </MotionStack>
 
-            <Box
+            <MotionBox
               position="relative"
               h={{ base: '400px', md: '550px' }}
               rounded="2xl"
               overflow="hidden"
               boxShadow="2xl"
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.6 }}
             >
               <Box
                 position="absolute"
@@ -233,7 +268,7 @@ export default function Home() {
                 bgSize="cover"
                 bgPosition="center"
               />
-            </Box>
+            </MotionBox>
           </SimpleGrid>
         </Container>
       </Box>
@@ -252,7 +287,7 @@ export default function Home() {
             </Stack>
             <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={10}>
               {features.map((feature, index) => (
-                <Stack
+                <MotionStack
                   key={index}
                   align="center"
                   textAlign="center"
@@ -260,6 +295,11 @@ export default function Home() {
                   p={6}
                   rounded="lg"
                   shadow="md"
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  whileHover={{ y: -8, shadow: "xl" }}
                 >
                   <Flex
                     w={16}
@@ -277,7 +317,7 @@ export default function Home() {
                     {feature.title}
                   </Heading>
                   <Text color="gray.600">{feature.text}</Text>
-                </Stack>
+                </MotionStack>
               ))}
             </SimpleGrid>
           </Stack>
@@ -313,7 +353,7 @@ export default function Home() {
             </Stack>
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={10}>
               {/* Tarik Belghazi */}
-              <Box
+              <MotionBox
                 position="relative"
                 h="500px"
                 w="400px"
@@ -323,6 +363,11 @@ export default function Home() {
                 role="group"
                 boxShadow="xl"
                 mx="auto"
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 0.6 }}
+                whileHover={{ scale: 1.02 }}
               >
                 <Box
                   position="absolute"
@@ -375,10 +420,10 @@ export default function Home() {
                     Diplômé de KEDGE Business School en Finance et gestion financière, il accompagne une clientèle internationale dans leurs stratégies patrimoniales, la gouvernance familiale et l&apos;organisation successorale, avec une approche unique : créer de la richesse avec et pour les personnes.
                   </Text>
                 </Stack>
-              </Box>
+              </MotionBox>
 
               {/* Kamil Alami */}
-              <Box
+              <MotionBox
                 position="relative"
                 h="500px"
                 w="400px"
@@ -388,6 +433,11 @@ export default function Home() {
                 role="group"
                 boxShadow="xl"
                 mx="auto"
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                whileHover={{ scale: 1.02 }}
               >
                 <Box
                   position="absolute"
@@ -440,7 +490,7 @@ export default function Home() {
                     Chez Messidor Patrimoine, il repense l'expérience client et digitalise les services de conseil patrimonial pour offrir une approche moderne et personnalisée.
                   </Text>
                 </Stack>
-              </Box>
+              </MotionBox>
             </SimpleGrid>
           </Stack>
         </Container>
@@ -448,11 +498,15 @@ export default function Home() {
 
       {/* CTA Section */}
       <Box py={20} bg="brand.800">
-        <Stack
+        <MotionStack
           spacing={6}
           textAlign="center"
           align="center"
           px={{ base: 8, md: 12 }}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 0.6 }}
         >
           <Heading as="h2" size="xl" color="white">
             Prêt à optimiser votre patrimoine ?
@@ -469,7 +523,7 @@ export default function Home() {
           >
             Contactez-nous
           </Button>
-        </Stack>
+        </MotionStack>
       </Box>
     </Box>
   )
