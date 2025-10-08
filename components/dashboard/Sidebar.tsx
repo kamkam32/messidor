@@ -9,7 +9,6 @@ import { createClient } from '@/lib/supabase/client'
 import Image from 'next/image'
 
 const menuItems = [
-  { name: 'Tableau de bord', href: '/dashboard', icon: FiHome },
   { name: 'OPCVM', href: '/dashboard/opcvm', icon: FiTrendingUp },
   { name: 'OPCI', href: '/dashboard/opci', icon: FiBarChart2 },
   { name: 'Simulateur', href: '/dashboard/simulateur', icon: FiSliders },
@@ -43,19 +42,26 @@ export default function Sidebar() {
       <Flex direction="column" h="full" justify="space-between">
         <Box>
           {/* Logo */}
-          <Box p={6} borderBottom="1px" borderColor="gray.200">
+          <Box
+            p={8}
+            borderBottom="1px"
+            borderColor="gray.200"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
             <Image
               src="/images/logomessidor.jpg"
               alt="Messidor Patrimoine"
-              width={120}
-              height={40}
+              width={200}
+              height={70}
               style={{ objectFit: 'contain' }}
               priority
             />
           </Box>
 
           {/* Menu Items */}
-          <VStack spacing={1} align="stretch" p={4}>
+          <VStack spacing={1} align="stretch" p={6} mt={4}>
             {menuItems.map((item) => {
               const isActive = pathname === item.href
               return (
@@ -65,12 +71,13 @@ export default function Sidebar() {
                   href={item.href}
                   px={4}
                   py={3}
-                  borderRadius="lg"
-                  bg={isActive ? 'accent.50' : 'transparent'}
-                  color={isActive ? 'accent.600' : 'gray.700'}
+                  borderRadius="md"
+                  bg={isActive ? 'gray.100' : 'transparent'}
+                  color="gray.700"
                   fontWeight={isActive ? '600' : '500'}
+                  fontSize="md"
                   _hover={{
-                    bg: isActive ? 'accent.50' : 'gray.100',
+                    bg: 'gray.50',
                     textDecoration: 'none',
                   }}
                   transition="all 0.2s"
@@ -87,15 +94,20 @@ export default function Sidebar() {
         </Box>
 
         {/* Logout Button */}
-        <Box p={4} borderTop="1px" borderColor="gray.200">
+        <Box p={6} borderTop="1px" borderColor="gray.200">
           <Button
             variant="ghost"
             w="full"
             leftIcon={<FiLogOut />}
             onClick={handleLogout}
-            colorScheme="red"
+            color="gray.600"
             justifyContent="flex-start"
             px={4}
+            fontWeight="500"
+            _hover={{
+              bg: 'gray.50',
+              color: 'red.600',
+            }}
           >
             Se déconnecter
           </Button>

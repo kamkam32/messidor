@@ -98,7 +98,7 @@ export default function Home() {
             <Stack direction={{ base: 'column', sm: 'row' }} spacing={6} pt={6}>
               <Button
                 as={NextLink}
-                href="/services"
+                href="/login"
                 size="lg"
                 colorScheme="accent"
                 variant="solid"
@@ -206,7 +206,7 @@ export default function Home() {
               <Box pt={4}>
                 <Button
                   as={NextLink}
-                  href="/services"
+                  href="/login"
                   size="lg"
                   colorScheme="accent"
                   rightIcon={<Icon as={FaChartLine} />}
