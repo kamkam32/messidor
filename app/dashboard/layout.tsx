@@ -11,7 +11,12 @@ export default function DashboardLayout({
   return (
     <Flex minH="100vh" bg="gray.50">
       <Sidebar />
-      <Box flex="1" ml={{ base: 0, lg: '280px' }} p={8}>
+      <Box
+        flex="1"
+        ml={{ base: 0, lg: '280px' }}
+        p={{ base: 4, md: 8 }}
+        pt={{ base: 20, lg: 8 }}
+      >
         {children}
       </Box>
     </Flex>

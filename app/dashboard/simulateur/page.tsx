@@ -37,7 +37,7 @@ export default function SimulateurPage() {
   }
 
   return (
-    <Box px={{ base: 4, md: 6 }} py={{ base: 4, md: 0 }}>
+    <Box>
       <Box mb={8}>
         <Heading as="h1" size={{ base: 'lg', md: 'xl' }} mb={2}>
           Simulateur d&apos;investissement

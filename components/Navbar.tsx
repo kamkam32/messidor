@@ -8,7 +8,17 @@ import {
   Link,
   Button,
   Container,
+  IconButton,
+  Drawer,
+  DrawerBody,
+  DrawerHeader,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerCloseButton,
+  VStack,
+  useDisclosure,
 } from '@chakra-ui/react'
+import { HamburgerIcon } from '@chakra-ui/icons'
 import NextLink from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
@@ -22,6 +32,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const pathname = usePathname()
   const isHomePage = pathname === '/'
+  const { isOpen, onOpen, onClose } = useDisclosure()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -53,7 +64,7 @@ export default function Navbar() {
             <Link
               as={NextLink}
               href="/"
-              fontSize={isHomePage ? "2xl" : undefined}
+              fontSize={isHomePage ? { base: 'lg', sm: 'xl', md: '2xl' } : undefined}
               fontWeight={isHomePage ? "bold" : undefined}
               color={isHomePage ? (scrolled ? 'brand.800' : 'white') : undefined}
               _hover={{ textDecoration: 'none', color: isHomePage ? (scrolled ? 'accent.600' : 'accent.300') : undefined }}
@@ -67,7 +78,7 @@ export default function Navbar() {
                   alt="Messidor Patrimoine"
                   width={180}
                   height={60}
-                  style={{ objectFit: 'contain' }}
+                  style={{ objectFit: 'contain', maxWidth: '150px', height: 'auto' }}
                   priority
                 />
               )}
@@ -95,22 +106,24 @@ export default function Navbar() {
               ))}
             </HStack>
           </HStack>
-          <HStack spacing={4}>
+          <HStack spacing={{ base: 2, md: 4 }}>
+            {/* Desktop Buttons */}
             <Button
               as={NextLink}
               href="/login"
               variant="outline"
               colorScheme={scrolled ? 'accent' : 'whiteAlpha'}
-              size="md"
-              fontSize="md"
+              size={{ base: 'sm', md: 'md' }}
+              fontSize={{ base: 'sm', md: 'md' }}
               fontWeight="600"
-              px={6}
-              py={5}
+              px={{ base: 3, md: 6 }}
+              py={{ base: 4, md: 5 }}
               borderColor={scrolled ? 'accent.500' : 'white'}
               color={scrolled ? 'accent.600' : 'white'}
               _hover={{
                 bg: scrolled ? 'accent.50' : 'whiteAlpha.200',
               }}
+              display={{ base: 'none', sm: 'inline-flex' }}
             >
               Espace Client
             </Button>
@@ -119,17 +132,94 @@ export default function Navbar() {
               href="/contact"
               variant="solid"
               colorScheme="accent"
-              size="md"
-              fontSize="md"
+              size={{ base: 'sm', md: 'md' }}
+              fontSize={{ base: 'sm', md: 'md' }}
               fontWeight="600"
-              px={6}
-              py={5}
+              px={{ base: 3, md: 6 }}
+              py={{ base: 4, md: 5 }}
+              display={{ base: 'none', sm: 'inline-flex' }}
             >
               Contactez-nous
             </Button>
+
+            {/* Mobile Menu Button */}
+            <IconButton
+              icon={<HamburgerIcon />}
+              onClick={onOpen}
+              variant="ghost"
+              color={scrolled ? 'gray.700' : 'white'}
+              _hover={{
+                bg: scrolled ? 'gray.100' : 'whiteAlpha.300',
+              }}
+              aria-label="Ouvrir le menu"
+              display={{ base: 'flex', md: 'none' }}
+              size="lg"
+            />
           </HStack>
         </Flex>
       </Container>
+
+      {/* Mobile Drawer */}
+      <Drawer isOpen={isOpen} placement="right" onClose={onClose} size="xs">
+        <DrawerOverlay />
+        <DrawerContent>
+          <DrawerCloseButton />
+          <DrawerHeader borderBottomWidth="1px">
+            Menu
+          </DrawerHeader>
+
+          <DrawerBody>
+            <VStack spacing={4} align="stretch" mt={4}>
+              {links.map((link) => (
+                <Link
+                  key={link.name}
+                  as={NextLink}
+                  href={link.href}
+                  onClick={onClose}
+                  px={4}
+                  py={3}
+                  rounded="md"
+                  fontSize="lg"
+                  fontWeight="500"
+                  color="gray.700"
+                  _hover={{
+                    textDecoration: 'none',
+                    bg: 'gray.100',
+                  }}
+                >
+                  {link.name}
+                </Link>
+              ))}
+
+              <Box pt={4} borderTopWidth="1px">
+                <Button
+                  as={NextLink}
+                  href="/login"
+                  variant="outline"
+                  colorScheme="accent"
+                  size="md"
+                  w="full"
+                  mb={3}
+                  onClick={onClose}
+                >
+                  Espace Client
+                </Button>
+                <Button
+                  as={NextLink}
+                  href="/contact"
+                  variant="solid"
+                  colorScheme="accent"
+                  size="md"
+                  w="full"
+                  onClick={onClose}
+                >
+                  Contactez-nous
+                </Button>
+              </Box>
+            </VStack>
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
     </Box>
   )
 }
