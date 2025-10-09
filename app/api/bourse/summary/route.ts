@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { getMASIQuote } from '@/lib/casablanca-bourse-scraper';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -77,13 +78,24 @@ export async function GET(request: Request) {
     }
 
     // Transformer en array
-    const summary = Object.values(latestByIndex).map((record: any) => {
+    const summary = await Promise.all(Object.values(latestByIndex).map(async (record: any) => {
       const points = record.data?.points || [];
       const count = record.data?.count || 0;
       const indexCode = record.index_code;
 
       // Vérifier si on a un quote officiel pour cet indice
-      const quote = quotesByIndex[indexCode]?.data;
+      let quote = quotesByIndex[indexCode]?.data;
+
+      // Si pas de quote en DB et c'est le MASI, récupérer en direct
+      if (!quote && indexCode === 'MASI') {
+        try {
+          console.log('📡 Fetching live MASI quote...');
+          const liveQuote = await getMASIQuote();
+          quote = liveQuote;
+        } catch (error) {
+          console.error('Error fetching live MASI quote:', error);
+        }
+      }
 
       // Calculer des statistiques
       let openValue = null;
@@ -143,7 +155,7 @@ export async function GET(request: Request) {
         variationPercent,
         scrapeTimestamp: record.scrape_timestamp,
       };
-    });
+    }));
 
     return NextResponse.json({
       success: true,

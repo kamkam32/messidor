@@ -75,14 +75,19 @@ export async function getMASIQuote(): Promise<IndexQuote> {
 
     const data = response.data;
 
+    const indexValue = parseFloat(data.data.field_index_value || '0');
+    const previousValue = parseFloat(data.data.veille || '0');
+    const variationPercent = parseFloat(data.data.field_var_veille || '0');
+    const variation = previousValue > 0 ? (indexValue - previousValue) : 0;
+
     return {
       indexValue: data.data.field_index_value || '0',
-      previousValue: data.data.field_previous_value || '0',
-      variation: data.data.field_variation || '0',
-      variationPercent: data.data.field_variation_percent || '0',
+      previousValue: data.data.veille || '0',
+      variation: variation.toString(),
+      variationPercent: data.data.field_var_veille || '0',
       high: data.data.field_index_high_value || '0',
       low: data.data.field_index_low_value || '0',
-      ytdVariation: data.data.field_ytd_variation || '0',
+      ytdVariation: data.data.field_var_year || '0',
       marketCap: data.data.field_market_capitalisation || '0',
       timestamp: new Date().toISOString(),
     };
