@@ -4,11 +4,12 @@ import { useMemo } from 'react'
 import { Box, VStack, Flex, Text, Icon, Button } from '@chakra-ui/react'
 import NextLink from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { FiHome, FiTrendingUp, FiBarChart2, FiSliders, FiLogOut } from 'react-icons/fi'
+import { FiHome, FiTrendingUp, FiBarChart2, FiSliders, FiLogOut, FiActivity } from 'react-icons/fi'
 import { createClient } from '@/lib/supabase/client'
 import Image from 'next/image'
 
 const menuItems = [
+  { name: 'Bourse', href: '/dashboard/bourse', icon: FiActivity },
   { name: 'OPCVM', href: '/dashboard/opcvm', icon: FiTrendingUp },
   { name: 'OPCI', href: '/dashboard/opci', icon: FiBarChart2 },
   { name: 'Simulateur', href: '/dashboard/simulateur', icon: FiSliders },

@@ -11,7 +11,11 @@
       "Bash(git remote add:*)",
       "Bash(git push:*)",
       "Bash(git remote set-url:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "WebFetch(domain:www.casablanca-bourse.com)",
+      "Bash(curl -k https://www.casablanca-bourse.com/robots.txt)",
+      "Bash(curl -k -s https://www.casablanca-bourse.com/fr/live-market/indices/MASI)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []
