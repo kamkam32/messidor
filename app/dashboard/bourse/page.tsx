@@ -1023,7 +1023,7 @@ export default function BoursePage() {
         <Text fontSize="sm" color="gray.500">
           Source: Bourse de Casablanca
           {dataSource === 'supabase'
-            ? ' - Données historiques collectées toutes les 10 minutes'
+            ? ' - Données historiques collectées toutes les heures'
             : ' - Scraping en direct'
           }
         </Text>
