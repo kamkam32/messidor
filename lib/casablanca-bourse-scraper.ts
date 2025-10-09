@@ -34,6 +34,16 @@ export interface IntradayData {
   indexValue: string;
 }
 
+// Interface pour les données brutes de composition (avant transformation)
+interface RawCompositionItem {
+  instrument: string;
+  price: string;
+  previousPrice: string;
+  variation: string;
+  volume: string;
+  quantity: string;
+}
+
 /**
  * Récupère la cotation de l'indice MASI
  */
@@ -212,7 +222,7 @@ export async function getMASIComposition(): Promise<StockComposition[]> {
 
     await browser.close();
 
-    return composition.map(item => {
+    return composition.map((item: RawCompositionItem) => {
       const variationMatch = item.variation.match(/([-+]?\d+[.,]\d+)\s*%/);
       const variationPercent = variationMatch ? variationMatch[1].replace(',', '.') : '0';
 
