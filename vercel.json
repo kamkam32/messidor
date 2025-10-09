@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/save-bourse",
-      "schedule": "0 * * * *"
+      "schedule": "*/10 * * * *"
     }
   ]
 }

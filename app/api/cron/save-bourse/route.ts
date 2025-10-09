@@ -18,10 +18,10 @@ interface SaveBourseResult {
 }
 
 /**
- * API Route: Cron job pour sauvegarder les données de la bourse toutes les heures
+ * API Route: Cron job pour sauvegarder les données de la bourse toutes les 10 minutes
  *
  * Sécurité: Vérifie le token CRON_SECRET
- * Fréquence: Toutes les heures (configuré dans vercel.json)
+ * Fréquence: Toutes les 10 minutes (configuré dans vercel.json)
  *
  * Collecte les données intraday pour plusieurs indices:
  * - MASI, MSI20, ESGI (MASI ESG), MASIMS (MASI Mid & Small Cap)
