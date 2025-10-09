@@ -2,14 +2,6 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { getMASIQuote, getMASIIntraday, getMASIComposition } from '@/lib/casablanca-bourse-scraper';
 
-// Configuration
-const CRON_SECRET = process.env.CRON_SECRET;
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-// Create Supabase client with service role key (bypasses RLS)
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-
 interface SaveBourseResult {
   success: boolean;
   date: string;
@@ -38,6 +30,7 @@ export async function GET(request: Request) {
 
   try {
     // 1. Vérifier le token de sécurité
+    const CRON_SECRET = process.env.CRON_SECRET;
     const authHeader = request.headers.get('authorization');
     const token = authHeader?.replace('Bearer ', '');
 
@@ -51,7 +44,21 @@ export async function GET(request: Request) {
 
     console.log('✅ Cron job authentifié - Début de la collecte des données');
 
-    // 2. Préparer la date
+    // 2. Créer le client Supabase avec service role key (bypasses RLS)
+    const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+      console.error('❌ Missing Supabase credentials');
+      return NextResponse.json(
+        { success: false, error: 'Missing Supabase configuration' },
+        { status: 500 }
+      );
+    }
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+
+    // 3. Préparer la date
     const today = new Date();
     const dateStr = today.toISOString().split('T')[0];
 
@@ -67,7 +74,7 @@ export async function GET(request: Request) {
       timestamp: new Date().toISOString(),
     };
 
-    // 3. Récupérer et sauvegarder les données de cotation (Quote)
+    // 4. Récupérer et sauvegarder les données de cotation (Quote)
     try {
       console.log('📊 Récupération de la cotation MASI...');
       const quote = await getMASIQuote();
@@ -99,7 +106,7 @@ export async function GET(request: Request) {
       result.errors.push(`Quote fetch: ${error.message}`);
     }
 
-    // 4. Récupérer et sauvegarder les données intraday
+    // 5. Récupérer et sauvegarder les données intraday
     try {
       console.log('📈 Récupération des données intraday MASI...');
       const intraday = await getMASIIntraday(dateStr);
@@ -136,7 +143,7 @@ export async function GET(request: Request) {
       result.errors.push(`Intraday fetch: ${error.message}`);
     }
 
-    // 5. Récupérer et sauvegarder la composition de l'indice
+    // 6. Récupérer et sauvegarder la composition de l'indice
     try {
       console.log('📋 Récupération de la composition MASI...');
       const composition = await getMASIComposition();
@@ -173,7 +180,7 @@ export async function GET(request: Request) {
       result.errors.push(`Composition fetch: ${error.message}`);
     }
 
-    // 6. Déterminer le succès global
+    // 7. Déterminer le succès global
     const savedCount = Object.values(result.saved).filter(Boolean).length;
     result.success = savedCount > 0; // Au moins une donnée sauvegardée = succès
 
