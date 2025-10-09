@@ -37,17 +37,17 @@ export default function SimulateurPage() {
   }
 
   return (
-    <Box>
+    <Box px={{ base: 4, md: 6 }} py={{ base: 4, md: 0 }}>
       <Box mb={8}>
-        <Heading as="h1" size="xl" mb={2}>
+        <Heading as="h1" size={{ base: 'lg', md: 'xl' }} mb={2}>
           Simulateur d&apos;investissement
         </Heading>
-        <Text color="gray.600" fontSize="lg">
+        <Text color="gray.600" fontSize={{ base: 'md', md: 'lg' }}>
           Estimez le rendement potentiel de vos investissements !
         </Text>
       </Box>
 
-      <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={8}>
+      <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={{ base: 6, md: 8 }}>
         {/* Formulaire */}
         <Card>
           <CardBody>
@@ -86,7 +86,7 @@ export default function SimulateurPage() {
                 />
               </FormControl>
 
-              <Button colorScheme="accent" size="lg" onClick={calculer}>
+              <Button colorScheme="accent" size={{ base: 'md', md: 'lg' }} onClick={calculer} w="full">
                 Calculer
               </Button>
             </VStack>

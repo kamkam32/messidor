@@ -195,14 +195,14 @@ export default function OPCVMPage() {
       </Box>
 
       {/* Search and Filters */}
-      <Box mb={6} p={6} bg="white" borderRadius="lg" shadow="sm" border="1px" borderColor="gray.200">
+      <Box mb={6} p={{ base: 4, md: 6 }} bg="white" borderRadius="lg" shadow="sm" border="1px" borderColor="gray.200">
         <VStack spacing={4} align="stretch">
-          <InputGroup size="lg">
+          <InputGroup size={{ base: 'md', md: 'lg' }}>
             <InputLeftElement pointerEvents="none">
               <SearchIcon color="gray.400" />
             </InputLeftElement>
             <Input
-              placeholder="Rechercher par nom, code ou société..."
+              placeholder="Rechercher par nom, code..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               bg="gray.50"
@@ -211,86 +211,88 @@ export default function OPCVMPage() {
             />
           </InputGroup>
 
-          <Flex gap={4} flexWrap="wrap" align="center">
-            <Text fontSize="sm" fontWeight="semibold" color="gray.700" minW="fit-content">
+          <Stack spacing={3}>
+            <Text fontSize="sm" fontWeight="semibold" color="gray.700" display={{ base: 'none', sm: 'block' }}>
               Filtrer par :
             </Text>
-            <Select
-              value={filterClassification}
-              onChange={(e) => setFilterClassification(e.target.value)}
-              maxW={{ base: '100%', md: '200px' }}
-              bg="gray.50"
-            >
-              <option value="all">Toutes classifications</option>
-              {classifications.map(c => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </Select>
+            <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} gap={3}>
+              <Select
+                value={filterClassification}
+                onChange={(e) => setFilterClassification(e.target.value)}
+                bg="gray.50"
+                size={{ base: 'sm', md: 'md' }}
+              >
+                <option value="all">Toutes classifications</option>
+                {classifications.map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </Select>
 
-            <Select
-              value={filterRisk}
-              onChange={(e) => setFilterRisk(e.target.value)}
-              maxW={{ base: '100%', md: '180px' }}
-              bg="gray.50"
-            >
-              <option value="all">Tous niveaux de risque</option>
-              {[1, 2, 3, 4, 5, 6, 7].map(r => (
-                <option key={r} value={r}>Risque {r}/7</option>
-              ))}
-            </Select>
+              <Select
+                value={filterRisk}
+                onChange={(e) => setFilterRisk(e.target.value)}
+                bg="gray.50"
+                size={{ base: 'sm', md: 'md' }}
+              >
+                <option value="all">Tous niveaux de risque</option>
+                {[1, 2, 3, 4, 5, 6, 7].map(r => (
+                  <option key={r} value={r}>Risque {r}/7</option>
+                ))}
+              </Select>
 
-            <Select
-              value={filterCompany}
-              onChange={(e) => setFilterCompany(e.target.value)}
-              flex="1"
-              minW="200px"
-              bg="gray.50"
-            >
-              <option value="all">Toutes sociétés</option>
-              {companies.map(c => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </Select>
-          </Flex>
+              <Select
+                value={filterCompany}
+                onChange={(e) => setFilterCompany(e.target.value)}
+                bg="gray.50"
+                size={{ base: 'sm', md: 'md' }}
+              >
+                <option value="all">Toutes sociétés</option>
+                {companies.map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </Select>
+            </SimpleGrid>
+          </Stack>
 
-          <Flex gap={4} flexWrap="wrap" align="center">
-            <Text fontSize="sm" fontWeight="semibold" color="gray.700" minW="fit-content">
-              Trier par :
-            </Text>
+          <Stack spacing={3}>
+            <Flex justify="space-between" align="center">
+              <Text fontSize="sm" fontWeight="semibold" color="gray.700" display={{ base: 'none', sm: 'block' }}>
+                Trier par :
+              </Text>
+              {(searchQuery || filterClassification !== 'all' || filterRisk !== 'all' || filterCompany !== 'all' || sortBy !== 'name') && (
+                <Button
+                  onClick={() => {
+                    setSearchQuery('')
+                    setFilterClassification('all')
+                    setFilterRisk('all')
+                    setFilterCompany('all')
+                    setSortBy('name')
+                  }}
+                  variant="ghost"
+                  colorScheme="red"
+                  size="sm"
+                  ml="auto"
+                >
+                  Réinitialiser
+                </Button>
+              )}
+            </Flex>
             <Select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              maxW={{ base: '100%', md: '250px' }}
               bg="gray.50"
+              size={{ base: 'sm', md: 'md' }}
             >
               <option value="name">Nom (A-Z)</option>
-              <option value="perf_ytd_desc">Performance YTD (meilleure)</option>
-              <option value="perf_ytd_asc">Performance YTD (plus faible)</option>
-              <option value="perf_1y_desc">Performance 1 an (meilleure)</option>
-              <option value="risk_asc">Risque (plus faible)</option>
-              <option value="risk_desc">Risque (plus élevé)</option>
-              <option value="nav_desc">Valeur liquidative (plus élevée)</option>
-              <option value="fees_asc">Frais de gestion (plus bas)</option>
+              <option value="perf_ytd_desc">Performance YTD ↓</option>
+              <option value="perf_ytd_asc">Performance YTD ↑</option>
+              <option value="perf_1y_desc">Performance 1 an ↓</option>
+              <option value="risk_asc">Risque ↑</option>
+              <option value="risk_desc">Risque ↓</option>
+              <option value="nav_desc">VL ↓</option>
+              <option value="fees_asc">Frais ↑</option>
             </Select>
-
-            {(searchQuery || filterClassification !== 'all' || filterRisk !== 'all' || filterCompany !== 'all' || sortBy !== 'name') && (
-              <Button
-                onClick={() => {
-                  setSearchQuery('')
-                  setFilterClassification('all')
-                  setFilterRisk('all')
-                  setFilterCompany('all')
-                  setSortBy('name')
-                }}
-                variant="ghost"
-                colorScheme="red"
-                size="sm"
-                ml="auto"
-              >
-                Réinitialiser
-              </Button>
-            )}
-          </Flex>
+          </Stack>
         </VStack>
       </Box>
 
@@ -310,7 +312,7 @@ export default function OPCVMPage() {
               <Image
                 src={`https://picsum.photos/seed/${fund.code}/400/200`}
                 alt={fund.name}
-                h="180px"
+                h={{ base: "150px", md: "180px" }}
                 w="100%"
                 objectFit="cover"
                 loading="lazy"
@@ -334,13 +336,13 @@ export default function OPCVMPage() {
                         Risque {fund.risk_level}/7
                       </Badge>
                     </HStack>
-                    <Heading size="md" mb={2} lineHeight="1.3">
+                    <Heading size={{ base: 'sm', md: 'md' }} mb={2} lineHeight="1.3" noOfLines={2}>
                       {fund.name}
                     </Heading>
-                    <Text fontSize="sm" color="gray.600" fontWeight="500">
+                    <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.600" fontWeight="500" noOfLines={1}>
                       {fund.management_company}
                     </Text>
-                    <Text fontSize="xs" color="gray.500" mt={1}>
+                    <Text fontSize="xs" color="gray.500" mt={1} noOfLines={1}>
                       {fund.legal_nature} • {fund.isin_code}
                     </Text>
                   </Box>

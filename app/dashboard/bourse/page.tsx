@@ -555,13 +555,13 @@ export default function BoursePage() {
       )}
 
       {/* Sélecteur d'indice - Boutons au lieu de dropdown */}
-      <Box mb={6}>
-        <HStack spacing={2} flexWrap="wrap">
+      <Box mb={6} overflowX="auto" pb={2}>
+        <HStack spacing={2} flexWrap={{ base: 'nowrap', md: 'wrap' }} minW={{ base: 'max-content', md: 'auto' }}>
           {[...summary].sort((a, b) => a.index === 'MASI' ? -1 : b.index === 'MASI' ? 1 : 0).map((s) => (
             <Button
               key={s.index}
               onClick={() => setSelectedIndex(s.index)}
-              size="lg"
+              size={{ base: 'md', md: 'lg' }}
               colorScheme={s.index === selectedIndex ? 'blue' : 'gray'}
               variant={s.index === selectedIndex ? 'solid' : 'outline'}
               fontWeight="bold"
@@ -570,6 +570,7 @@ export default function BoursePage() {
                 shadow: 'md'
               }}
               transition="all 0.2s"
+              flexShrink={0}
             >
               {s.index}
             </Button>
@@ -579,7 +580,7 @@ export default function BoursePage() {
 
       {/* Statistiques de l'indice sélectionné */}
       {currentIndex && (
-        <SimpleGrid columns={{ base: 2, md: 3, lg: 5 }} spacing={4} mb={8}>
+        <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 5 }} spacing={4} mb={8}>
           <Card>
             <CardBody>
               <Stat>
@@ -707,12 +708,12 @@ export default function BoursePage() {
       </Card>
 
       {/* Graphiques */}
-      <Tabs variant="enclosed" colorScheme="blue">
-        <TabList>
-          <Tab>Intraday (Aujourd'hui)</Tab>
-          <Tab>Comparaison Intraday</Tab>
-          <Tab>Historique 30 jours</Tab>
-          <Tab>Performance Normalisée</Tab>
+      <Tabs variant="enclosed" colorScheme="blue" isLazy>
+        <TabList overflowX="auto" overflowY="hidden" flexWrap="nowrap">
+          <Tab fontSize={{ base: 'xs', sm: 'sm', md: 'md' }} whiteSpace="nowrap">Intraday</Tab>
+          <Tab fontSize={{ base: 'xs', sm: 'sm', md: 'md' }} whiteSpace="nowrap">Comparaison</Tab>
+          <Tab fontSize={{ base: 'xs', sm: 'sm', md: 'md' }} whiteSpace="nowrap">Historique</Tab>
+          <Tab fontSize={{ base: 'xs', sm: 'sm', md: 'md' }} whiteSpace="nowrap">Performance</Tab>
         </TabList>
 
         <TabPanels>
@@ -722,10 +723,10 @@ export default function BoursePage() {
               <CardBody>
                 {intradayData.length > 0 ? (
                   <>
-                    <Heading size="sm" mb={4}>
+                    <Heading size={{ base: 'xs', md: 'sm' }} mb={4}>
                       Évolution intraday - {selectedIndex} ({intradayData.length} points)
                     </Heading>
-                    <Box height="400px">
+                    <Box height={{ base: "300px", md: "400px" }}>
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={intradayData}>
                           <defs>
@@ -773,13 +774,13 @@ export default function BoursePage() {
               <CardBody>
                 {normalizedIntradayData.length > 0 ? (
                   <>
-                    <Heading size="sm" mb={4}>
+                    <Heading size={{ base: 'xs', md: 'sm' }} mb={4}>
                       Comparaison des Indices - Intraday (Base 100)
                     </Heading>
-                    <Text fontSize="sm" color="gray.600" mb={4}>
+                    <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.600" mb={4}>
                       Comparaison des performances intraday de tous les indices (base 100 à l'ouverture)
                     </Text>
-                    <Box height="400px">
+                    <Box height={{ base: "300px", md: "400px" }}>
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={normalizedIntradayData}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -841,10 +842,10 @@ export default function BoursePage() {
               <CardBody>
                 {historicalData.length > 0 ? (
                   <>
-                    <Heading size="sm" mb={4}>
+                    <Heading size={{ base: 'xs', md: 'sm' }} mb={4}>
                       Historique 30 jours - {selectedIndex} ({historicalData.length} jours)
                     </Heading>
-                    <Box height="400px">
+                    <Box height={{ base: "300px", md: "400px" }}>
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={historicalData}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -891,13 +892,13 @@ export default function BoursePage() {
               <CardBody>
                 {normalizedData.length > 0 ? (
                   <>
-                    <Heading size="sm" mb={4}>
+                    <Heading size={{ base: 'xs', md: 'sm' }} mb={4}>
                       Performance Normalisée (Base 100) - Comparaison de tous les indices
                     </Heading>
-                    <Text fontSize="sm" color="gray.600" mb={4}>
+                    <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.600" mb={4}>
                       Tous les indices démarrent à 100 pour faciliter la comparaison des performances relatives
                     </Text>
-                    <Box height="400px">
+                    <Box height={{ base: "300px", md: "400px" }}>
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={normalizedData}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -959,10 +960,10 @@ export default function BoursePage() {
       {selectedIndex === 'MASI' && composition.length > 0 && (
         <Card mb={8} mt={8}>
           <CardBody>
-            <Heading size="md" mb={4}>
+            <Heading size={{ base: 'sm', md: 'md' }} mb={4}>
               Composition de l'indice MASI ({composition.length} titres)
             </Heading>
-            <TableContainer>
+            <TableContainer overflowX="auto">
               <Table variant="simple" size="sm">
                 <Thead>
                   <Tr>

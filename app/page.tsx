@@ -55,7 +55,7 @@ export default function Home() {
   return (
     <Box flex="1" ref={heroRef}>
       {/* Hero Section */}
-      <Box position="relative" h="100vh" overflow="hidden">
+      <Box position="relative" h={{ base: "100svh", md: "100vh" }} overflow="hidden">
         {/* Video Background */}
         <Box
           as={motion.video}
@@ -110,27 +110,29 @@ export default function Home() {
           >
             <Heading
               as="h1"
-              fontSize={{ base: '5xl', md: '7xl', lg: '8xl' }}
+              fontSize={{ base: '3xl', sm: '4xl', md: '6xl', lg: '8xl' }}
               fontWeight="bold"
               lineHeight="1.1"
               letterSpacing="tight"
+              px={{ base: 4, md: 0 }}
             >
               Bâtissez un patrimoine d&apos;exception
             </Heading>
-            <Text fontSize={{ base: '2xl', md: '3xl' }} fontWeight="300" lineHeight="1.5" maxW="4xl">
+            <Text fontSize={{ base: 'lg', sm: 'xl', md: '2xl', lg: '3xl' }} fontWeight="300" lineHeight="1.5" maxW="4xl" px={{ base: 4, md: 0 }}>
               Messidor Patrimoine vous accompagne dans la construction et la préservation de votre richesse avec une expertise sur-mesure du marché financier marocain.
             </Text>
-            <Stack direction={{ base: 'column', sm: 'row' }} spacing={6} pt={6}>
+            <Stack direction={{ base: 'column', sm: 'row' }} spacing={{ base: 4, sm: 6 }} pt={6} w={{ base: 'full', sm: 'auto' }} px={{ base: 4, md: 0 }}>
               <Button
                 as={NextLink}
                 href="/login"
-                size="lg"
+                size={{ base: 'md', md: 'lg' }}
                 colorScheme="accent"
                 variant="solid"
-                px={10}
-                py={8}
-                fontSize="xl"
+                px={{ base: 6, md: 10 }}
+                py={{ base: 6, md: 8 }}
+                fontSize={{ base: 'md', md: 'xl' }}
                 fontWeight="semibold"
+                w={{ base: 'full', sm: 'auto' }}
               >
                 Découvrir nos solutions
               </Button>
@@ -139,16 +141,17 @@ export default function Home() {
                 href="https://calendly.com/kamil-messidor"
                 target="_blank"
                 rel="noopener noreferrer"
-                size="lg"
+                size={{ base: 'md', md: 'lg' }}
                 variant="outline"
                 color="white"
                 borderColor="white"
                 borderWidth="2px"
                 _hover={{ bg: 'whiteAlpha.200' }}
-                px={10}
-                py={8}
-                fontSize="xl"
+                px={{ base: 6, md: 10 }}
+                py={{ base: 6, md: 8 }}
+                fontSize={{ base: 'md', md: 'xl' }}
                 fontWeight="semibold"
+                w={{ base: 'full', sm: 'auto' }}
               >
                 Prendre rendez-vous
               </Button>
@@ -189,7 +192,7 @@ export default function Home() {
                     mt={2}
                     flexShrink={0}
                   />
-                  <Text fontSize="lg" color="gray.700">
+                  <Text fontSize={{ base: 'md', md: 'lg' }} color="gray.700">
                     Accès aux meilleurs OPCVM et OPCI du marché marocain
                   </Text>
                 </Flex>
@@ -202,7 +205,7 @@ export default function Home() {
                     mt={2}
                     flexShrink={0}
                   />
-                  <Text fontSize="lg" color="gray.700">
+                  <Text fontSize={{ base: 'md', md: 'lg' }} color="gray.700">
                     Suivi personnalisé et reporting détaillé de vos investissements
                   </Text>
                 </Flex>
@@ -215,7 +218,7 @@ export default function Home() {
                     mt={2}
                     flexShrink={0}
                   />
-                  <Text fontSize="lg" color="gray.700">
+                  <Text fontSize={{ base: 'md', md: 'lg' }} color="gray.700">
                     Conseils indépendants sans conflit d&apos;intérêt
                   </Text>
                 </Flex>
@@ -228,7 +231,7 @@ export default function Home() {
                     mt={2}
                     flexShrink={0}
                   />
-                  <Text fontSize="lg" color="gray.700">
+                  <Text fontSize={{ base: 'md', md: 'lg' }} color="gray.700">
                     Stratégies patrimoniales adaptées à vos objectifs
                   </Text>
                 </Flex>
@@ -355,8 +358,9 @@ export default function Home() {
               {/* Tarik Belghazi */}
               <MotionBox
                 position="relative"
-                h="500px"
-                w="400px"
+                h={{ base: "400px", md: "500px" }}
+                w={{ base: "100%", md: "400px" }}
+                maxW="400px"
                 rounded="xl"
                 overflow="hidden"
                 cursor="pointer"
@@ -425,8 +429,9 @@ export default function Home() {
               {/* Kamil Alami */}
               <MotionBox
                 position="relative"
-                h="500px"
-                w="400px"
+                h={{ base: "400px", md: "500px" }}
+                w={{ base: "100%", md: "400px" }}
+                maxW="400px"
                 rounded="xl"
                 overflow="hidden"
                 cursor="pointer"

@@ -4,17 +4,17 @@ import { Box, Heading, Text, SimpleGrid, Card, CardBody, Badge, Button, HStack }
 
 export default function OPCIPage() {
   return (
-    <Box>
+    <Box px={{ base: 4, md: 6 }} py={{ base: 4, md: 0 }}>
       <Box mb={8}>
-        <Heading as="h1" size="xl" mb={2}>
+        <Heading as="h1" size={{ base: 'lg', md: 'xl' }} mb={2}>
           Fonds OPCI
         </Heading>
-        <Text color="gray.600" fontSize="lg">
+        <Text color="gray.600" fontSize={{ base: 'md', md: 'lg' }}>
           Organismes de Placement Collectif Immobilier
         </Text>
       </Box>
 
-      <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
+      <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={{ base: 4, md: 6 }}>
         {/* Placeholder for funds */}
         <Card>
           <CardBody>
