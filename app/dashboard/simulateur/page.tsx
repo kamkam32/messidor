@@ -43,7 +43,7 @@ export default function SimulateurPage() {
           Simulateur d&apos;investissement
         </Heading>
         <Text color="gray.600" fontSize="lg">
-          Estimez le rendement potentiel de vos investissements
+          Estimez le rendement potentiel de vos investissements !
         </Text>
       </Box>
 
