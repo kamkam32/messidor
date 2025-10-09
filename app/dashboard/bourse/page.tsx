@@ -464,7 +464,7 @@ export default function BoursePage() {
       {/* Header avec auto-refresh indicator */}
       <Flex justify="space-between" align="center" mb={6}>
         <VStack align="start" spacing={1}>
-          <Heading size="lg">Bourse de Casablanca</Heading>
+          <Heading as="h1" size="lg">Bourse de Casablanca</Heading>
           <HStack spacing={2}>
             <Text color="gray.600" fontSize="sm">
               {lastUpdate ? `Mis à jour: ${lastUpdate.toLocaleTimeString('fr-FR')}` : 'Chargement...'}
@@ -658,7 +658,7 @@ export default function BoursePage() {
       {/* Comparaison rapide de tous les indices */}
       <Card mb={8}>
         <CardBody>
-          <Heading size="md" mb={4}>Tous les indices</Heading>
+          <Heading as="h2" size="md" mb={4}>Tous les indices</Heading>
           <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
             {[...summary].sort((a, b) => a.index === 'MASI' ? -1 : b.index === 'MASI' ? 1 : 0).map((idx) => (
               <Card

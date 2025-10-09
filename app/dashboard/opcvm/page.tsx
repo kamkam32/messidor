@@ -186,7 +186,7 @@ export default function OPCVMPage() {
   return (
     <Container maxW="7xl" px={{ base: 4, md: 8, lg: 12 }}>
       <Box mb={8}>
-        <Heading size="xl" mb={2}>
+        <Heading as="h1" size="xl" mb={2}>
           Fonds OPCVM
         </Heading>
         <Text color="gray.600" fontSize="lg">

@@ -6,7 +6,7 @@ export default function OPCIPage() {
   return (
     <Box>
       <Box mb={8}>
-        <Heading size="xl" mb={2}>
+        <Heading as="h1" size="xl" mb={2}>
           Fonds OPCI
         </Heading>
         <Text color="gray.600" fontSize="lg">

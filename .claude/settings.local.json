@@ -16,7 +16,8 @@
       "Bash(curl -k https://www.casablanca-bourse.com/robots.txt)",
       "Bash(curl -k -s https://www.casablanca-bourse.com/fr/live-market/indices/MASI)",
       "Bash(node:*)",
-      "Bash(curl -k \"https://www.casablanca-bourse.com/api/proxy/fr/api/bourse/dashboard/index_cotation/512335\" -H \"User-Agent: Mozilla/5.0\" -H \"Accept: application/json\")"
+      "Bash(curl -k \"https://www.casablanca-bourse.com/api/proxy/fr/api/bourse/dashboard/index_cotation/512335\" -H \"User-Agent: Mozilla/5.0\" -H \"Accept: application/json\")",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []

@@ -39,7 +39,7 @@ export default function SimulateurPage() {
   return (
     <Box>
       <Box mb={8}>
-        <Heading size="xl" mb={2}>
+        <Heading as="h1" size="xl" mb={2}>
           Simulateur d&apos;investissement
         </Heading>
         <Text color="gray.600" fontSize="lg">
@@ -97,7 +97,7 @@ export default function SimulateurPage() {
         <Card>
           <CardBody>
             <VStack spacing={6} align="stretch" h="full" justify="center">
-              <Heading size="md">Résultats</Heading>
+              <Heading as="h2" size="md">Résultats</Heading>
 
               {resultat !== null ? (
                 <>
