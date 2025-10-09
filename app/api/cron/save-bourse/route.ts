@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { getIndexIntraday, getMASIComposition, INDICES } from '@/lib/casablanca-bourse-scraper';
+import { getIndexIntraday, getMASIComposition, getMASIQuote, INDICES } from '@/lib/casablanca-bourse-scraper';
 
 interface IndexResult {
   index: string;
   intradaySaved: boolean;
   compositionSaved: boolean;
+  quoteSaved: boolean;
   errors: string[];
 }
 
@@ -77,6 +78,7 @@ export async function GET(request: Request) {
         index: indexCode,
         intradaySaved: false,
         compositionSaved: false,
+        quoteSaved: false,
         errors: [],
       };
 
@@ -117,6 +119,40 @@ export async function GET(request: Request) {
       } catch (error: any) {
         console.log(`   ❌ Erreur récupération: ${error.message}`);
         indexResult.errors.push(`Intraday fetch: ${error.message}`);
+      }
+
+      // 5.2 Récupérer et sauvegarder la cotation officielle (quote) pour MASI
+      if (indexCode === 'MASI') {
+        try {
+          console.log(`   📊 Récupération cotation officielle...`);
+          const quote = await getMASIQuote();
+
+          const { error: quoteError } = await supabase
+            .from('bourse_history')
+            .upsert(
+              {
+                date: dateStr,
+                scrape_timestamp: new Date().toISOString(),
+                data_type: 'quote',
+                index_code: 'MASI',
+                data: quote,
+              },
+              {
+                onConflict: 'date,data_type,index_code',
+              }
+            );
+
+          if (quoteError) {
+            console.log(`   ❌ Erreur sauvegarde quote: ${quoteError.message}`);
+            indexResult.errors.push(`Quote: ${quoteError.message}`);
+          } else {
+            console.log(`   ✅ Cotation officielle sauvegardée`);
+            indexResult.quoteSaved = true;
+          }
+        } catch (error: any) {
+          console.log(`   ❌ Erreur récupération quote: ${error.message}`);
+          indexResult.errors.push(`Quote fetch: ${error.message}`);
+        }
       }
 
       results.push(indexResult);
@@ -187,7 +223,7 @@ export async function GET(request: Request) {
     console.log(`\nDétails par indice:`);
     results.forEach(r => {
       const status = r.intradaySaved ? '✅' : '❌';
-      console.log(`  ${status} ${r.index} - Intraday: ${r.intradaySaved}, Composition: ${r.compositionSaved || 'N/A'}`);
+      console.log(`  ${status} ${r.index} - Intraday: ${r.intradaySaved}, Quote: ${r.quoteSaved || 'N/A'}, Composition: ${r.compositionSaved || 'N/A'}`);
       if (r.errors.length > 0) {
         r.errors.forEach(err => console.log(`      ⚠️ ${err}`));
       }

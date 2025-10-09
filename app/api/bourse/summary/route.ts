@@ -17,9 +17,8 @@ export async function GET(request: Request) {
     // Créer le client Supabase
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Si une date est spécifiée, récupérer uniquement cette date
-    // Sinon, récupérer la date la plus récente pour chaque indice
-    let query = supabase
+    // Récupérer les données intraday
+    let intradayQuery = supabase
       .from('bourse_history')
       .select('*')
       .eq('data_type', 'intraday')
@@ -27,10 +26,24 @@ export async function GET(request: Request) {
       .order('scrape_timestamp', { ascending: false });
 
     if (date) {
-      query = query.eq('date', date);
+      intradayQuery = intradayQuery.eq('date', date);
     }
 
-    const { data, error } = await query;
+    const { data, error } = await intradayQuery;
+
+    // Récupérer aussi les quotes officiels
+    let quoteQuery = supabase
+      .from('bourse_history')
+      .select('*')
+      .eq('data_type', 'quote')
+      .order('date', { ascending: false })
+      .order('scrape_timestamp', { ascending: false });
+
+    if (date) {
+      quoteQuery = quoteQuery.eq('date', date);
+    }
+
+    const { data: quotesData, error: quotesError } = await quoteQuery;
 
     if (error) {
       console.error('Error fetching summary from Supabase:', error);
@@ -42,6 +55,7 @@ export async function GET(request: Request) {
 
     // Grouper par indice et ne garder que la dernière entrée pour chaque
     const latestByIndex: Record<string, any> = {};
+    const quotesByIndex: Record<string, any> = {};
 
     if (data) {
       for (const record of data) {
@@ -52,12 +66,26 @@ export async function GET(request: Request) {
       }
     }
 
+    // Grouper les quotes par indice
+    if (quotesData) {
+      for (const record of quotesData) {
+        const indexCode = record.index_code;
+        if (!quotesByIndex[indexCode]) {
+          quotesByIndex[indexCode] = record;
+        }
+      }
+    }
+
     // Transformer en array
     const summary = Object.values(latestByIndex).map((record: any) => {
       const points = record.data?.points || [];
       const count = record.data?.count || 0;
+      const indexCode = record.index_code;
 
-      // Calculer des statistiques si on a des points
+      // Vérifier si on a un quote officiel pour cet indice
+      const quote = quotesByIndex[indexCode]?.data;
+
+      // Calculer des statistiques
       let openValue = null;
       let closeValue = null;
       let highValue = null;
@@ -65,31 +93,46 @@ export async function GET(request: Request) {
       let variation = null;
       let variationPercent = null;
 
-      if (points.length > 0) {
-        // Filter out points with null or zero indexValue
+      // Si on a un quote officiel, l'utiliser en priorité
+      if (quote) {
+        closeValue = quote.indexValue ? parseFloat(quote.indexValue) : null;
+        highValue = quote.high ? parseFloat(quote.high) : null;
+        lowValue = quote.low ? parseFloat(quote.low) : null;
+        variation = quote.variation ? parseFloat(quote.variation) : null;
+        variationPercent = quote.variationPercent ? parseFloat(quote.variationPercent) : null;
+
+        // Pour l'ouverture, calculer depuis les données intraday si disponibles
+        if (points.length > 0) {
+          const validPoints = points.filter((p: any) => {
+            const val = parseFloat(p.indexValue || '0');
+            return val > 0;
+          });
+          if (validPoints.length > 0) {
+            openValue = parseFloat(validPoints[0].indexValue);
+          }
+        }
+      } else if (points.length > 0) {
+        // Fallback: calculer depuis les points intraday
         const validPoints = points.filter((p: any) => {
           const val = parseFloat(p.indexValue || '0');
           return val > 0;
         });
 
         if (validPoints.length > 0) {
-          // Use first and last valid points
           openValue = parseFloat(validPoints[0].indexValue);
           closeValue = parseFloat(validPoints[validPoints.length - 1].indexValue);
 
-          // Calculate from valid values only
           const values = validPoints.map((p: any) => parseFloat(p.indexValue));
           highValue = Math.max(...values);
           lowValue = Math.min(...values);
 
-          // Calculate variation
           variation = closeValue - openValue;
           variationPercent = (variation / openValue) * 100;
         }
       }
 
       return {
-        index: record.index_code,
+        index: indexCode,
         date: record.date,
         dataCount: count,
         openValue,
