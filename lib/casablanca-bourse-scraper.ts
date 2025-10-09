@@ -6,6 +6,19 @@ const httpsAgent = new https.Agent({
   rejectUnauthorized: false
 });
 
+// Configuration des indices disponibles
+export const INDICES = {
+  MASI: { code: 'MASI', id: '512335', name: 'MASI' },
+  MSI20: { code: 'MSI20', id: '512343', name: 'MSI 20' },
+  ESGI: { code: 'ESGI', id: null, name: 'MASI ESG' },
+  MASIMS: { code: 'MASIMS', id: null, name: 'MASI Mid & Small Cap' },
+  // Indices sans données intraday disponibles (pour référence)
+  // MADEX: { code: 'MADEX', id: null, name: 'MADEX' },
+  // FTSE: { code: 'FTSE CSE Morocco 15 Index', id: null, name: 'FTSE Morocco 15' },
+} as const;
+
+export type IndexCode = keyof typeof INDICES;
+
 export interface IndexQuote {
   indexValue: string;
   previousValue: string;
@@ -103,9 +116,9 @@ export async function getTicker(): Promise<any> {
 }
 
 /**
- * Récupère les données intraday de l'indice MASI
+ * Récupère les données intraday pour n'importe quel indice
  */
-export async function getMASIIntraday(date?: string): Promise<IntradayData[]> {
+export async function getIndexIntraday(indexCode: string, date?: string): Promise<IntradayData[]> {
   try {
     const targetDate = date || new Date().toISOString().split('T')[0];
 
@@ -123,7 +136,7 @@ export async function getMASIIntraday(date?: string): Promise<IntradayData[]> {
         'filter[seance][condition][value]': targetDate,
         'filter[index][condition][path]': 'indexCode.field_code',
         'filter[index][condition][operator]': '=',
-        'filter[index][condition][value]': 'MASI',
+        'filter[index][condition][value]': indexCode,
         'page[offset]': offset.toString(),
         'page[limit]': limit.toString(),
       });
@@ -162,29 +175,56 @@ export async function getMASIIntraday(date?: string): Promise<IntradayData[]> {
       }
     }
 
-    console.log(`✅ Récupéré ${allData.length} points intraday pour ${targetDate}`);
+    console.log(`✅ Récupéré ${allData.length} points intraday pour ${indexCode} - ${targetDate}`);
 
     // Trier par ordre chronologique
     allData.sort((a, b) => new Date(a.transactTime).getTime() - new Date(b.transactTime).getTime());
 
     return allData;
   } catch (error) {
-    console.error('Error fetching MASI intraday:', error);
+    console.error(`Error fetching ${indexCode} intraday:`, error);
     throw error;
   }
 }
 
 /**
+ * Récupère les données intraday de l'indice MASI (rétrocompatibilité)
+ */
+export async function getMASIIntraday(date?: string): Promise<IntradayData[]> {
+  return getIndexIntraday('MASI', date);
+}
+
+/**
  * Récupère la composition complète de l'indice MASI via Puppeteer
+ * Utilise chromium serverless pour compatibilité Vercel
  */
 export async function getMASIComposition(): Promise<StockComposition[]> {
   try {
-    const puppeteer = require('puppeteer');
+    // Déterminer si on est en environnement serverless (Vercel) ou local
+    const isProduction = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
 
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--ignore-certificate-errors', '--no-sandbox', '--disable-setuid-sandbox']
-    });
+    let browser;
+
+    if (isProduction) {
+      // Environnement serverless : utiliser chromium
+      const chromium = require('@sparticuz/chromium');
+      const puppeteer = require('puppeteer-core');
+
+      browser = await puppeteer.launch({
+        args: [...chromium.args, '--ignore-certificate-errors', '--no-sandbox', '--disable-setuid-sandbox'],
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
+      });
+    } else {
+      // Environnement local : utiliser puppeteer classique
+      const puppeteer = require('puppeteer');
+
+      browser = await puppeteer.launch({
+        headless: true,
+        args: ['--ignore-certificate-errors', '--no-sandbox', '--disable-setuid-sandbox']
+      });
+    }
 
     const page = await browser.newPage();
 

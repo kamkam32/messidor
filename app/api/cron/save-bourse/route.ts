@@ -1,29 +1,31 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { getMASIQuote, getMASIIntraday, getMASIComposition } from '@/lib/casablanca-bourse-scraper';
+import { getIndexIntraday, getMASIComposition, INDICES } from '@/lib/casablanca-bourse-scraper';
+
+interface IndexResult {
+  index: string;
+  intradaySaved: boolean;
+  compositionSaved: boolean;
+  errors: string[];
+}
 
 interface SaveBourseResult {
   success: boolean;
   date: string;
-  saved: {
-    quote: boolean;
-    intraday: boolean;
-    composition: boolean;
-  };
-  errors: string[];
+  indices: IndexResult[];
+  totalErrors: number;
   timestamp: string;
 }
 
 /**
- * API Route: Cron job pour sauvegarder les données de la bourse quotidiennement
+ * API Route: Cron job pour sauvegarder les données de la bourse toutes les 10 minutes
  *
  * Sécurité: Vérifie le token CRON_SECRET
- * Fréquence: Une fois par jour à 18h (configuré dans vercel.json)
+ * Fréquence: Toutes les 10 minutes (configuré dans vercel.json)
  *
- * Sauvegarde 3 types de données:
- * 1. Quote (cotation de clôture)
- * 2. Intraday (données tick par tick de la journée)
- * 3. Composition (composition de l'indice)
+ * Collecte les données intraday pour plusieurs indices:
+ * - MASI, MSI20, ESGI (MASI ESG), MASIMS (MASI Mid & Small Cap)
+ * - Composition uniquement pour MASI (via Puppeteer, plus lourd)
  */
 export async function GET(request: Request) {
   const startTime = Date.now();
@@ -62,143 +64,135 @@ export async function GET(request: Request) {
     const today = new Date();
     const dateStr = today.toISOString().split('T')[0];
 
+    const results: IndexResult[] = [];
+
+    // 4. Indices à collecter (intraday) - seulement ceux avec des données disponibles
+    const indicesToCollect = ['MASI', 'MSI20', 'ESGI', 'MASIMS'];
+
+    console.log(`\n📊 Collecte de ${indicesToCollect.length} indices pour ${dateStr}\n`);
+
+    // 5. Boucle sur chaque indice
+    for (const indexCode of indicesToCollect) {
+      const indexResult: IndexResult = {
+        index: indexCode,
+        intradaySaved: false,
+        compositionSaved: false,
+        errors: [],
+      };
+
+      console.log(`\n🔍 ${indexCode}:`);
+
+      // 5.1 Récupérer et sauvegarder les données intraday
+      try {
+        console.log(`   📈 Récupération intraday...`);
+        const intraday = await getIndexIntraday(indexCode, dateStr);
+
+        if (intraday.length > 0) {
+          const { error: intradayError } = await supabase
+            .from('bourse_history')
+            .upsert(
+              {
+                date: dateStr,
+                scrape_timestamp: new Date().toISOString(),
+                data_type: 'intraday',
+                index_code: indexCode,
+                data: { points: intraday, count: intraday.length },
+              },
+              {
+                onConflict: 'date,data_type,index_code',
+              }
+            );
+
+          if (intradayError) {
+            console.log(`   ❌ Erreur sauvegarde: ${intradayError.message}`);
+            indexResult.errors.push(`Intraday: ${intradayError.message}`);
+          } else {
+            console.log(`   ✅ Intraday sauvegardé (${intraday.length} points)`);
+            indexResult.intradaySaved = true;
+          }
+        } else {
+          console.log(`   ⚠️ Aucune donnée intraday disponible`);
+          indexResult.errors.push('Intraday: No data available');
+        }
+      } catch (error: any) {
+        console.log(`   ❌ Erreur récupération: ${error.message}`);
+        indexResult.errors.push(`Intraday fetch: ${error.message}`);
+      }
+
+      results.push(indexResult);
+    }
+
+    // 6. Récupérer la composition uniquement pour MASI (plus lourd)
+    console.log(`\n📋 MASI - Composition:`);
+    const masiResult = results.find(r => r.index === 'MASI');
+    if (masiResult) {
+      try {
+        console.log(`   🔍 Récupération composition...`);
+        const composition = await getMASIComposition();
+
+        if (composition.length > 0) {
+          const { error: compositionError } = await supabase
+            .from('bourse_history')
+            .upsert(
+              {
+                date: dateStr,
+                scrape_timestamp: new Date().toISOString(),
+                data_type: 'composition',
+                index_code: 'MASI',
+                data: { stocks: composition, count: composition.length },
+              },
+              {
+                onConflict: 'date,data_type,index_code',
+              }
+            );
+
+          if (compositionError) {
+            console.log(`   ❌ Erreur sauvegarde: ${compositionError.message}`);
+            masiResult.errors.push(`Composition: ${compositionError.message}`);
+          } else {
+            console.log(`   ✅ Composition sauvegardée (${composition.length} valeurs)`);
+            masiResult.compositionSaved = true;
+          }
+        } else {
+          console.log(`   ⚠️ Aucune donnée de composition disponible`);
+          masiResult.errors.push('Composition: No data available');
+        }
+      } catch (error: any) {
+        console.log(`   ❌ Erreur récupération: ${error.message}`);
+        masiResult.errors.push(`Composition fetch: ${error.message}`);
+      }
+    }
+
+    // 7. Calculer le résumé
+    const totalErrors = results.reduce((sum, r) => sum + r.errors.length, 0);
+    const successfulSaves = results.filter(r => r.intradaySaved || r.compositionSaved).length;
+
     const result: SaveBourseResult = {
-      success: true,
+      success: successfulSaves > 0,
       date: dateStr,
-      saved: {
-        quote: false,
-        intraday: false,
-        composition: false,
-      },
-      errors: [],
+      indices: results,
+      totalErrors,
       timestamp: new Date().toISOString(),
     };
 
-    // 4. Récupérer et sauvegarder les données de cotation (Quote)
-    try {
-      console.log('📊 Récupération de la cotation MASI...');
-      const quote = await getMASIQuote();
-
-      const { error: quoteError } = await supabase
-        .from('bourse_history')
-        .upsert(
-          {
-            date: dateStr,
-            scrape_timestamp: new Date().toISOString(),
-            data_type: 'quote',
-            index_code: 'MASI',
-            data: quote,
-          },
-          {
-            onConflict: 'date,data_type,index_code',
-          }
-        );
-
-      if (quoteError) {
-        console.error('❌ Erreur sauvegarde quote:', quoteError);
-        result.errors.push(`Quote: ${quoteError.message}`);
-      } else {
-        console.log('✅ Quote sauvegardé');
-        result.saved.quote = true;
-      }
-    } catch (error: any) {
-      console.error('❌ Erreur récupération quote:', error);
-      result.errors.push(`Quote fetch: ${error.message}`);
-    }
-
-    // 5. Récupérer et sauvegarder les données intraday
-    try {
-      console.log('📈 Récupération des données intraday MASI...');
-      const intraday = await getMASIIntraday(dateStr);
-
-      if (intraday.length > 0) {
-        const { error: intradayError } = await supabase
-          .from('bourse_history')
-          .upsert(
-            {
-              date: dateStr,
-              scrape_timestamp: new Date().toISOString(),
-              data_type: 'intraday',
-              index_code: 'MASI',
-              data: { points: intraday, count: intraday.length },
-            },
-            {
-              onConflict: 'date,data_type,index_code',
-            }
-          );
-
-        if (intradayError) {
-          console.error('❌ Erreur sauvegarde intraday:', intradayError);
-          result.errors.push(`Intraday: ${intradayError.message}`);
-        } else {
-          console.log(`✅ Intraday sauvegardé (${intraday.length} points)`);
-          result.saved.intraday = true;
-        }
-      } else {
-        console.log('⚠️ Aucune donnée intraday disponible');
-        result.errors.push('Intraday: No data available');
-      }
-    } catch (error: any) {
-      console.error('❌ Erreur récupération intraday:', error);
-      result.errors.push(`Intraday fetch: ${error.message}`);
-    }
-
-    // 6. Récupérer et sauvegarder la composition de l'indice
-    try {
-      console.log('📋 Récupération de la composition MASI...');
-      const composition = await getMASIComposition();
-
-      if (composition.length > 0) {
-        const { error: compositionError } = await supabase
-          .from('bourse_history')
-          .upsert(
-            {
-              date: dateStr,
-              scrape_timestamp: new Date().toISOString(),
-              data_type: 'composition',
-              index_code: 'MASI',
-              data: { stocks: composition, count: composition.length },
-            },
-            {
-              onConflict: 'date,data_type,index_code',
-            }
-          );
-
-        if (compositionError) {
-          console.error('❌ Erreur sauvegarde composition:', compositionError);
-          result.errors.push(`Composition: ${compositionError.message}`);
-        } else {
-          console.log(`✅ Composition sauvegardée (${composition.length} valeurs)`);
-          result.saved.composition = true;
-        }
-      } else {
-        console.log('⚠️ Aucune donnée de composition disponible');
-        result.errors.push('Composition: No data available');
-      }
-    } catch (error: any) {
-      console.error('❌ Erreur récupération composition:', error);
-      result.errors.push(`Composition fetch: ${error.message}`);
-    }
-
-    // 7. Déterminer le succès global
-    const savedCount = Object.values(result.saved).filter(Boolean).length;
-    result.success = savedCount > 0; // Au moins une donnée sauvegardée = succès
-
+    // 8. Afficher le résumé
     const duration = Date.now() - startTime;
-    console.log(`\n${'='.repeat(50)}`);
+    console.log(`\n${'='.repeat(60)}`);
     console.log(`📊 RÉSUMÉ DU CRON JOB`);
-    console.log(`${'='.repeat(50)}`);
+    console.log(`${'='.repeat(60)}`);
     console.log(`Date: ${dateStr}`);
     console.log(`Durée: ${(duration / 1000).toFixed(2)}s`);
-    console.log(`Quote: ${result.saved.quote ? '✅' : '❌'}`);
-    console.log(`Intraday: ${result.saved.intraday ? '✅' : '❌'}`);
-    console.log(`Composition: ${result.saved.composition ? '✅' : '❌'}`);
-    console.log(`Erreurs: ${result.errors.length}`);
-    if (result.errors.length > 0) {
-      console.log(`\n⚠️ Erreurs rencontrées:`);
-      result.errors.forEach(err => console.log(`   - ${err}`));
-    }
-    console.log(`${'='.repeat(50)}\n`);
+    console.log(`Indices collectés: ${successfulSaves}/${indicesToCollect.length}`);
+    console.log(`Erreurs totales: ${totalErrors}`);
+    console.log(`\nDétails par indice:`);
+    results.forEach(r => {
+      const status = r.intradaySaved ? '✅' : '❌';
+      console.log(`  ${status} ${r.index} - Intraday: ${r.intradaySaved}, Composition: ${r.compositionSaved || 'N/A'}`);
+      if (r.errors.length > 0) {
+        r.errors.forEach(err => console.log(`      ⚠️ ${err}`));
+      }
+    });
+    console.log(`${'='.repeat(60)}\n`);
 
     return NextResponse.json(result, {
       status: result.success ? 200 : 500,
