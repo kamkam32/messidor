@@ -9,10 +9,10 @@ import { createClient } from '@/lib/supabase/client'
 import Image from 'next/image'
 
 const menuItems = [
-  { name: 'Bourse', href: '/dashboard/bourse', icon: FiActivity },
   { name: 'OPCVM', href: '/dashboard/opcvm', icon: FiTrendingUp },
   { name: 'OPCI', href: '/dashboard/opci', icon: FiBarChart2 },
   { name: 'Simulateur', href: '/dashboard/simulateur', icon: FiSliders },
+  { name: 'Bourse', href: '/dashboard/bourse', icon: FiActivity },
 ]
 
 export default function Sidebar() {

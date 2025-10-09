@@ -7,7 +7,7 @@ export default function DashboardPage() {
   const router = useRouter()
 
   useEffect(() => {
-    router.replace('/dashboard/bourse')
+    router.replace('/dashboard/opcvm')
   }, [router])
 
   return null

@@ -41,6 +41,7 @@ export default function OPCVMPage() {
   const [filterRisk, setFilterRisk] = useState<string>('all')
   const [filterCompany, setFilterCompany] = useState<string>('all')
   const [sortBy, setSortBy] = useState<string>('name')
+  const [displayedCount, setDisplayedCount] = useState(20) // Nombre de fonds affichés
   const supabase = useMemo(() => createClient(), [])
   const toast = useToast()
 
@@ -133,6 +134,35 @@ export default function OPCVMPage() {
     return result
   }, [funds, searchQuery, filterClassification, filterRisk, filterCompany, sortBy])
 
+  // Only display a subset of filtered funds
+  const displayedFunds = useMemo(() => {
+    return filteredFunds.slice(0, displayedCount)
+  }, [filteredFunds, displayedCount])
+
+  // Reset displayed count when filters change
+  useEffect(() => {
+    setDisplayedCount(20)
+  }, [searchQuery, filterClassification, filterRisk, filterCompany, sortBy])
+
+  // Load more when scrolling near bottom
+  useEffect(() => {
+    if (displayedCount >= filteredFunds.length) return
+
+    const handleScroll = () => {
+      const scrollHeight = document.documentElement.scrollHeight
+      const scrollTop = document.documentElement.scrollTop
+      const clientHeight = document.documentElement.clientHeight
+
+      // Load more when 200px from bottom
+      if (scrollHeight - scrollTop - clientHeight < 200) {
+        setDisplayedCount(prev => Math.min(prev + 20, filteredFunds.length))
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [displayedCount, filteredFunds.length])
+
   if (loading) {
     return (
       <Container maxW="7xl" px={{ base: 4, md: 8, lg: 12 }}>
@@ -160,7 +190,7 @@ export default function OPCVMPage() {
           Fonds OPCVM
         </Heading>
         <Text color="gray.600" fontSize="lg">
-          {filteredFunds.length} fonds disponibles {filteredFunds.length !== funds.length && `sur ${funds.length}`}
+          Affichage de {displayedFunds.length} sur {filteredFunds.length} fonds {filteredFunds.length !== funds.length && `(${funds.length} au total)`}
         </Text>
       </Box>
 
@@ -273,8 +303,9 @@ export default function OPCVMPage() {
           </CardBody>
         </Card>
       ) : (
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
-          {filteredFunds.map((fund) => (
+        <>
+          <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
+            {displayedFunds.map((fund) => (
             <Card key={fund.id} _hover={{ shadow: 'xl', transform: 'translateY(-4px)' }} transition="all 0.3s" overflow="hidden" display="flex" flexDirection="column" h="full">
               <Image
                 src={`https://picsum.photos/seed/${fund.code}/400/200`}
@@ -282,6 +313,7 @@ export default function OPCVMPage() {
                 h="180px"
                 w="100%"
                 objectFit="cover"
+                loading="lazy"
                 fallbackSrc="https://via.placeholder.com/400x200/4299e1/ffffff?text=OPCVM"
               />
               <CardBody display="flex" flexDirection="column" flex="1">
@@ -406,6 +438,16 @@ export default function OPCVMPage() {
             </Card>
           ))}
         </SimpleGrid>
+
+        {/* Loading indicator when there are more funds to load */}
+        {displayedCount < filteredFunds.length && (
+          <Box mt={8} textAlign="center">
+            <Text color="gray.500" fontSize="sm">
+              Chargement de plus de fonds...
+            </Text>
+          </Box>
+        )}
+        </>
       )}
     </Container>
   )
