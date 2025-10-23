@@ -1,22 +1,59 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Simulateur d\'Investissement - Calculez vos rendements',
-  description: 'Simulateur d\'investissement gratuit pour estimer le rendement potentiel de vos placements OPCVM, OPCI et portefeuilles au Maroc. Calculez vos gains sur 1, 5, 10 ans ou plus.',
-  keywords: ['simulateur investissement maroc', 'calculateur rendement opcvm', 'simulation placement maroc', 'calculer investissement', 'rendement opcvm maroc'],
+  title: 'Simulateur d\'Investissement et Fiscalité Maroc 2025 - Calcul Précis avec IR',
+  description: 'Simulateur d\'investissement gratuit avec calcul fiscal précis selon la Loi de Finances 2025. Plus-values boursières 15%, dividendes 12,5%, immobilier. Calculez vos gains nets après impôts au Maroc.',
+  keywords: [
+    'simulateur investissement maroc',
+    'fiscalité maroc 2025',
+    'calculateur rendement opcvm',
+    'impôt sur le revenu maroc',
+    'plus-values boursières maroc',
+    'simulation placement maroc',
+    'IR maroc 2025',
+    'barème impôt maroc',
+    'calculer investissement',
+    'fiscalité dividendes maroc',
+    'taxation actions maroc',
+    'immobilier locatif maroc',
+    'loi de finances 2025',
+    'rendement net après impôts',
+    'simulateur fiscal maroc',
+  ],
   openGraph: {
-    title: 'Simulateur d\'Investissement Maroc - Messidor Patrimoine',
-    description: 'Estimez le rendement potentiel de vos investissements avec notre simulateur gratuit. OPCVM, OPCI, actions - planifiez votre avenir financier.',
-    url: 'https://VOTRE-DOMAINE.com/dashboard/simulateur',
+    title: 'Simulateur d\'Investissement & Fiscalité Maroc 2025 - Messidor Patrimoine',
+    description: 'Calculez le rendement réel de vos investissements avec simulation fiscale complète. Barème IR 2025, plus-values, dividendes. Graphiques détaillés et projections annuelles.',
+    url: 'https://messidor-patrimoine.com/dashboard/simulateur',
     type: 'website',
+    locale: 'fr_MA',
+    siteName: 'Messidor Patrimoine',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Simulateur d\'Investissement Maroc',
-    description: 'Estimez le rendement potentiel de vos investissements avec notre simulateur gratuit.',
+    title: 'Simulateur Investissement & Fiscalité Maroc 2025',
+    description: 'Calculez vos gains nets après impôts selon la Loi de Finances 2025. Actions, immobilier, OPCVM - simulation fiscale complète.',
   },
   alternates: {
-    canonical: 'https://VOTRE-DOMAINE.com/dashboard/simulateur',
+    canonical: 'https://messidor-patrimoine.com/dashboard/simulateur',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  authors: [{ name: 'Messidor Patrimoine' }],
+  category: 'Finance',
+  other: {
+    'article:published_time': '2025-01-01',
+    'article:modified_time': new Date().toISOString(),
+    'article:section': 'Outils Financiers',
+    'article:tag': 'Fiscalité Maroc, Investissement, Simulation',
   },
 }
 

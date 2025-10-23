@@ -41,7 +41,9 @@ export default function Footer() {
               <Stack align="flex-start">
                 <Text fontWeight="600">Contact</Text>
                 <Text fontSize="sm">Casablanca, Maroc</Text>
-                <Text fontSize="sm">contact@messidor-patrimoine.ma</Text>
+                <Link href="mailto:kamil@messidorai.com" fontSize="sm" _hover={{ color: 'accent.600' }}>
+                  kamil@messidorai.com
+                </Link>
               </Stack>
             </Stack>
           </Stack>

@@ -20,18 +20,15 @@ import {
 } from '@chakra-ui/react'
 import { HamburgerIcon } from '@chakra-ui/icons'
 import NextLink from 'next/link'
-import Image from 'next/image'
-import { usePathname } from 'next/navigation'
 
 const links = [
   { name: 'Accueil', href: '/' },
   { name: 'Services', href: '/services' },
+  { name: 'Simulateurs', href: '/simulateurs' },
 ]
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
-  const pathname = usePathname()
-  const isHomePage = pathname === '/'
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   useEffect(() => {
@@ -64,24 +61,13 @@ export default function Navbar() {
             <Link
               as={NextLink}
               href="/"
-              fontSize={isHomePage ? { base: 'lg', sm: 'xl', md: '2xl' } : undefined}
-              fontWeight={isHomePage ? "bold" : undefined}
-              color={isHomePage ? (scrolled ? 'brand.800' : 'white') : undefined}
-              _hover={{ textDecoration: 'none', color: isHomePage ? (scrolled ? 'accent.600' : 'accent.300') : undefined }}
+              fontSize={{ base: 'lg', sm: 'xl', md: '2xl' }}
+              fontWeight="bold"
+              color={scrolled ? 'brand.800' : 'white'}
+              _hover={{ textDecoration: 'none', color: scrolled ? 'accent.600' : 'accent.300' }}
               transition="all 0.3s"
             >
-              {isHomePage ? (
-                'Messidor Patrimoine'
-              ) : (
-                <Image
-                  src="/images/logomessidor.jpg"
-                  alt="Messidor Patrimoine"
-                  width={180}
-                  height={60}
-                  style={{ objectFit: 'contain', maxWidth: '150px', height: 'auto' }}
-                  priority
-                />
-              )}
+              Messidor Patrimoine
             </Link>
             <HStack as="nav" spacing={6} display={{ base: 'none', md: 'flex' }}>
               {links.map((link) => (
