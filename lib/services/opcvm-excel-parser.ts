@@ -64,7 +64,7 @@ export async function parseOPCVMExcel(
     const worksheet = workbook.Sheets[sheetName];
 
     // Convertir en JSON (array of arrays)
-    const data = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet, {
+    const data = XLSX.utils.sheet_to_json(worksheet, {
       header: 1,
       raw: false,
       defval: null
