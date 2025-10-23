@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
   Box,
   Button,
@@ -71,6 +71,7 @@ import {
 } from 'react-icons/fa'
 import NextLink from 'next/link'
 import { motion } from 'framer-motion'
+import LeadCaptureModal from '@/components/LeadCaptureModal'
 
 const MotionBox = motion.create(Box)
 const MotionStack = motion.create(Stack)
@@ -112,7 +113,7 @@ interface SimulationResult {
   }>
 }
 
-// Composant pour input avec formatage automatique
+// Composant pour input avec formatage automatique (au blur uniquement)
 function FormattedNumberInput({
   value,
   onChange,
@@ -128,38 +129,49 @@ function FormattedNumberInput({
   step?: number
   placeholder?: string
 }) {
-  const [displayValue, setDisplayValue] = useState(formatNumber(value))
+  const [isFocused, setIsFocused] = useState(false)
+  const [inputValue, setInputValue] = useState(value.toString())
+
+  // Afficher la valeur formatée ou brute selon le focus
+  const displayValue = isFocused ? inputValue : formatNumber(value)
 
   const handleChange = (valueString: string) => {
+    // Pendant la saisie, on stocke la valeur brute
+    setInputValue(valueString)
+
     // Enlever les espaces pour obtenir le nombre
     const numericValue = parseFloat(valueString.replace(/\s/g, ''))
     if (!isNaN(numericValue)) {
       onChange(numericValue)
-      setDisplayValue(formatNumber(numericValue))
     } else if (valueString === '') {
       onChange(0)
-      setDisplayValue('')
     }
   }
 
+  const handleFocus = () => {
+    setIsFocused(true)
+    setInputValue(value > 0 ? value.toString() : '')
+  }
+
   const handleBlur = () => {
-    if (value === 0) {
-      setDisplayValue('')
-    } else {
-      setDisplayValue(formatNumber(value))
-    }
+    setIsFocused(false)
+    // Formater la valeur finale
+    setInputValue(value.toString())
   }
 
   return (
     <NumberInput
       value={displayValue}
       onChange={handleChange}
-      onBlur={handleBlur}
       min={min}
       max={max}
       step={step}
     >
-      <NumberInputField placeholder={placeholder} />
+      <NumberInputField
+        placeholder={placeholder}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+      />
       <NumberInputStepper>
         <NumberIncrementStepper />
         <NumberDecrementStepper />
@@ -1381,8 +1393,61 @@ function SimulateurPVImmobiliere() {
 }
 
 export default function SimulateursPage() {
+  const [showLeadModal, setShowLeadModal] = useState(false)
+  const [activeTab, setActiveTab] = useState(0)
+  const [currentSimulatorType, setCurrentSimulatorType] = useState('epargne')
+
+  // Logique pour afficher le modal après quelques secondes
+  useEffect(() => {
+    // Vérifier si le lead a déjà été capturé ou skipped
+    const leadCaptured = localStorage.getItem('lead_captured')
+    const leadSkipped = localStorage.getItem('lead_modal_skipped')
+    const skippedDate = localStorage.getItem('lead_modal_skipped_date')
+
+    console.log('Lead modal check:', { leadCaptured, leadSkipped, skippedDate })
+
+    // Si skipped, ne redemander que après 7 jours
+    if (leadSkipped && skippedDate) {
+      const daysSinceSkip = Math.floor(
+        (Date.now() - new Date(skippedDate).getTime()) / (1000 * 60 * 60 * 24)
+      )
+      console.log('Days since skip:', daysSinceSkip)
+      if (daysSinceSkip < 7) {
+        return
+      }
+    }
+
+    // Si déjà capturé, ne plus demander
+    if (leadCaptured) {
+      console.log('Lead already captured, not showing modal')
+      return
+    }
+
+    // Afficher le modal après 5 secondes (pour test - changer à 45000 en prod)
+    console.log('Setting timer for lead modal...')
+    const timer = setTimeout(() => {
+      console.log('Showing lead modal now!')
+      setShowLeadModal(true)
+    }, 5000) // 5 secondes pour test
+
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Mapper les tabs aux types de simulateurs
+  const simulatorTypes = ['epargne', 'succession', 'fiscalite', 'bilan', 'plus_value_immobiliere']
+
+  useEffect(() => {
+    setCurrentSimulatorType(simulatorTypes[activeTab])
+  }, [activeTab])
+
   return (
     <Box flex="1">
+      {/* Modal de capture de leads */}
+      <LeadCaptureModal
+        isOpen={showLeadModal}
+        onClose={() => setShowLeadModal(false)}
+        simulatorType={currentSimulatorType}
+      />
       <Box
         position="relative"
         bg="brand.800"
@@ -1428,7 +1493,24 @@ export default function SimulateursPage() {
 
       <Box py={{ base: 16, md: 24 }} bg="gray.50">
         <Container maxW="container.xl">
-          <Tabs variant="enclosed" colorScheme="yellow" size={{ base: 'sm', md: 'md' }} isLazy>
+          <Tabs
+            variant="enclosed"
+            colorScheme="yellow"
+            size={{ base: 'sm', md: 'md' }}
+            isLazy
+            index={activeTab}
+            onChange={(index) => {
+              setActiveTab(index)
+              const types = [
+                'epargne',
+                'succession',
+                'fiscalite',
+                'bilan',
+                'plus_value_immobiliere',
+              ]
+              setCurrentSimulatorType(types[index])
+            }}
+          >
             <TabList
               overflowX="auto"
               overflowY="hidden"
