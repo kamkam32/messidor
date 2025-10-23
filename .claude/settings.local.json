@@ -20,7 +20,14 @@
       "Bash(test:*)",
       "Bash(mkdir:*)",
       "Bash(npm run build:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(npx tsx:*)",
+      "Bash(curl:*)",
+      "Bash(for date in \"12-09-2025\" \"05-09-2025\" \"29-08-2025\" \"22-08-2025\" \"15-08-2025\" \"08-08-2025\")",
+      "Bash(do echo -n \"$date: \")",
+      "Bash(awk:*)",
+      "Bash(done)",
+      "WebFetch(domain:www.asfim.ma)"
     ],
     "deny": [],
     "ask": []

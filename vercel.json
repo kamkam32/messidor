@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/save-bourse",
       "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/sync-opcvm-performance",
+      "schedule": "0 19 * * *"
     }
   ]
 }

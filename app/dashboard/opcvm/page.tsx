@@ -37,6 +37,7 @@ export const dynamic = 'force-dynamic'
 export default function OPCVMPage() {
   const [funds, setFunds] = useState<Fund[]>([])
   const [loading, setLoading] = useState(true)
+  const [lastUpdate, setLastUpdate] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [filterClassification, setFilterClassification] = useState<string>('all')
   const [filterRisk, setFilterRisk] = useState<string>('all')
@@ -58,6 +59,24 @@ export default function OPCVMPage() {
       if (error) throw error
 
       setFunds(data || [])
+
+      // Récupérer la date de dernière mise à jour depuis la vue fund_performance_stats
+      const { data: statsData } = await supabase
+        .from('fund_performance_stats')
+        .select('last_updated_at')
+        .order('last_updated_at', { ascending: false })
+        .limit(1)
+        .single()
+
+      if (statsData?.last_updated_at) {
+        setLastUpdate(new Date(statsData.last_updated_at).toLocaleDateString('fr-FR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        }))
+      }
     } catch {
       toast({
         title: 'Erreur',
@@ -119,6 +138,12 @@ export default function OPCVMPage() {
           return (b.ytd_performance || 0) - (a.ytd_performance || 0)
         case 'perf_1y_desc':
           return (b.perf_1y || 0) - (a.perf_1y || 0)
+        case 'perf_3y_desc':
+          return (b.perf_3y || 0) - (a.perf_3y || 0)
+        case 'perf_5y_desc':
+          return (b.perf_5y || 0) - (a.perf_5y || 0)
+        case 'perf_1m_desc':
+          return (b.perf_1m || 0) - (a.perf_1m || 0)
         case 'risk_asc':
           return (a.risk_level || 0) - (b.risk_level || 0)
         case 'risk_desc':
@@ -187,9 +212,27 @@ export default function OPCVMPage() {
   return (
     <Container maxW="7xl" px={{ base: 4, md: 8, lg: 12 }}>
       <Box mb={8}>
-        <Heading as="h1" size="xl" mb={2}>
-          Fonds OPCVM
-        </Heading>
+        <HStack justify="space-between" mb={2} flexWrap="wrap" gap={2}>
+          <Heading as="h1" size="xl">
+            Fonds OPCVM
+          </Heading>
+          <HStack gap={2}>
+            {lastUpdate && (
+              <Badge colorScheme="green" px={3} py={1} borderRadius="md" fontSize="sm">
+                🔄 Mis à jour le {lastUpdate}
+              </Badge>
+            )}
+            <Button
+              size="sm"
+              onClick={fetchFunds}
+              isLoading={loading}
+              colorScheme="purple"
+              variant="outline"
+            >
+              Actualiser
+            </Button>
+          </HStack>
+        </HStack>
         <Text color="gray.600" fontSize="lg">
           Affichage de {displayedFunds.length} sur {filteredFunds.length} fonds {filteredFunds.length !== funds.length && `(${funds.length} au total)`}
         </Text>
@@ -288,6 +331,9 @@ export default function OPCVMPage() {
               <option value="perf_ytd_desc">Performance YTD ↓</option>
               <option value="perf_ytd_asc">Performance YTD ↑</option>
               <option value="perf_1y_desc">Performance 1 an ↓</option>
+              <option value="perf_3y_desc">Performance 3 ans ↓</option>
+              <option value="perf_5y_desc">Performance 5 ans ↓</option>
+              <option value="perf_1m_desc">Performance 1 mois ↓</option>
               <option value="risk_asc">Risque ↑</option>
               <option value="risk_desc">Risque ↓</option>
               <option value="nav_desc">VL ↓</option>
@@ -372,9 +418,9 @@ export default function OPCVMPage() {
                   {/* Short-term performance */}
                   <Box>
                     <Text fontSize="xs" fontWeight="semibold" color="gray.700" mb={3} textTransform="uppercase" letterSpacing="wide">
-                      Performances récentes
+                      Performances
                     </Text>
-                    <SimpleGrid columns={4} spacing={2}>
+                    <SimpleGrid columns={4} spacing={2} mb={2}>
                       <Box bg="gray.50" p={2} borderRadius="md" textAlign="center">
                         <Text color="gray.500" fontSize="2xs" mb={1}>1J</Text>
                         <Text fontWeight="bold" fontSize="xs" color={fund.perf_1d && fund.perf_1d > 0 ? 'green.600' : 'red.600'}>
@@ -397,6 +443,26 @@ export default function OPCVMPage() {
                         <Text color="gray.500" fontSize="2xs" mb={1}>1A</Text>
                         <Text fontWeight="bold" fontSize="xs" color={fund.perf_1y && fund.perf_1y > 0 ? 'green.600' : 'red.600'}>
                           {formatPercent(fund.perf_1y)}
+                        </Text>
+                      </Box>
+                    </SimpleGrid>
+                    <SimpleGrid columns={3} spacing={2}>
+                      <Box bg="gray.50" p={2} borderRadius="md" textAlign="center">
+                        <Text color="gray.500" fontSize="2xs" mb={1}>3M</Text>
+                        <Text fontWeight="bold" fontSize="xs" color={fund.perf_3m && fund.perf_3m > 0 ? 'green.600' : 'red.600'}>
+                          {formatPercent(fund.perf_3m)}
+                        </Text>
+                      </Box>
+                      <Box bg="gray.50" p={2} borderRadius="md" textAlign="center">
+                        <Text color="gray.500" fontSize="2xs" mb={1}>3A</Text>
+                        <Text fontWeight="bold" fontSize="xs" color={fund.perf_3y && fund.perf_3y > 0 ? 'green.600' : 'red.600'}>
+                          {formatPercent(fund.perf_3y)}
+                        </Text>
+                      </Box>
+                      <Box bg="gray.50" p={2} borderRadius="md" textAlign="center">
+                        <Text color="gray.500" fontSize="2xs" mb={1}>5A</Text>
+                        <Text fontWeight="bold" fontSize="xs" color={fund.perf_5y && fund.perf_5y > 0 ? 'green.600' : 'red.600'}>
+                          {formatPercent(fund.perf_5y)}
                         </Text>
                       </Box>
                     </SimpleGrid>
@@ -433,6 +499,7 @@ export default function OPCVMPage() {
                     color="white"
                     _hover={{ transform: 'scale(1.02)', bg: '#1a2942' }}
                     transition="all 0.2s"
+                    onClick={() => window.location.href = `/dashboard/opcvm/${fund.id}`}
                   >
                     Voir les détails
                   </Button>
