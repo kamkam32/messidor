@@ -202,10 +202,11 @@ export default function ComparateurPage() {
             .lte('date', endDate.toISOString().split('T')[0])
             .order('date', { ascending: true })
 
-          const history = (data || []).map((item, index) => {
-            const perfRelative = index === 0 || !data[0].nav || !item.nav
+          const historyData = data || []
+          const history = historyData.map((item, index) => {
+            const perfRelative = index === 0 || !historyData[0]?.nav || !item.nav
               ? 0
-              : ((item.nav - data[0].nav) / data[0].nav) * 100
+              : ((item.nav - historyData[0].nav) / historyData[0].nav) * 100
 
             return {
               date: item.date,
