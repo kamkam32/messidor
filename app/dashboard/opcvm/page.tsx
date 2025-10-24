@@ -217,6 +217,14 @@ export default function OPCVMPage() {
             Fonds OPCVM
           </Heading>
           <HStack gap={2}>
+            <Button
+              size="sm"
+              onClick={() => window.location.href = '/dashboard/opcvm/comparateur'}
+              colorScheme="blue"
+              leftIcon={<Text>📊</Text>}
+            >
+              Comparateur
+            </Button>
             {lastUpdate && (
               <Badge colorScheme="green" px={3} py={1} borderRadius="md" fontSize="sm">
                 🔄 Mis à jour le {lastUpdate}

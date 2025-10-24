@@ -42,8 +42,9 @@ function getAllThursdays(startDate: Date, endDate: Date): Date[] {
  */
 async function fileExists(date: Date): Promise<boolean> {
   const formattedDate = formatDate(date);
-  const fileName = `Tableau des Performances Hebdomadaires au ${formattedDate}.xlsx`;
-  const url = `https://asfim.ma/static/tableau-des-performances/${encodeURIComponent(fileName)}`;
+  // Format avec TIRETS (pas d'espaces)
+  const fileName = `Tableau-des-Performances-Hebdomadaires-au-${formattedDate}.xlsx`;
+  const url = `https://asfim.ma/static/tableau-des-performances/${fileName}`;
 
   try {
     await axios.head(url, { timeout: 10000 });

@@ -23,6 +23,9 @@ import {
   TabPanel,
   Button,
   Skeleton,
+  Switch,
+  FormControl,
+  FormLabel,
 } from '@chakra-ui/react'
 import { createClient } from '@/lib/supabase/client'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
@@ -35,6 +38,7 @@ interface PerformanceHistoryData {
   perf_1m?: number
   perf_3m?: number
   perf_1y?: number
+  perf_relative?: number
 }
 
 export default function FundDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -43,7 +47,7 @@ export default function FundDetailPage({ params }: { params: Promise<{ id: strin
   const [history, setHistory] = useState<PerformanceHistoryData[]>([])
   const [loading, setLoading] = useState(true)
   const [period, setPeriod] = useState<'1m' | '3m' | '6m' | '1y' | '3y'>('1y')
-  const [metric, setMetric] = useState<'nav' | 'perf_ytd'>('nav')
+  const [metric, setMetric] = useState<'nav' | 'perf_ytd' | 'perf_relative'>('perf_relative')
 
   const supabase = createClient()
 
@@ -112,6 +116,37 @@ export default function FundDetailPage({ params }: { params: Promise<{ id: strin
   const formatPercent = (value: number | null) => {
     if (value === null || value === undefined) return 'N/A'
     return `${value > 0 ? '+' : ''}${value.toFixed(2)}%`
+  }
+
+  // Calculer la performance relative depuis le premier point
+  const enrichedHistory = history.map((item, index) => {
+    if (index === 0 || !history[0].nav || !item.nav) {
+      return { ...item, perf_relative: 0 }
+    }
+    const perfRelative = ((item.nav - history[0].nav) / history[0].nav) * 100
+    return { ...item, perf_relative: perfRelative }
+  })
+
+  // Calculer le domaine pour l'axe Y automatiquement
+  const getYAxisDomain = () => {
+    if (enrichedHistory.length === 0) return [0, 100]
+
+    let values: number[] = []
+    if (metric === 'nav') {
+      values = enrichedHistory.map(d => d.nav).filter((v): v is number => v !== null && v !== undefined)
+    } else if (metric === 'perf_ytd') {
+      values = enrichedHistory.map(d => d.perf_ytd).filter((v): v is number => v !== null && v !== undefined)
+    } else if (metric === 'perf_relative') {
+      values = enrichedHistory.map(d => d.perf_relative).filter((v): v is number => v !== null && v !== undefined)
+    }
+
+    if (values.length === 0) return [0, 100]
+
+    const min = Math.min(...values)
+    const max = Math.max(...values)
+    const padding = (max - min) * 0.1 || 1 // 10% padding ou 1 si diff est 0
+
+    return [Math.floor(min - padding), Math.ceil(max + padding)]
   }
 
   if (loading) {
@@ -196,11 +231,11 @@ export default function FundDetailPage({ params }: { params: Promise<{ id: strin
       <Card mb={8}>
         <CardBody>
           <VStack align="stretch" spacing={4}>
-            <HStack justify="space-between">
+            <HStack justify="space-between" flexWrap="wrap" gap={4}>
               <Heading size="md">Historique des Performances</Heading>
-              <HStack>
+              <HStack spacing={6}>
                 {/* Sélection de période */}
-                <HStack>
+                <HStack spacing={2}>
                   {(['1m', '3m', '6m', '1y', '3y'] as const).map(p => (
                     <Button
                       key={p}
@@ -213,37 +248,57 @@ export default function FundDetailPage({ params }: { params: Promise<{ id: strin
                     </Button>
                   ))}
                 </HStack>
-                {/* Sélection de métrique */}
-                <HStack>
-                  <Button
-                    size="sm"
-                    variant={metric === 'nav' ? 'solid' : 'outline'}
-                    colorScheme="blue"
-                    onClick={() => setMetric('nav')}
+
+                {/* Switch VL / Perf % */}
+                <HStack
+                  spacing={3}
+                  px={4}
+                  py={2}
+                  bg="gray.50"
+                  borderRadius="full"
+                  border="1px solid"
+                  borderColor="gray.200"
+                >
+                  <Text
+                    fontSize="sm"
+                    fontWeight={metric === 'nav' ? 'bold' : 'medium'}
+                    color={metric === 'nav' ? 'blue.600' : 'gray.500'}
+                    transition="all 0.2s"
                   >
                     VL
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={metric === 'perf_ytd' ? 'solid' : 'outline'}
-                    colorScheme="blue"
-                    onClick={() => setMetric('perf_ytd')}
+                  </Text>
+                  <Switch
+                    colorScheme="green"
+                    size="lg"
+                    isChecked={metric === 'perf_relative'}
+                    onChange={(e) => setMetric(e.target.checked ? 'perf_relative' : 'nav')}
+                  />
+                  <Text
+                    fontSize="sm"
+                    fontWeight={metric === 'perf_relative' ? 'bold' : 'medium'}
+                    color={metric === 'perf_relative' ? 'green.600' : 'gray.500'}
+                    transition="all 0.2s"
                   >
-                    Perf YTD
-                  </Button>
+                    Perf %
+                  </Text>
                 </HStack>
               </HStack>
             </HStack>
 
             {history.length > 0 ? (
               <ResponsiveContainer width="100%" height={400}>
-                <LineChart data={history}>
+                <LineChart data={enrichedHistory}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis
                     dataKey="date"
                     tickFormatter={(date) => new Date(date).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' })}
                   />
-                  <YAxis />
+                  <YAxis
+                    domain={getYAxisDomain()}
+                    tickFormatter={(value) =>
+                      metric === 'nav' ? `${value.toFixed(0)}` : `${value > 0 ? '+' : ''}${value.toFixed(1)}%`
+                    }
+                  />
                   <Tooltip
                     labelFormatter={(date) => new Date(date).toLocaleDateString('fr-FR')}
                     formatter={(value: number) =>
@@ -254,9 +309,15 @@ export default function FundDetailPage({ params }: { params: Promise<{ id: strin
                   <Line
                     type="monotone"
                     dataKey={metric}
-                    stroke="#8884d8"
+                    stroke={metric === 'nav' ? '#8884d8' : '#10b981'}
                     strokeWidth={2}
-                    name={metric === 'nav' ? 'Valeur Liquidative' : 'Performance YTD'}
+                    name={
+                      metric === 'nav'
+                        ? 'Valeur Liquidative'
+                        : metric === 'perf_relative'
+                        ? 'Performance %'
+                        : 'Performance YTD'
+                    }
                     dot={false}
                   />
                 </LineChart>

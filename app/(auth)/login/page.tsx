@@ -24,6 +24,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [resetMode, setResetMode] = useState(false)
   const router = useRouter()
   const toast = useToast()
   const supabase = useMemo(() => createClient(), [])
@@ -51,6 +52,37 @@ export default function LoginPage() {
     } catch (err: any) {
       toast({
         title: 'Erreur de connexion',
+        description: err.message || 'Une erreur est survenue',
+        status: 'error',
+        duration: 5000,
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      })
+
+      if (error) throw error
+
+      toast({
+        title: 'Email envoyé',
+        description: 'Vérifiez votre boîte mail pour réinitialiser votre mot de passe',
+        status: 'success',
+        duration: 5000,
+      })
+
+      setResetMode(false)
+    } catch (err: any) {
+      toast({
+        title: 'Erreur',
         description: err.message || 'Une erreur est survenue',
         status: 'error',
         duration: 5000,
@@ -109,14 +141,16 @@ export default function LoginPage() {
           <VStack spacing={8} align="stretch">
             <VStack spacing={2} align="flex-start">
               <Heading size="xl" color="brand.800">
-                Bienvenue
+                {resetMode ? 'Réinitialiser le mot de passe' : 'Bienvenue'}
               </Heading>
               <Text color="gray.600" fontSize="lg">
-                Connectez-vous à votre espace client
+                {resetMode
+                  ? 'Entrez votre email pour recevoir un lien de réinitialisation'
+                  : 'Connectez-vous à votre espace client'}
               </Text>
             </VStack>
 
-            <form onSubmit={handleLogin}>
+            <form onSubmit={resetMode ? handleResetPassword : handleLogin}>
               <VStack spacing={4}>
                 <FormControl isRequired>
                   <FormLabel>Email</FormLabel>
@@ -129,16 +163,31 @@ export default function LoginPage() {
                   />
                 </FormControl>
 
-                <FormControl isRequired>
-                  <FormLabel>Mot de passe</FormLabel>
-                  <Input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    size="lg"
-                  />
-                </FormControl>
+                {!resetMode && (
+                  <FormControl isRequired>
+                    <FormLabel>Mot de passe</FormLabel>
+                    <Input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      size="lg"
+                    />
+                  </FormControl>
+                )}
+
+                {!resetMode && (
+                  <Text
+                    fontSize="sm"
+                    color="accent.600"
+                    alignSelf="flex-end"
+                    cursor="pointer"
+                    _hover={{ textDecoration: 'underline' }}
+                    onClick={() => setResetMode(true)}
+                  >
+                    Mot de passe oublié ?
+                  </Text>
+                )}
 
                 <Button
                   type="submit"
@@ -146,19 +195,31 @@ export default function LoginPage() {
                   size="lg"
                   w="full"
                   isLoading={loading}
-                  loadingText="Connexion..."
+                  loadingText={resetMode ? 'Envoi...' : 'Connexion...'}
                 >
-                  Se connecter
+                  {resetMode ? 'Envoyer le lien' : 'Se connecter'}
                 </Button>
+
+                {resetMode && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setResetMode(false)}
+                  >
+                    Retour à la connexion
+                  </Button>
+                )}
               </VStack>
             </form>
 
-            <Text fontSize="sm" color="gray.600" textAlign="center">
-              Pas encore de compte ?{' '}
-              <Link href="/signup" style={{ color: '#0EA5E9', fontWeight: '600' }}>
-                Créer un compte
-              </Link>
-            </Text>
+            {!resetMode && (
+              <Text fontSize="sm" color="gray.600" textAlign="center">
+                Pas encore de compte ?{' '}
+                <Link href="/signup" style={{ color: '#0EA5E9', fontWeight: '600' }}>
+                  Créer un compte
+                </Link>
+              </Text>
+            )}
           </VStack>
         </Box>
       </Flex>

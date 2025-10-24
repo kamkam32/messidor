@@ -27,7 +27,8 @@
       "Bash(do echo -n \"$date: \")",
       "Bash(awk:*)",
       "Bash(done)",
-      "WebFetch(domain:www.asfim.ma)"
+      "WebFetch(domain:www.asfim.ma)",
+      "Bash(psql:*)"
     ],
     "deny": [],
     "ask": []
