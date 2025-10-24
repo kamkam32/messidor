@@ -31,6 +31,7 @@ import {
 import { SearchIcon } from '@chakra-ui/icons'
 import { createClient } from '@/lib/supabase/client'
 import type { Fund } from '@/lib/types/fund.types'
+import { getManagementCompanyLogo } from '@/lib/utils/management-company-logos'
 
 export const dynamic = 'force-dynamic'
 
@@ -150,6 +151,8 @@ export default function OPCVMPage() {
           return (b.risk_level || 0) - (a.risk_level || 0)
         case 'nav_desc':
           return (b.nav || 0) - (a.nav || 0)
+        case 'asset_desc':
+          return (b.asset_value || 0) - (a.asset_value || 0)
         case 'fees_asc':
           return (a.management_fees || 0) - (b.management_fees || 0)
         default:
@@ -342,6 +345,7 @@ export default function OPCVMPage() {
               <option value="perf_3y_desc">Performance 3 ans ↓</option>
               <option value="perf_5y_desc">Performance 5 ans ↓</option>
               <option value="perf_1m_desc">Performance 1 mois ↓</option>
+              <option value="asset_desc">Actif Net ↓</option>
               <option value="risk_asc">Risque ↑</option>
               <option value="risk_desc">Risque ↓</option>
               <option value="nav_desc">VL ↓</option>
@@ -365,13 +369,16 @@ export default function OPCVMPage() {
             {displayedFunds.map((fund) => (
             <Card key={fund.id} _hover={{ shadow: 'xl', transform: 'translateY(-4px)' }} transition="all 0.3s" overflow="hidden" display="flex" flexDirection="column" h="full">
               <Image
-                src={`https://picsum.photos/seed/${fund.code}/400/200`}
-                alt={fund.name}
+                src={getManagementCompanyLogo(fund.management_company)}
+                alt={fund.management_company || fund.name}
                 h={{ base: "150px", md: "180px" }}
                 w="100%"
-                objectFit="cover"
+                objectFit="contain"
+                objectPosition="center"
+                bg="white"
+                p={4}
                 loading="lazy"
-                fallbackSrc="https://via.placeholder.com/400x200/4299e1/ffffff?text=OPCVM"
+                fallbackSrc="/images/logomessidor.jpg"
               />
               <CardBody display="flex" flexDirection="column" flex="1">
                 <VStack align="stretch" spacing={3} flex="1">
@@ -404,24 +411,77 @@ export default function OPCVMPage() {
 
                   <Divider />
 
-                  {/* VL & Performance YTD */}
-                  <Box bg="gray.50" p={4} borderRadius="md">
-                    <SimpleGrid columns={2} spacing={4}>
-                      <Stat size="sm">
-                        <StatLabel fontSize="xs" color="gray.600">Valeur Liquidative</StatLabel>
-                        <StatNumber fontSize="md" fontWeight="bold" mt={1}>{formatCurrency(fund.nav)}</StatNumber>
-                      </Stat>
-                      <Stat size="sm">
-                        <StatLabel fontSize="xs" color="gray.600">Performance YTD</StatLabel>
-                        <StatNumber fontSize="md" fontWeight="bold" color={fund.ytd_performance && fund.ytd_performance > 0 ? 'green.600' : 'red.600'} mt={1}>
-                          {fund.ytd_performance && (
-                            <StatArrow type={fund.ytd_performance > 0 ? 'increase' : 'decrease'} />
-                          )}
-                          {formatPercent(fund.ytd_performance)}
-                        </StatNumber>
-                      </Stat>
-                    </SimpleGrid>
-                  </Box>
+                  {/* VL, Actif Net & Performance YTD */}
+                  <HStack
+                    spacing={0}
+                    divider={<Box h="60px" w="1px" bg="gray.300" />}
+                    bg="white"
+                    border="1px solid"
+                    borderColor="gray.200"
+                    borderRadius="lg"
+                    overflow="hidden"
+                  >
+                    <VStack
+                      flex={1}
+                      py={4}
+                      spacing={1}
+                      align="center"
+                      _hover={{ bg: 'gray.50' }}
+                      transition="all 0.2s"
+                    >
+                      <Text fontSize="2xs" color="gray.500" fontWeight="600" textTransform="uppercase" letterSpacing="wide">
+                        Valeur Liquidative
+                      </Text>
+                      <Text fontSize="lg" fontWeight="bold" color="gray.900">
+                        {fund.nav ? `${fund.nav.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}` : 'N/A'}
+                      </Text>
+                      <Text fontSize="2xs" color="gray.400" fontWeight="500">MAD</Text>
+                    </VStack>
+
+                    <VStack
+                      flex={1}
+                      py={4}
+                      spacing={1}
+                      align="center"
+                      _hover={{ bg: 'purple.50' }}
+                      transition="all 0.2s"
+                    >
+                      <Text fontSize="2xs" color="gray.500" fontWeight="600" textTransform="uppercase" letterSpacing="wide">
+                        Actif Net
+                      </Text>
+                      <Text fontSize="lg" fontWeight="bold" color="purple.600">
+                        {fund.asset_value ? `${(fund.asset_value / 1000000).toFixed(1)}M` : 'N/A'}
+                      </Text>
+                      <Text fontSize="2xs" color="gray.400" fontWeight="500">MAD</Text>
+                    </VStack>
+
+                    <VStack
+                      flex={1}
+                      py={4}
+                      spacing={1}
+                      align="center"
+                      bg={fund.ytd_performance && fund.ytd_performance > 0 ? 'green.50' : fund.ytd_performance && fund.ytd_performance < 0 ? 'red.50' : 'gray.50'}
+                      _hover={{ bg: fund.ytd_performance && fund.ytd_performance > 0 ? 'green.100' : fund.ytd_performance && fund.ytd_performance < 0 ? 'red.100' : 'gray.100' }}
+                      transition="all 0.2s"
+                    >
+                      <Text fontSize="2xs" color="gray.500" fontWeight="600" textTransform="uppercase" letterSpacing="wide">
+                        Performance YTD
+                      </Text>
+                      <HStack spacing={1}>
+                        {fund.ytd_performance && (
+                          <Text fontSize="lg" color={fund.ytd_performance > 0 ? 'green.600' : 'red.600'}>
+                            {fund.ytd_performance > 0 ? '↗' : '↘'}
+                          </Text>
+                        )}
+                        <Text fontSize="lg" fontWeight="bold" color={fund.ytd_performance && fund.ytd_performance > 0 ? 'green.600' : fund.ytd_performance && fund.ytd_performance < 0 ? 'red.600' : 'gray.600'}>
+                          {fund.ytd_performance !== null && fund.ytd_performance !== undefined
+                            ? `${fund.ytd_performance > 0 ? '+' : ''}${fund.ytd_performance.toFixed(2)}%`
+                            : 'N/A'}
+                        </Text>
+                      </HStack>
+                      <Text fontSize="2xs" color="gray.400" fontWeight="500">Année en cours</Text>
+                    </VStack>
+                  </HStack>
 
                   {/* Short-term performance */}
                   <Box>

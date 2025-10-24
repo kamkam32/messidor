@@ -102,10 +102,13 @@ export default function ComparateurPage() {
       .eq('is_active', true)
       .limit(200)
 
-    // Trier côté client : d'abord ceux avec perf_1y, puis par perf décroissante
+    // Trier côté client : perf 1Y décroissante, puis actif net décroissant (critère secondaire)
     const sorted = (allData || []).sort((a, b) => {
       // Fonds sans perf_1y à la fin
-      if (a.perf_1y === null && b.perf_1y === null) return 0
+      if (a.perf_1y === null && b.perf_1y === null) {
+        // Si pas de perf, trier par actif net
+        return (b.asset_value || 0) - (a.asset_value || 0)
+      }
       if (a.perf_1y === null) return 1
       if (b.perf_1y === null) return -1
       // Sinon tri par perf décroissante
@@ -497,7 +500,7 @@ export default function ComparateurPage() {
                         onClick={() => addFund(fund)}
                       >
                         <VStack align="stretch" spacing={2}>
-                          <HStack justify="space-between">
+                          <HStack justify="space-between" align="start">
                             <Text fontWeight="600" fontSize="sm" noOfLines={1} flex={1}>
                               {fund.name}
                             </Text>
@@ -518,8 +521,28 @@ export default function ComparateurPage() {
                               fontSize="2xs"
                               borderRadius="md"
                             >
-                              {formatPercent(fund.perf_1y || 0)}
+                              1Y: {formatPercent(fund.perf_1y || 0)}
                             </Badge>
+                          </HStack>
+                          <HStack spacing={3} fontSize="2xs" color="gray.600">
+                            <HStack spacing={1}>
+                              <Text fontWeight="600">AUM:</Text>
+                              <Text color="purple.600" fontWeight="600">
+                                {fund.asset_value ? `${(fund.asset_value / 1000000).toFixed(0)}M` : 'N/A'}
+                              </Text>
+                            </HStack>
+                            <HStack spacing={1}>
+                              <Text fontWeight="600">YTD:</Text>
+                              <Text color={fund.ytd_performance && fund.ytd_performance > 0 ? 'green.700' : 'red.600'} fontWeight="600">
+                                {formatPercent(fund.ytd_performance || 0)}
+                              </Text>
+                            </HStack>
+                            <HStack spacing={1}>
+                              <Text fontWeight="600">3Y:</Text>
+                              <Text color={fund.perf_3y && fund.perf_3y > 0 ? 'green.700' : 'red.600'} fontWeight="600">
+                                {fund.perf_3y ? formatPercent(fund.perf_3y) : 'N/A'}
+                              </Text>
+                            </HStack>
                           </HStack>
                         </VStack>
                       </Box>
@@ -554,25 +577,47 @@ export default function ComparateurPage() {
                             borderColor="green.200"
                             onClick={() => addFund(fund)}
                           >
-                            <HStack justify="space-between" align="start">
-                              <VStack align="start" spacing={1} flex={1} minW={0}>
-                                <Text fontWeight="600" fontSize="sm" noOfLines={1}>{fund.name}</Text>
-                                <HStack spacing={2}>
-                                  <Badge colorScheme="green" fontSize="2xs" borderRadius="md" fontWeight="600">
-                                    {formatPercent(fund.perf_1y || 0)}
-                                  </Badge>
-                                  <Text fontSize="2xs" color="gray.600">{fund.classification}</Text>
+                            <VStack align="stretch" spacing={2}>
+                              <HStack justify="space-between" align="start">
+                                <VStack align="start" spacing={0} flex={1} minW={0}>
+                                  <Text fontWeight="600" fontSize="sm" noOfLines={1}>{fund.name}</Text>
+                                  <HStack spacing={2} mt={1}>
+                                    <Badge colorScheme="green" fontSize="2xs" borderRadius="md" fontWeight="600">
+                                      1Y: {formatPercent(fund.perf_1y || 0)}
+                                    </Badge>
+                                    <Text fontSize="2xs" color="gray.600">{fund.classification}</Text>
+                                  </HStack>
+                                </VStack>
+                                <IconButton
+                                  aria-label="Ajouter"
+                                  icon={<Text fontSize="lg">+</Text>}
+                                  size="xs"
+                                  colorScheme="green"
+                                  variant="ghost"
+                                  borderRadius="full"
+                                />
+                              </HStack>
+                              <HStack spacing={3} fontSize="2xs" color="gray.600">
+                                <HStack spacing={1}>
+                                  <Text fontWeight="600">AUM:</Text>
+                                  <Text color="purple.600" fontWeight="600">
+                                    {fund.asset_value ? `${(fund.asset_value / 1000000).toFixed(0)}M` : 'N/A'}
+                                  </Text>
                                 </HStack>
-                              </VStack>
-                              <IconButton
-                                aria-label="Ajouter"
-                                icon={<Text fontSize="lg">+</Text>}
-                                size="xs"
-                                colorScheme="green"
-                                variant="ghost"
-                                borderRadius="full"
-                              />
-                            </HStack>
+                                <HStack spacing={1}>
+                                  <Text fontWeight="600">YTD:</Text>
+                                  <Text color={fund.ytd_performance && fund.ytd_performance > 0 ? 'green.700' : 'red.600'} fontWeight="600">
+                                    {formatPercent(fund.ytd_performance || 0)}
+                                  </Text>
+                                </HStack>
+                                <HStack spacing={1}>
+                                  <Text fontWeight="600">3Y:</Text>
+                                  <Text color={fund.perf_3y && fund.perf_3y > 0 ? 'green.700' : 'red.600'} fontWeight="600">
+                                    {fund.perf_3y ? formatPercent(fund.perf_3y) : 'N/A'}
+                                  </Text>
+                                </HStack>
+                              </HStack>
+                            </VStack>
                           </Box>
                         ))}
                       </SimpleGrid>
@@ -703,8 +748,28 @@ export default function ComparateurPage() {
                                         fontSize="2xs"
                                         borderRadius="md"
                                       >
-                                        {formatPercent(fund.perf_1y || 0)}
+                                        1Y: {formatPercent(fund.perf_1y || 0)}
                                       </Badge>
+                                    </HStack>
+                                    <HStack spacing={3} fontSize="2xs" color="gray.600">
+                                      <HStack spacing={1}>
+                                        <Text fontWeight="600">AUM:</Text>
+                                        <Text color="purple.600" fontWeight="600">
+                                          {fund.asset_value ? `${(fund.asset_value / 1000000).toFixed(0)}M` : 'N/A'}
+                                        </Text>
+                                      </HStack>
+                                      <HStack spacing={1}>
+                                        <Text fontWeight="600">YTD:</Text>
+                                        <Text color={fund.ytd_performance && fund.ytd_performance > 0 ? 'green.700' : 'red.600'} fontWeight="600">
+                                          {formatPercent(fund.ytd_performance || 0)}
+                                        </Text>
+                                      </HStack>
+                                      <HStack spacing={1}>
+                                        <Text fontWeight="600">3Y:</Text>
+                                        <Text color={fund.perf_3y && fund.perf_3y > 0 ? 'green.700' : 'red.600'} fontWeight="600">
+                                          {fund.perf_3y ? formatPercent(fund.perf_3y) : 'N/A'}
+                                        </Text>
+                                      </HStack>
                                     </HStack>
                                   </VStack>
                                 </Box>
@@ -996,6 +1061,7 @@ export default function ComparateurPage() {
                           strokeWidth={3}
                           name="Portefeuille"
                           dot={false}
+                          connectNulls={true}
                         />
 
                         {/* Lignes des fonds individuels */}
@@ -1008,6 +1074,7 @@ export default function ComparateurPage() {
                             strokeWidth={2}
                             name={pf.fund.name}
                             dot={false}
+                            connectNulls={true}
                           />
                         ))}
                       </LineChart>
@@ -1044,14 +1111,17 @@ export default function ComparateurPage() {
                   </HStack>
 
                   {portfolioFunds.map((pf, index) => (
-                    <Box key={pf.fund.id} p={4} bg="gray.50" borderRadius="md">
+                    <Box key={pf.fund.id} p={4} bg="white" borderRadius="lg" border="1px solid" borderColor="gray.200" shadow="sm">
                       <VStack align="stretch" spacing={3}>
                         <HStack justify="space-between">
                           <Box flex={1}>
-                            <Text fontWeight="bold">{pf.fund.name}</Text>
-                            <HStack spacing={2}>
-                              <Badge colorScheme="purple">{pf.fund.classification}</Badge>
-                              <Text fontSize="sm" color="gray.600">Code: {pf.fund.code}</Text>
+                            <Text fontWeight="bold" fontSize="md">{pf.fund.name}</Text>
+                            <HStack spacing={2} mt={1}>
+                              <Badge colorScheme="purple" fontSize="xs">{pf.fund.classification}</Badge>
+                              <Badge colorScheme={pf.fund.risk_level && pf.fund.risk_level > 5 ? 'red' : 'green'} fontSize="xs">
+                                Risque {pf.fund.risk_level}/7
+                              </Badge>
+                              <Text fontSize="xs" color="gray.500">Code: {pf.fund.code}</Text>
                             </HStack>
                           </Box>
                           <IconButton
@@ -1063,6 +1133,40 @@ export default function ComparateurPage() {
                             onClick={() => removeFund(pf.fund.id)}
                           />
                         </HStack>
+
+                        {/* Infos clés du fonds */}
+                        <SimpleGrid columns={4} spacing={3} p={3} bg="gray.50" borderRadius="md">
+                          <VStack spacing={0} align="center">
+                            <Text fontSize="2xs" color="gray.500" fontWeight="600" textTransform="uppercase">Actif Net</Text>
+                            <Text fontSize="sm" fontWeight="bold" color="purple.600">
+                              {pf.fund.asset_value ? `${(pf.fund.asset_value / 1000000).toFixed(1)}M` : 'N/A'}
+                            </Text>
+                          </VStack>
+                          <VStack spacing={0} align="center">
+                            <Text fontSize="2xs" color="gray.500" fontWeight="600" textTransform="uppercase">Perf YTD</Text>
+                            <Text fontSize="sm" fontWeight="bold" color={pf.fund.ytd_performance && pf.fund.ytd_performance > 0 ? 'green.600' : 'red.600'}>
+                              {pf.fund.ytd_performance !== null && pf.fund.ytd_performance !== undefined
+                                ? `${pf.fund.ytd_performance > 0 ? '+' : ''}${pf.fund.ytd_performance.toFixed(2)}%`
+                                : 'N/A'}
+                            </Text>
+                          </VStack>
+                          <VStack spacing={0} align="center">
+                            <Text fontSize="2xs" color="gray.500" fontWeight="600" textTransform="uppercase">Perf 1 an</Text>
+                            <Text fontSize="sm" fontWeight="bold" color={pf.fund.perf_1y && pf.fund.perf_1y > 0 ? 'green.600' : 'red.600'}>
+                              {pf.fund.perf_1y !== null && pf.fund.perf_1y !== undefined
+                                ? `${pf.fund.perf_1y > 0 ? '+' : ''}${pf.fund.perf_1y.toFixed(2)}%`
+                                : 'N/A'}
+                            </Text>
+                          </VStack>
+                          <VStack spacing={0} align="center">
+                            <Text fontSize="2xs" color="gray.500" fontWeight="600" textTransform="uppercase">Perf 3 ans</Text>
+                            <Text fontSize="sm" fontWeight="bold" color={pf.fund.perf_3y && pf.fund.perf_3y > 0 ? 'green.600' : 'red.600'}>
+                              {pf.fund.perf_3y !== null && pf.fund.perf_3y !== undefined
+                                ? `${pf.fund.perf_3y > 0 ? '+' : ''}${pf.fund.perf_3y.toFixed(2)}%`
+                                : 'N/A'}
+                            </Text>
+                          </VStack>
+                        </SimpleGrid>
 
                         {!showAmount ? (
                           <HStack spacing={4}>
