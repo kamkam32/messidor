@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://VOTRE-DOMAINE.com'), // Remplacez par votre vrai domaine GoDaddy
+  metadataBase: new URL('https://www.messidor-patrimoine.com'),
   title: {
     default: "Messidor Patrimoine - Cabinet de Gestion de Patrimoine au Maroc | OPCVM, OPCI, Bourse",
     template: "%s | Messidor Patrimoine"
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'fr_MA',
-    url: 'https://VOTRE-DOMAINE.com',
+    url: 'https://www.messidor-patrimoine.com',
     title: 'Messidor Patrimoine - Cabinet de Gestion de Patrimoine au Maroc',
     description: 'Cabinet de gestion de patrimoine marocain spécialisé dans les actifs financiers : OPCVM, OPCI, actions Bourse de Casablanca et portefeuilles personnalisés.',
     siteName: 'Messidor Patrimoine',

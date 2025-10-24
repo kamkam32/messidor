@@ -32,6 +32,7 @@ import { SearchIcon } from '@chakra-ui/icons'
 import { createClient } from '@/lib/supabase/client'
 import type { Fund } from '@/lib/types/fund.types'
 import { getManagementCompanyLogo } from '@/lib/utils/management-company-logos'
+import { OPCVMStructuredData } from '@/components/OPCVMStructuredData'
 
 export const dynamic = 'force-dynamic'
 
@@ -213,8 +214,10 @@ export default function OPCVMPage() {
   }
 
   return (
-    <Container maxW="7xl" px={{ base: 4, md: 8, lg: 12 }}>
-      <Box mb={8}>
+    <>
+      <OPCVMStructuredData funds={displayedFunds} />
+      <Container maxW="7xl" px={{ base: 4, md: 8, lg: 12 }}>
+        <Box mb={8}>
         <HStack justify="space-between" mb={2} flexWrap="wrap" gap={2}>
           <Heading as="h1" size="xl">
             Fonds OPCVM
@@ -588,5 +591,6 @@ export default function OPCVMPage() {
         </>
       )}
     </Container>
+    </>
   )
 }
