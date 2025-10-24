@@ -50,6 +50,7 @@ export async function middleware(request: NextRequest) {
     '/dashboard/opcvm',      // Liste des OPCVM et détails des fonds
     '/dashboard/bourse',     // Bourse
     '/dashboard/simulateur', // Simulateur
+    '/blog',                 // Blog et articles
   ]
 
   const isPublicPath = publicPaths.some(path =>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import {
   Box,
   Flex,
@@ -24,12 +25,17 @@ import NextLink from 'next/link'
 const links = [
   { name: 'Accueil', href: '/' },
   { name: 'Services', href: '/services' },
+  { name: 'Blog', href: '/blog' },
   { name: 'Simulateurs', href: '/simulateurs' },
 ]
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const pathname = usePathname()
+
+  // Pages avec fond blanc qui nécessitent toujours un navbar avec fond
+  const isWhiteBackgroundPage = pathname?.startsWith('/blog') || pathname?.startsWith('/dashboard')
 
   useEffect(() => {
     const handleScroll = () => {
@@ -40,11 +46,14 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Pour les pages avec fond blanc, toujours afficher la navbar avec fond
+  const showBackground = isWhiteBackgroundPage || scrolled
+
   return (
     <Box
-      bg={scrolled ? 'white' : 'transparent'}
-      backdropFilter={scrolled ? 'none' : 'blur(10px)'}
-      borderBottom={scrolled ? 1 : 0}
+      bg={showBackground ? 'white' : 'transparent'}
+      backdropFilter={showBackground ? 'none' : 'blur(10px)'}
+      borderBottom={showBackground ? 1 : 0}
       borderStyle="solid"
       borderColor="gray.200"
       position="fixed"
@@ -53,7 +62,7 @@ export default function Navbar() {
       right={0}
       zIndex={1000}
       transition="all 0.3s ease-in-out"
-      boxShadow={scrolled ? 'sm' : 'none'}
+      boxShadow={showBackground ? 'sm' : 'none'}
     >
       <Container maxW="container.xl">
         <Flex h={20} alignItems="center" justifyContent="space-between">
@@ -63,8 +72,8 @@ export default function Navbar() {
               href="/"
               fontSize={{ base: 'lg', sm: 'xl', md: '2xl' }}
               fontWeight="bold"
-              color={scrolled ? 'brand.800' : 'white'}
-              _hover={{ textDecoration: 'none', color: scrolled ? 'accent.600' : 'accent.300' }}
+              color={showBackground ? 'brand.800' : 'white'}
+              _hover={{ textDecoration: 'none', color: showBackground ? 'accent.600' : 'accent.300' }}
               transition="all 0.3s"
             >
               Messidor Patrimoine
@@ -80,10 +89,10 @@ export default function Navbar() {
                   rounded="md"
                   fontSize="lg"
                   fontWeight="500"
-                  color={scrolled ? 'gray.700' : 'white'}
+                  color={showBackground ? 'gray.700' : 'white'}
                   _hover={{
                     textDecoration: 'none',
-                    bg: scrolled ? 'gray.200' : 'whiteAlpha.300',
+                    bg: showBackground ? 'gray.200' : 'whiteAlpha.300',
                   }}
                   transition="all 0.3s"
                 >
@@ -98,16 +107,16 @@ export default function Navbar() {
               as={NextLink}
               href="/login"
               variant="outline"
-              colorScheme={scrolled ? 'accent' : 'whiteAlpha'}
+              colorScheme={showBackground ? 'accent' : 'whiteAlpha'}
               size={{ base: 'sm', md: 'md' }}
               fontSize={{ base: 'sm', md: 'md' }}
               fontWeight="600"
               px={{ base: 3, md: 6 }}
               py={{ base: 4, md: 5 }}
-              borderColor={scrolled ? 'accent.500' : 'white'}
-              color={scrolled ? 'accent.600' : 'white'}
+              borderColor={showBackground ? 'accent.500' : 'white'}
+              color={showBackground ? 'accent.600' : 'white'}
               _hover={{
-                bg: scrolled ? 'accent.50' : 'whiteAlpha.200',
+                bg: showBackground ? 'accent.50' : 'whiteAlpha.200',
               }}
               display={{ base: 'none', sm: 'inline-flex' }}
             >
@@ -133,9 +142,9 @@ export default function Navbar() {
               icon={<HamburgerIcon />}
               onClick={onOpen}
               variant="ghost"
-              color={scrolled ? 'gray.700' : 'white'}
+              color={showBackground ? 'gray.700' : 'white'}
               _hover={{
-                bg: scrolled ? 'gray.100' : 'whiteAlpha.300',
+                bg: showBackground ? 'gray.100' : 'whiteAlpha.300',
               }}
               aria-label="Ouvrir le menu"
               display={{ base: 'flex', md: 'none' }}
