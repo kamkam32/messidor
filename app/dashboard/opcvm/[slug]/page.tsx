@@ -41,7 +41,7 @@ interface PerformanceHistoryData {
   perf_relative?: number
 }
 
-export default function FundDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function FundDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params)
   const [fund, setFund] = useState<Fund | null>(null)
   const [history, setHistory] = useState<PerformanceHistoryData[]>([])
@@ -53,16 +53,16 @@ export default function FundDetailPage({ params }: { params: Promise<{ id: strin
 
   useEffect(() => {
     fetchFundData()
-  }, [resolvedParams.id, period])
+  }, [resolvedParams.slug, period])
 
   const fetchFundData = async () => {
     setLoading(true)
     try {
-      // Récupérer les infos du fonds
+      // Récupérer les infos du fonds par slug
       const { data: fundData, error: fundError } = await supabase
         .from('funds')
         .select('*')
-        .eq('id', resolvedParams.id)
+        .eq('slug', resolvedParams.slug)
         .single()
 
       if (fundError) throw fundError
@@ -93,7 +93,7 @@ export default function FundDetailPage({ params }: { params: Promise<{ id: strin
       const { data: historyData, error: historyError } = await supabase
         .from('fund_performance_history')
         .select('date, nav, perf_ytd, perf_1m, perf_3m, perf_1y')
-        .eq('fund_id', resolvedParams.id)
+        .eq('fund_id', fundData.id)
         .gte('date', startDate.toISOString().split('T')[0])
         .lte('date', endDate.toISOString().split('T')[0])
         .order('date', { ascending: true })

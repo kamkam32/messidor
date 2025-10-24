@@ -1,5 +1,6 @@
 export interface Fund {
   id: string
+  slug: string | null
   isin_code: string | null
   morocco_code: string | null
   name: string

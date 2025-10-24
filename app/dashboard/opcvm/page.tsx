@@ -570,7 +570,7 @@ export default function OPCVMPage() {
                     color="white"
                     _hover={{ transform: 'scale(1.02)', bg: '#1a2942' }}
                     transition="all 0.2s"
-                    onClick={() => window.location.href = `/dashboard/opcvm/${fund.id}`}
+                    onClick={() => window.location.href = `/dashboard/opcvm/${fund.slug}`}
                   >
                     Voir les détails
                   </Button>

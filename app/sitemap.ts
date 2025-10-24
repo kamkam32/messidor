@@ -50,13 +50,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const supabase = await createClient()
     const { data: funds } = await supabase
       .from('funds')
-      .select('id, updated_at')
+      .select('slug, updated_at')
       .eq('type', 'OPCVM')
       .eq('is_active', true)
 
     // Créer une entrée pour chaque fonds OPCVM
     const fundPages: MetadataRoute.Sitemap = (funds || []).map(fund => ({
-      url: `${baseUrl}/dashboard/opcvm/${fund.id}`,
+      url: `${baseUrl}/dashboard/opcvm/${fund.slug}`,
       lastModified: fund.updated_at ? new Date(fund.updated_at) : currentDate,
       changeFrequency: 'daily' as const,
       priority: 0.7,

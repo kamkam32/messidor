@@ -25,7 +25,7 @@ export function OPCVMStructuredData({ funds }: OPCVMStructuredDataProps) {
       'position': index + 1,
       'item': {
         '@type': 'FinancialProduct',
-        '@id': `${baseUrl}/dashboard/opcvm/${fund.id}`,
+        '@id': `${baseUrl}/dashboard/opcvm/${fund.slug}`,
         'name': fund.name,
         'description': `OPCVM ${fund.classification} - ${fund.management_company}`,
         'category': fund.classification,
