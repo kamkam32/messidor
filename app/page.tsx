@@ -480,7 +480,7 @@ export default function Home() {
                       Kamil Alami
                     </Heading>
                     <Text fontSize="md" color="accent.300" fontWeight="600">
-                      Chief Product Officer - Messidor Patrimoine
+                      Fondateur & CPO - Messidor Patrimoine
                     </Text>
                   </Stack>
                   <Text
@@ -521,8 +521,8 @@ export default function Home() {
             comment nous pouvons vous aider à atteindre vos objectifs financiers.
           </Text>
           <Button
-            as={NextLink}
-            href="/contact"
+            as="a"
+            href="mailto:kamil@messidorai.com"
             size="lg"
             colorScheme="accent"
           >

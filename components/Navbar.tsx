@@ -114,8 +114,8 @@ export default function Navbar() {
               Espace Client
             </Button>
             <Button
-              as={NextLink}
-              href="/contact"
+              as="a"
+              href="mailto:kamil@messidorai.com"
               variant="solid"
               colorScheme="accent"
               size={{ base: 'sm', md: 'md' }}
@@ -191,8 +191,8 @@ export default function Navbar() {
                   Espace Client
                 </Button>
                 <Button
-                  as={NextLink}
-                  href="/contact"
+                  as="a"
+                  href="mailto:kamil@messidorai.com"
                   variant="solid"
                   colorScheme="accent"
                   size="md"
