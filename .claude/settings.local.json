@@ -28,7 +28,8 @@
       "Bash(awk:*)",
       "Bash(done)",
       "WebFetch(domain:www.asfim.ma)",
-      "Bash(psql:*)"
+      "Bash(psql:*)",
+      "WebFetch(domain:www.wafagestion.com)"
     ],
     "deny": [],
     "ask": []

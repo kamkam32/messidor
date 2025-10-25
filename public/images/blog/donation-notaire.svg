@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400">
+  <defs>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="400" fill="#f0fdf4"/>
+
+  <!-- Document -->
+  <rect x="250" y="80" width="300" height="240" rx="8" fill="white" stroke="#10b981" stroke-width="3"/>
+
+  <!-- Document lines -->
+  <line x1="280" y1="120" x2="520" y2="120" stroke="#d1d5db" stroke-width="3"/>
+  <line x1="280" y1="150" x2="520" y2="150" stroke="#d1d5db" stroke-width="3"/>
+  <line x1="280" y1="180" x2="450" y2="180" stroke="#d1d5db" stroke-width="3"/>
+
+  <!-- Signature line -->
+  <line x1="280" y1="250" x2="420" y2="250" stroke="#6b7280" stroke-width="2" stroke-dasharray="5,5"/>
+  <text x="350" y="275" font-family="cursive" font-size="20" fill="#10b981" text-anchor="middle">Signature</text>
+
+  <!-- Stamp -->
+  <circle cx="480" cy="260" r="35" fill="none" stroke="#dc2626" stroke-width="3"/>
+  <text x="480" y="255" font-family="Arial, sans-serif" font-size="14" fill="#dc2626" text-anchor="middle" font-weight="bold">CERTIFIÉ</text>
+  <text x="480" y="272" font-family="Arial, sans-serif" font-size="12" fill="#dc2626" text-anchor="middle">2025</text>
+
+  <!-- Pen -->
+  <rect x="330" y="220" width="12" height="60" rx="2" fill="#3b82f6" transform="rotate(-25 336 250)"/>
+  <path d="M 325,279 L 335,285 L 338,276 Z" fill="#1e293b"/>
+
+  <!-- Title -->
+  <text x="400" y="50" font-family="Arial, sans-serif" font-size="28" fill="#10b981" text-anchor="middle" font-weight="bold">Acte de Donation</text>
+
+  <!-- Bottom text -->
+  <text x="400" y="360" font-family="Arial, sans-serif" font-size="20" fill="#1e293b" text-anchor="middle">Transmission de Patrimoine</text>
+</svg>

@@ -25,7 +25,7 @@ import NextLink from 'next/link'
 const links = [
   { name: 'Accueil', href: '/' },
   { name: 'Services', href: '/services' },
-  { name: 'Blog', href: '/blog' },
+  { name: 'Articles', href: '/blog' },
   { name: 'Simulateurs', href: '/simulateurs' },
 ]
 

@@ -4,7 +4,7 @@ slug: "top-10-opcvm-maroc-2025"
 date: "2025-10-24T10:27:32.133Z"
 author: "Équipe Messidor Patrimoine"
 category: "Analyses"
-image: "/images/blog/top-opcvm-2025.jpg"
+image: "/images/OPCVM.jpg"
 excerpt: "Découvrez notre analyse détaillée des 10 OPCVM marocains affichant les meilleures performances en 2025. Données actualisées et comparatifs complets."
 keywords: ["opcvm maroc", "meilleurs opcvm maroc 2025", "performance opcvm", "investissement maroc", "top opcvm"]
 ---
