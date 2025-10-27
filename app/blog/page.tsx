@@ -45,91 +45,92 @@ export default function BlogPage() {
         ) : (
           <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
             {posts.map(post => (
-              <Box
-                key={post.slug}
-                as={NextLink}
-                href={`/blog/${post.slug}`}
-                overflow="hidden"
-                transition="all 0.3s"
-                _hover={{ transform: 'translateY(-8px)', shadow: '2xl' }}
-                cursor="pointer"
-                borderRadius="xl"
-                bg="white"
-                position="relative"
-                boxShadow="md"
-              >
-                {/* Image d'en-tête */}
-                <AspectRatio ratio={16 / 9}>
-                  <Image
-                    src={post.image || '/images/OPCVM.jpg'}
-                    alt={post.title}
-                    objectFit="cover"
-                    fallbackSrc="/images/OPCVM.jpg"
-                  />
-                </AspectRatio>
+              <NextLink key={post.slug} href={`/blog/${post.slug}`} passHref legacyBehavior>
+                <Box
+                  as="a"
+                  overflow="hidden"
+                  transition="all 0.3s"
+                  _hover={{ transform: 'translateY(-8px)', shadow: '2xl' }}
+                  cursor="pointer"
+                  borderRadius="xl"
+                  bg="white"
+                  position="relative"
+                  boxShadow="md"
+                  display="block"
+                >
+                  {/* Image d'en-tête */}
+                  <AspectRatio ratio={16 / 9}>
+                    <Image
+                      src={post.image || '/images/OPCVM.jpg'}
+                      alt={post.title}
+                      objectFit="cover"
+                      fallbackSrc="/images/OPCVM.jpg"
+                    />
+                  </AspectRatio>
 
-                <Box p={6}>
-                  <VStack align="stretch" spacing={4}>
-                    {/* Badge et date */}
-                    <HStack spacing={2} flexWrap="wrap">
-                      <Badge
-                        colorScheme="blue"
-                        fontSize="xs"
-                        px={3}
-                        py={1}
-                        borderRadius="full"
+                  <Box p={6}>
+                    <VStack align="stretch" spacing={4}>
+                      {/* Badge et date */}
+                      <HStack spacing={2} flexWrap="wrap">
+                        <Badge
+                          colorScheme="blue"
+                          fontSize="xs"
+                          px={3}
+                          py={1}
+                          borderRadius="full"
+                        >
+                          {post.category}
+                        </Badge>
+                        <Text fontSize="xs" color="gray.500" fontWeight="500">
+                          {new Date(post.date).toLocaleDateString('fr-FR', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                          })}
+                        </Text>
+                      </HStack>
+
+                      {/* Titre */}
+                      <Heading
+                        size="md"
+                        noOfLines={2}
+                        lineHeight="1.3"
+                        fontWeight="700"
+                        color="gray.800"
                       >
-                        {post.category}
-                      </Badge>
-                      <Text fontSize="xs" color="gray.500" fontWeight="500">
-                        {new Date(post.date).toLocaleDateString('fr-FR', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric'
-                        })}
-                      </Text>
-                    </HStack>
+                        {post.title}
+                      </Heading>
 
-                    {/* Titre */}
-                    <Heading
-                      size="md"
-                      noOfLines={2}
-                      lineHeight="1.3"
-                      fontWeight="700"
-                      color="gray.800"
-                    >
-                      {post.title}
-                    </Heading>
-
-                    {/* Extrait */}
-                    <Text
-                      color="gray.600"
-                      noOfLines={3}
-                      fontSize="sm"
-                      lineHeight="1.6"
-                    >
-                      {post.excerpt}
-                    </Text>
-
-                    {/* Footer */}
-                    <HStack justify="space-between" pt={2} borderTop="1px" borderColor="gray.100">
-                      <Text fontSize="xs" color="gray.500" fontWeight="500">
-                        {post.author}
-                      </Text>
+                      {/* Extrait */}
                       <Text
-                        color="blue.600"
-                        fontWeight="600"
+                        color="gray.600"
+                        noOfLines={3}
                         fontSize="sm"
-                        display="flex"
-                        alignItems="center"
-                        gap={1}
+                        lineHeight="1.6"
                       >
-                        Lire →
+                        {post.excerpt}
                       </Text>
-                    </HStack>
-                  </VStack>
+
+                      {/* Footer */}
+                      <HStack justify="space-between" pt={2} borderTop="1px" borderColor="gray.100">
+                        <Text fontSize="xs" color="gray.500" fontWeight="500">
+                          {post.author}
+                        </Text>
+                        <Text
+                          color="blue.600"
+                          fontWeight="600"
+                          fontSize="sm"
+                          display="flex"
+                          alignItems="center"
+                          gap={1}
+                        >
+                          Lire →
+                        </Text>
+                      </HStack>
+                    </VStack>
+                  </Box>
                 </Box>
-              </Box>
+              </NextLink>
             ))}
           </SimpleGrid>
         )}

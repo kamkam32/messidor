@@ -150,12 +150,14 @@ export default function LoginPage() {
               </Text>
             </VStack>
 
-            <form onSubmit={resetMode ? handleResetPassword : handleLogin}>
+            <form onSubmit={resetMode ? handleResetPassword : handleLogin} autoComplete="on">
               <VStack spacing={4}>
                 <FormControl isRequired>
                   <FormLabel>Email</FormLabel>
                   <Input
                     type="email"
+                    name="email"
+                    autoComplete="username email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="votre@email.com"
@@ -168,6 +170,8 @@ export default function LoginPage() {
                     <FormLabel>Mot de passe</FormLabel>
                     <Input
                       type="password"
+                      name="password"
+                      autoComplete="current-password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
