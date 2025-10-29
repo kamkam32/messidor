@@ -9,6 +9,12 @@ import rehypeStringify from 'rehype-stringify'
 
 const postsDirectory = path.join(process.cwd(), 'content/blog')
 
+export interface Heading {
+  id: string
+  text: string
+  level: number
+}
+
 export interface BlogPost {
   slug: string
   title: string
@@ -19,6 +25,7 @@ export interface BlogPost {
   excerpt: string
   keywords: string[]
   content: string
+  headings: Heading[]
 }
 
 export function getAllPosts(): BlogPost[] {
@@ -46,6 +53,7 @@ export function getAllPosts(): BlogPost[] {
         excerpt: data.excerpt || '',
         keywords: data.keywords || [],
         content,
+        headings: [], // Pas besoin d'extraire les titres pour la liste
       } as BlogPost
     })
 
@@ -59,11 +67,49 @@ export function getAllPosts(): BlogPost[] {
   })
 }
 
+function extractHeadings(content: string): Heading[] {
+  const headings: Heading[] = []
+  const lines = content.split('\n')
+
+  for (const line of lines) {
+    // Détecter les titres markdown H2 (##) et H3 (###)
+    const h2Match = line.match(/^##\s+(.+)$/)
+    const h3Match = line.match(/^###\s+(.+)$/)
+
+    if (h2Match && !line.startsWith('###')) {
+      const text = h2Match[1].trim()
+      const id = text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Enlever les accents
+        .replace(/[^a-z0-9\s-]/g, '') // Enlever caractères spéciaux
+        .replace(/\s+/g, '-') // Remplacer espaces par tirets
+        .replace(/-+/g, '-') // Remplacer tirets multiples par un seul
+      headings.push({ id, text, level: 2 })
+    } else if (h3Match) {
+      const text = h3Match[1].trim()
+      const id = text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+      headings.push({ id, text, level: 3 })
+    }
+  }
+
+  return headings
+}
+
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
   try {
     const fullPath = path.join(postsDirectory, `${slug}.md`)
     const fileContents = fs.readFileSync(fullPath, 'utf8')
     const { data, content } = matter(fileContents)
+
+    // Extraire les titres du markdown
+    const headings = extractHeadings(content)
 
     // Convertir le markdown en HTML avec support des tableaux et HTML brut
     const processedContent = await remark()
@@ -84,6 +130,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
       excerpt: data.excerpt || '',
       keywords: data.keywords || [],
       content: contentHtml,
+      headings,
     }
   } catch (error) {
     return null
