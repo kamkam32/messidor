@@ -5,6 +5,8 @@ import { getPostBySlug, getPostSlugs } from '@/lib/blog'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import TableOfContents from '@/components/blog/TableOfContents'
+import CallToActionBox from '@/components/blog/CallToActionBox'
+import FloatingCTA from '@/components/blog/FloatingCTA'
 
 export async function generateStaticParams() {
   const slugs = getPostSlugs()
@@ -144,12 +146,15 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
 
         <Show above="lg">
           <GridItem>
+            <CallToActionBox />
             {post.headings.length > 0 && (
               <TableOfContents headings={post.headings} />
             )}
           </GridItem>
         </Show>
       </Grid>
+
+      <FloatingCTA />
     </Container>
   )
 }

@@ -67,10 +67,10 @@ export default function TableOfContents({ headings }: TableOfContentsProps) {
   return (
     <Box
       position="fixed"
-      top="120px"
+      top="460px"
       right="calc((100vw - 1400px) / 2 + 20px)"
       width="300px"
-      maxH="calc(100vh - 140px)"
+      maxH="calc(100vh - 480px)"
       bg="gray.50"
       borderRadius="lg"
       border="1px solid"
