@@ -72,9 +72,8 @@ function extractHeadings(content: string): Heading[] {
   const lines = content.split('\n')
 
   for (const line of lines) {
-    // Détecter les titres markdown H2 (##) et H3 (###)
+    // Détecter uniquement les titres markdown H2 (##) pour le menu
     const h2Match = line.match(/^##\s+(.+)$/)
-    const h3Match = line.match(/^###\s+(.+)$/)
 
     if (h2Match && !line.startsWith('###')) {
       const text = h2Match[1].trim()
@@ -86,16 +85,6 @@ function extractHeadings(content: string): Heading[] {
         .replace(/\s+/g, '-') // Remplacer espaces par tirets
         .replace(/-+/g, '-') // Remplacer tirets multiples par un seul
       headings.push({ id, text, level: 2 })
-    } else if (h3Match) {
-      const text = h3Match[1].trim()
-      const id = text
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9\s-]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/-+/g, '-')
-      headings.push({ id, text, level: 3 })
     }
   }
 

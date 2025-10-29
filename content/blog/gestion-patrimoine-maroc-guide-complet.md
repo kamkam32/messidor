@@ -38,7 +38,7 @@ Ce guide complet vous explique tout ce que vous devez savoir sur la gestion de p
 
 La gestion de patrimoine, c'est bien plus que placer de l'argent. C'est une approche globale et stratégique qui consiste à **optimiser l'ensemble de vos actifs** (financiers, immobiliers, professionnels) pour atteindre vos objectifs de vie : préparer votre retraite, protéger votre famille, transmettre à vos enfants, financer leurs études, générer des revenus complémentaires.
 
-### les 4 piliers de la gestion de patrimoine au maroc
+### Les 4 piliers de la gestion de patrimoine au maroc
 
 **1. la dimension financière**
 
@@ -56,7 +56,7 @@ Structurer votre patrimoine de manière optimale : donation avec réserve d'usuf
 
 Anticiper la transmission de votre patrimoine : répartir équitablement entre vos enfants malgré les règles légales, protéger votre épouse au-delà du 1/8ème légal, éviter l'indivision source de conflits, minimiser les coûts et délais de succession.
 
-### pourquoi la gestion de patrimoine est essentielle au maroc ?
+### Pourquoi la gestion de patrimoine est essentielle au maroc ?
 
 Le contexte marocain présente des spécificités qui rendent la gestion de patrimoine encore plus importante qu'ailleurs :
 
@@ -137,11 +137,11 @@ Avant d'optimiser, il faut d'abord savoir où vous en êtes. Un bilan patrimonia
 
 ## optimiser votre patrimoine financier : les placements intelligents
 
-### les OPCVM : le placement de référence au maroc
+### Les OPCVM : le placement de référence au maroc
 
 Les OPCVM (Organismes de Placement Collectif en Valeurs Mobilières) sont le cœur d'un patrimoine financier bien géré au Maroc. Pourquoi ? Performance supérieure aux comptes bancaires, diversification, liquidité, gestion professionnelle.
 
-#### comment choisir le bon OPCVM ?
+#### Comment choisir le bon OPCVM ?
 
 <div style="background: #f8fafc; padding: 24px; border-radius: 8px; border: 1px solid #e2e8f0; margin: 24px 0;">
 
@@ -165,7 +165,7 @@ Préférez un fonds qui fait +8% régulièrement plutôt qu'un fonds qui fait +2
 
 </div>
 
-#### les meilleurs OPCVM 2025 par catégorie
+#### Les meilleurs OPCVM 2025 par catégorie
 
 **actions maroc** : CFG Equity Market, Attijari Actions, BMCI Equity Fund (performances 2024 : +12% à +15%)
 
@@ -175,7 +175,7 @@ Préférez un fonds qui fait +8% régulièrement plutôt qu'un fonds qui fait +2
 
 [**→ Découvrez notre sélection détaillée des meilleurs OPCVM 2025**](/blog/top-10-opcvm-maroc-2025)
 
-### l'assurance-vie : l'outil de transmission par excellence
+### L'assurance-vie : l'outil de transmission par excellence
 
 Au-delà de la protection décès classique, l'assurance-vie moderne permet de constituer un capital qui échappera aux règles d'héritage classiques.
 
@@ -190,7 +190,7 @@ Au-delà de la protection décès classique, l'assurance-vie moderne permet de c
 - En cas de décès : chaque fille reçoit 500 000 DH directement
 - Avantage : compense l'inégalité potentielle si un fils naît plus tard
 
-### la diversification : la règle d'or
+### La diversification : la règle d'or
 
 Ne mettez jamais tous vos œufs dans le même panier. Une allocation patrimoniale équilibrée ressemble à :
 
@@ -230,7 +230,7 @@ Ne mettez jamais tous vos œufs dans le même panier. Une allocation patrimonial
 
 L'immobilier représente souvent 60-80% du patrimoine des Marocains. Bien géré, il génère des revenus et se valorise. Mal géré, il immobilise des capitaux et coûte cher en impôts.
 
-### l'investissement locatif : calculs à connaître
+### L'investissement locatif : calculs à connaître
 
 **rendement locatif brut** = (loyer annuel / prix d'achat) × 100
 
@@ -250,7 +250,7 @@ L'immobilier représente souvent 60-80% du patrimoine des Marocains. Bien géré
 - Impôt : 43 200 × 20% = 8 640 DH
 - Revenus nets après impôts : 72 000 - 17 200 - 8 640 = **46 160 DH/an** (3,8% net-net)
 
-### la SCI familiale : structurer son patrimoine locatif
+### La SCI familiale : structurer son patrimoine locatif
 
 Quand vous possédez plusieurs biens locatifs, la Société Civile Immobilière familiale devient pertinente.
 
@@ -268,7 +268,7 @@ Quand vous possédez plusieurs biens locatifs, la Société Civile Immobilière 
 - Progressivement : Hamid donne 3% de ses parts par an à son épouse
 - Résultat après 10 ans : épouse détient 60%, mieux protégée
 
-### achat neuf vs ancien : que choisir ?
+### Achat neuf vs ancien : que choisir ?
 
 **neuf : avantages**
 - Exonération taxe d'habitation 5 ans
@@ -300,7 +300,7 @@ Quand vous possédez plusieurs biens locatifs, la Société Civile Immobilière 
 
 La fiscalité est le grand oublié de la gestion de patrimoine, alors qu'elle peut vous faire économiser 10 000 à 30 000 DH par an selon votre situation.
 
-### fiscalité immobilière : les 3 leviers d'optimisation
+### Fiscalité immobilière : les 3 leviers d'optimisation
 
 **1. profitez de l'abattement 75% résidence principale**
 
@@ -325,7 +325,7 @@ Beaucoup de MRE ne le savent pas et paient plein tarif. Une simple demande admin
 
 [**→ Découvrez notre guide complet sur la fiscalité immobilière 2025**](/blog/fiscalite-immobiliere-maroc-2025)
 
-### plus-value immobilière : vendez au bon moment
+### Plus-value immobilière : vendez au bon moment
 
 **exonération totale** : si vous vendez votre résidence principale après 6 ans minimum d'occupation
 
@@ -342,7 +342,7 @@ Beaucoup de MRE ne le savent pas et paient plein tarif. Une simple demande admin
 
 C'est le sujet que personne n'aime aborder, mais c'est le plus important. Sans planification, la loi décide à votre place, et le résultat ne correspond souvent pas à vos souhaits.
 
-### la réalité : ce que dit la loi marocaine
+### La réalité : ce que dit la loi marocaine
 
 En l'absence de toute action de votre part, le Code de la famille marocain s'applique :
 
@@ -357,7 +357,7 @@ En l'absence de toute action de votre part, le Code de la famille marocain s'app
 
 Beaucoup de pères de famille trouvent cette répartition injuste, surtout concernant l'épouse (12,5% alors qu'elle a contribué à construire le patrimoine) et l'inégalité fille/garçon.
 
-### les solutions pour protéger vos proches
+### Les solutions pour protéger vos proches
 
 #### 1. la donation avec réserve d'usufruit
 
@@ -398,7 +398,7 @@ Vous pouvez disposer librement d'un tiers maximum de votre patrimoine via testam
 
 **limite** : 2/3 du patrimoine doivent obligatoirement aller aux héritiers réservataires selon les parts légales.
 
-### cas pratique complet : la stratégie globale de Hassan
+### Cas pratique complet : la stratégie globale de Hassan
 
 **situation** : Hassan, 58 ans, patrimoine 5M DH
 - Résidence principale : 2M DH
@@ -446,7 +446,7 @@ Vous pouvez disposer librement d'un tiers maximum de votre patrimoine via testam
 
 Votre conseiller en gestion de patrimoine sera votre partenaire stratégique pendant des années. Bien le choisir est crucial.
 
-### les 7 critères essentiels
+### Les 7 critères essentiels
 
 **1. l'indépendance**
 
@@ -489,7 +489,7 @@ Votre conseiller doit être accessible : échanges réguliers, au moins 2 rendez
 
 Demandez des cas clients (anonymisés) similaires au vôtre et les résultats obtenus.
 
-### les erreurs à éviter
+### Les erreurs à éviter
 
 **❌ choisir son banquier comme conseiller patrimonial**
 
@@ -513,7 +513,7 @@ Ce qui fonctionne pour votre voisin ne fonctionnera pas forcément pour vous. Â
 
 Chez Messidor Patrimoine, nous pratiquons une gestion de patrimoine à 360° adaptée au contexte marocain et aux spécificités de nos clients (résidents, MRE, entrepreneurs).
 
-### notre méthodologie en 5 étapes
+### Notre méthodologie en 5 étapes
 
 **étape 1 : le bilan patrimonial complet (1er rendez-vous)**
 
@@ -556,7 +556,7 @@ Votre vie évolue, votre stratégie aussi :
 - Héritage reçu : intégration au patrimoine global
 - Départ retraite : transition vers profil plus prudent
 
-### cas clients : résultats concrets
+### Cas clients : résultats concrets
 
 **cas 1 : Karim, cadre supérieur, 45 ans**
 

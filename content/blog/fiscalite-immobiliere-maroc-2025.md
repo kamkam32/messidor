@@ -42,13 +42,13 @@ Ce guide vous explique tout : les taxes à payer, les nouveautés 2025, et surto
 
 La taxe d'habitation s'applique à tous les biens immobiliers bâtis : résidence principale, secondaire, appartement locatif. Elle se calcule sur la **valeur locative** du bien.
 
-#### comment ça marche ?
+#### Comment ça marche ?
 
 La valeur locative correspond au loyer annuel moyen pratiqué dans votre quartier pour un bien similaire. Par exemple, si les appartements comparables au vôtre se louent 5 000 DH/mois dans votre quartier, votre valeur locative sera de 60 000 DH/an.
 
 Cette valeur locative augmente automatiquement de 2% tous les 5 ans.
 
-#### le barème 2025
+#### Le barème 2025
 
 <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin: 24px 0;">
 
@@ -61,7 +61,7 @@ Cette valeur locative augmente automatiquement de 2% tous les 5 ans.
 
 </div>
 
-#### l'abattement de 75% qui change tout
+#### L'abattement de 75% qui change tout
 
 **Si le bien est votre résidence principale**, vous bénéficiez d'un abattement de 75% sur la valeur locative avant calcul de la taxe. Concrètement, vous ne payez que sur 25% de la valeur locative.
 
@@ -72,7 +72,7 @@ Cette valeur locative augmente automatiquement de 2% tous les 5 ans.
 
 **économie annuelle : 2 200 DH** simplement en déclarant le bien comme résidence principale.
 
-#### cas particulier des MRE : l'avantage méconnu
+#### Cas particulier des MRE : l'avantage méconnu
 
 Les Marocains Résidant à l'Étranger bénéficient également de l'abattement de 75%, même si le logement est occupé gratuitement par leurs proches (conjoint, enfants, parents).
 
@@ -97,7 +97,7 @@ Cette taxe finance les services locaux (éclairage public, voirie, etc.). Elle s
 - Avec abattement 75% : 6 000 × 10,5% = **630 DH/an**
 - **économie : 1 890 DH/an**
 
-### quand et comment payer ?
+### Quand et comment payer ?
 
 Les avis d'imposition arrivent fin mars avec un délai de paiement de 8 semaines. Passé ce délai :
 - Pénalité de 10% immédiate
@@ -112,7 +112,7 @@ Les avis d'imposition arrivent fin mars avec un délai de paiement de 8 semaines
 
 Si vous louez un bien immobilier, vos revenus locatifs sont imposables. La Loi de Finances 2025 a apporté des changements majeurs qui peuvent simplifier votre vie.
 
-### le nouveau seuil d'exonération : 40 000 DH
+### Le nouveau seuil d'exonération : 40 000 DH
 
 **Nouveauté 2025** : le seuil d'exonération passe de 30 000 à **40 000 DH par an**.
 
@@ -121,9 +121,9 @@ Si vos revenus locatifs annuels (tous biens confondus) sont inférieurs à 40 00
 **exemple** : Vous louez un studio 3 000 DH/mois = 36 000 DH/an
 - **Résultat : 0 DH d'impôt** (en dessous du seuil)
 
-### au-delà de 40 000 DH : deux options s'offrent à vous
+### Au-delà de 40 000 DH : deux options s'offrent à vous
 
-#### option 1 : le régime classique (retenue à la source)
+#### Option 1 : le régime classique (retenue à la source)
 
 Si votre locataire est une entreprise ou un professionnel, il doit appliquer une retenue à la source :
 - **10%** si vos revenus locatifs annuels sont inférieurs à 120 000 DH
@@ -139,7 +139,7 @@ Cette retenue n'est pas libératoire : vous devez quand même déclarer vos reve
   - Cette somme s'ajoute à vos autres revenus
   - Les 8 400 DH déjà retenus seront déduits de l'impôt final
 
-#### option 2 : le taux libératoire de 20% (nouveauté 2025 !)
+#### Option 2 : le taux libératoire de 20% (nouveauté 2025 !)
 
 **grande nouveauté** : Vous pouvez désormais opter pour un taux libératoire de 20% sur vos revenus locatifs (après abattement de 40%), à condition que vos loyers annuels dépassent 120 000 DH.
 
@@ -164,7 +164,7 @@ Cette retenue n'est pas libératoire : vous devez quand même déclarer vos reve
   <p style="margin: 8px 0 0 0; color: #475569;">Si vos revenus locatifs dépassent 120 000 DH/an et que vous avez déjà un salaire confortable, l'option libératoire 20% est généralement plus avantageuse. Faites simuler les deux options par un expert.</p>
 </div>
 
-### cas pratique complet : optimiser ses revenus locatifs
+### Cas pratique complet : optimiser ses revenus locatifs
 
 **situation** : Nadia, cadre dans une banque (salaire 25 000 DH/mois), possède deux appartements qu'elle loue.
 
@@ -206,7 +206,7 @@ Cette retenue n'est pas libératoire : vous devez quand même déclarer vos reve
 
 Si vous faites construire ou achetez un bien neuf, vous bénéficiez d'une exonération de **5 ans sur la taxe d'habitation** (mais pas sur la taxe de services communaux).
 
-### conditions pour en bénéficier
+### Conditions pour en bénéficier
 
 - Construction neuve ou extension d'un bien existant
 - Affectation à titre de **résidence principale**
@@ -214,7 +214,7 @@ Si vous faites construire ou achetez un bien neuf, vous bénéficiez d'une exon�
 
 **important** : Si vous louez le bien neuf, vous bénéficiez aussi d'une exonération d'impôt sur les revenus locatifs pendant **3 ans** après la fin des travaux.
 
-### exemple chiffré
+### Exemple chiffré
 
 **situation** : Ahmed achète un appartement neuf à Rabat en 2025 (valeur locative 30 000 DH/an)
 
@@ -230,12 +230,12 @@ S'il occupe le bien comme résidence principale, il bénéficiera en plus de l'a
 
 Quand vous vendez un bien immobilier, vous devez payer une taxe sur la plus-value réalisée.
 
-### le taux : 20% avec un minimum de 3%
+### Le taux : 20% avec un minimum de 3%
 
 - **Taux normal** : 20% de la plus-value nette
 - **Minimum de perception** : 3% du prix de vente (même si la plus-value est faible ou nulle)
 
-### comment calculer la plus-value ?
+### Comment calculer la plus-value ?
 
 <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin: 24px 0;">
 
@@ -249,7 +249,7 @@ Quand vous vendez un bien immobilier, vous devez payer une taxe sur la plus-valu
 
 </div>
 
-### exemple concret
+### Exemple concret
 
 **situation** : Rachid a acheté un appartement en 2018 pour 800 000 DH. Il le revend en 2025 pour 1 200 000 DH.
 
@@ -272,7 +272,7 @@ Rachid paie **37 200 DH** (le montant le plus élevé des deux).
 
 </div>
 
-### les exonérations totales
+### Les exonérations totales
 
 Vous ne payez **aucune taxe** si :
 
@@ -283,7 +283,7 @@ Vous ne payez **aucune taxe** si :
 
 **Stratégie** : Si vous possédez plusieurs biens, vendez d'abord celui que vous occupez comme résidence principale pour éviter l'impôt.
 
-### nouveauté 2025 : le quitus fiscal obligatoire
+### Nouveauté 2025 : le quitus fiscal obligatoire
 
 Depuis juillet 2024, vous devez obtenir un **quitus fiscal** avant toute vente immobilière. Ce document atteste que toutes vos taxes (habitation, services communaux, etc.) sont à jour.
 
@@ -366,7 +366,7 @@ Si vous avez des revenus élevés, ne pas opter pour le taux libératoire 20% pe
 
 ## Cas pratiques complets : optimisations réelles
 
-### cas 1 : le MRE qui optimise tout
+### Cas 1 : le MRE qui optimise tout
 
 **Profil** : Hassan, MRE en Belgique, possède :
 - 1 appartement à Casablanca (valeur locative 25 000 DH) occupé par sa mère
@@ -394,7 +394,7 @@ Si vous avez des revenus élevés, ne pas opter pour le taux libératoire 20% pe
 
 </div>
 
-### cas 2 : l'investisseur locatif qui utilise l'option libératoire
+### Cas 2 : l'investisseur locatif qui utilise l'option libératoire
 
 **Profil** : Samira, médecin (revenus 400 000 DH/an), possède 3 appartements locatifs :
 - Appartement 1 : 6 000 DH/mois
@@ -423,7 +423,7 @@ Sur 10 ans : **156 800 DH économisés**
 
 </div>
 
-### cas 3 : le propriétaire qui vend au bon moment
+### Cas 3 : le propriétaire qui vend au bon moment
 
 **Profil** : Mohamed possède deux appartements :
 - Appartement A : sa résidence principale depuis 4 ans (plus-value potentielle 300 000 DH)
