@@ -31,7 +31,8 @@
       "Bash(psql:*)",
       "WebFetch(domain:www.wafagestion.com)",
       "WebFetch(domain:www.oc.gov.ma)",
-      "WebFetch(domain:www.seloger.com)"
+      "WebFetch(domain:www.seloger.com)",
+      "WebFetch(domain:www.ammc.ma)"
     ],
     "deny": [],
     "ask": []

@@ -4,7 +4,7 @@ slug: "investir-maroc-mre-guide-complet-2025"
 date: "2025-10-29T10:00:00.000Z"
 author: "Équipe Messidor Patrimoine"
 category: "Guides"
-image: "/images/investissement-maroc.jpg"
+image: "/images/investirmaroc.png"
 excerpt: "Guide complet pour les MRE qui veulent investir au Maroc : immobilier, OPCVM, entreprise. Comment investir en euros et rapatrier vos gains en toute légalité."
 keywords: ["investir au maroc MRE", "investissement maroc marocains étranger", "compte devises maroc", "rapatriement euros maroc", "garantie retransfert maroc", "immobilier maroc MRE", "crédit immobilier MRE", "compte convertible maroc"]
 ---
