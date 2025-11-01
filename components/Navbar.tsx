@@ -25,6 +25,7 @@ import NextLink from 'next/link'
 const links = [
   { name: 'Accueil', href: '/' },
   { name: 'Services', href: '/services' },
+  { name: 'OPCVM', href: '/opcvm' },
   { name: 'Articles', href: '/blog' },
   { name: 'Simulateurs', href: '/simulateurs' },
 ]
@@ -35,7 +36,7 @@ export default function Navbar() {
   const pathname = usePathname()
 
   // Pages avec fond blanc qui nécessitent toujours un navbar avec fond
-  const isWhiteBackgroundPage = pathname?.startsWith('/blog') || pathname?.startsWith('/dashboard')
+  const isWhiteBackgroundPage = pathname?.startsWith('/blog') || pathname?.startsWith('/dashboard') || pathname?.startsWith('/opcvm')
 
   useEffect(() => {
     const handleScroll = () => {

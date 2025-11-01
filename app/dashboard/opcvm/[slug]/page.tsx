@@ -166,41 +166,39 @@ export default function FundDetailPage({ params }: { params: Promise<{ slug: str
   }
 
   return (
-    <Container maxW="7xl" py={8}>
+    <Container maxW="7xl" py={8} px={{ base: 4, md: 8 }}>
       {/* En-tête */}
       <Box mb={8}>
-        <HStack justify="space-between" mb={4}>
-          <Box>
-            <Heading size="xl" mb={2}>{fund.name}</Heading>
-            <HStack spacing={3}>
-              <Badge colorScheme="purple">{fund.classification}</Badge>
-              <Badge colorScheme={fund.risk_level && fund.risk_level > 5 ? 'red' : 'green'}>
-                Risque {fund.risk_level}/7
-              </Badge>
-              <Text color="gray.600">{fund.management_company}</Text>
-            </HStack>
-          </Box>
-          <Button onClick={() => window.history.back()}>
+        <VStack align="stretch" spacing={4}>
+          <Heading size={{ base: 'md', md: 'xl' }} noOfLines={2}>{fund.name}</Heading>
+          <HStack spacing={3} flexWrap="wrap">
+            <Badge colorScheme="purple" fontSize={{ base: 'xs', md: 'sm' }}>{fund.classification}</Badge>
+            <Badge colorScheme={fund.risk_level && fund.risk_level > 5 ? 'red' : 'green'} fontSize={{ base: 'xs', md: 'sm' }}>
+              Risque {fund.risk_level}/7
+            </Badge>
+            <Text color="gray.600" fontSize={{ base: 'sm', md: 'md' }} noOfLines={1}>{fund.management_company}</Text>
+          </HStack>
+          <Button onClick={() => window.history.back()} w={{ base: 'full', sm: 'auto' }} size={{ base: 'sm', md: 'md' }}>
             Retour
           </Button>
-        </HStack>
+        </VStack>
       </Box>
 
       {/* Stats principales */}
-      <SimpleGrid columns={{ base: 2, md: 4 }} spacing={6} mb={8}>
+      <SimpleGrid columns={{ base: 1, sm: 2, md: 4 }} spacing={{ base: 3, md: 6 }} mb={8}>
         <Card>
-          <CardBody>
+          <CardBody p={{ base: 4, md: 6 }}>
             <Stat>
-              <StatLabel>Valeur Liquidative</StatLabel>
-              <StatNumber fontSize="2xl">{formatCurrency(fund.nav)}</StatNumber>
+              <StatLabel fontSize={{ base: 'xs', md: 'sm' }}>Valeur Liquidative</StatLabel>
+              <StatNumber fontSize={{ base: 'lg', md: '2xl' }} noOfLines={1}>{formatCurrency(fund.nav)}</StatNumber>
             </Stat>
           </CardBody>
         </Card>
         <Card>
-          <CardBody>
+          <CardBody p={{ base: 4, md: 6 }}>
             <Stat>
-              <StatLabel>Performance YTD</StatLabel>
-              <StatNumber fontSize="2xl" color={fund.ytd_performance && fund.ytd_performance > 0 ? 'green.500' : 'red.500'}>
+              <StatLabel fontSize={{ base: 'xs', md: 'sm' }}>Performance YTD</StatLabel>
+              <StatNumber fontSize={{ base: 'lg', md: '2xl' }} color={fund.ytd_performance && fund.ytd_performance > 0 ? 'green.500' : 'red.500'}>
                 {fund.ytd_performance && <StatArrow type={fund.ytd_performance > 0 ? 'increase' : 'decrease'} />}
                 {formatPercent(fund.ytd_performance)}
               </StatNumber>
@@ -208,20 +206,20 @@ export default function FundDetailPage({ params }: { params: Promise<{ slug: str
           </CardBody>
         </Card>
         <Card>
-          <CardBody>
+          <CardBody p={{ base: 4, md: 6 }}>
             <Stat>
-              <StatLabel>Performance 1 an</StatLabel>
-              <StatNumber fontSize="2xl" color={fund.perf_1y && fund.perf_1y > 0 ? 'green.500' : 'red.500'}>
+              <StatLabel fontSize={{ base: 'xs', md: 'sm' }}>Performance 1 an</StatLabel>
+              <StatNumber fontSize={{ base: 'lg', md: '2xl' }} color={fund.perf_1y && fund.perf_1y > 0 ? 'green.500' : 'red.500'}>
                 {formatPercent(fund.perf_1y)}
               </StatNumber>
             </Stat>
           </CardBody>
         </Card>
         <Card>
-          <CardBody>
+          <CardBody p={{ base: 4, md: 6 }}>
             <Stat>
-              <StatLabel>Actif Net</StatLabel>
-              <StatNumber fontSize="2xl">{formatCurrency(fund.asset_value)}</StatNumber>
+              <StatLabel fontSize={{ base: 'xs', md: 'sm' }}>Actif Net</StatLabel>
+              <StatNumber fontSize={{ base: 'lg', md: '2xl' }} noOfLines={1}>{formatCurrency(fund.asset_value)}</StatNumber>
             </Stat>
           </CardBody>
         </Card>
@@ -231,63 +229,66 @@ export default function FundDetailPage({ params }: { params: Promise<{ slug: str
       <Card mb={8}>
         <CardBody>
           <VStack align="stretch" spacing={4}>
-            <HStack justify="space-between" flexWrap="wrap" gap={4}>
-              <Heading size="md">Historique des Performances</Heading>
-              <HStack spacing={6}>
-                {/* Sélection de période */}
-                <HStack spacing={2}>
-                  {(['1m', '3m', '6m', '1y', '3y'] as const).map(p => (
-                    <Button
-                      key={p}
-                      size="sm"
-                      variant={period === p ? 'solid' : 'outline'}
-                      colorScheme="purple"
-                      onClick={() => setPeriod(p)}
-                    >
-                      {p.toUpperCase()}
-                    </Button>
-                  ))}
-                </HStack>
+            <VStack align="stretch" spacing={3}>
+              <Heading size={{ base: 'sm', md: 'md' }}>Historique des Performances</Heading>
 
-                {/* Switch VL / Perf % */}
-                <HStack
-                  spacing={3}
-                  px={4}
-                  py={2}
-                  bg="gray.50"
-                  borderRadius="full"
-                  border="1px solid"
-                  borderColor="gray.200"
-                >
-                  <Text
-                    fontSize="sm"
-                    fontWeight={metric === 'nav' ? 'bold' : 'medium'}
-                    color={metric === 'nav' ? 'blue.600' : 'gray.500'}
-                    transition="all 0.2s"
+              {/* Sélection de période */}
+              <HStack spacing={2} flexWrap="wrap">
+                {(['1m', '3m', '6m', '1y', '3y'] as const).map(p => (
+                  <Button
+                    key={p}
+                    size={{ base: 'xs', md: 'sm' }}
+                    variant={period === p ? 'solid' : 'outline'}
+                    colorScheme="purple"
+                    onClick={() => setPeriod(p)}
+                    minW={{ base: '50px', md: 'auto' }}
                   >
-                    VL
-                  </Text>
-                  <Switch
-                    colorScheme="green"
-                    size="lg"
-                    isChecked={metric === 'perf_relative'}
-                    onChange={(e) => setMetric(e.target.checked ? 'perf_relative' : 'nav')}
-                  />
-                  <Text
-                    fontSize="sm"
-                    fontWeight={metric === 'perf_relative' ? 'bold' : 'medium'}
-                    color={metric === 'perf_relative' ? 'green.600' : 'gray.500'}
-                    transition="all 0.2s"
-                  >
-                    Perf %
-                  </Text>
-                </HStack>
+                    {p.toUpperCase()}
+                  </Button>
+                ))}
               </HStack>
-            </HStack>
+
+              {/* Switch VL / Perf % */}
+              <HStack
+                spacing={{ base: 2, md: 3 }}
+                px={{ base: 3, md: 4 }}
+                py={2}
+                bg="gray.50"
+                borderRadius="full"
+                border="1px solid"
+                borderColor="gray.200"
+                w={{ base: 'full', sm: 'auto' }}
+                justify="center"
+              >
+                <Text
+                  fontSize={{ base: 'xs', md: 'sm' }}
+                  fontWeight={metric === 'nav' ? 'bold' : 'medium'}
+                  color={metric === 'nav' ? 'blue.600' : 'gray.500'}
+                  transition="all 0.2s"
+                >
+                  VL
+                </Text>
+                <Switch
+                  colorScheme="green"
+                  size={{ base: 'md', md: 'lg' }}
+                  isChecked={metric === 'perf_relative'}
+                  onChange={(e) => setMetric(e.target.checked ? 'perf_relative' : 'nav')}
+                />
+                <Text
+                  fontSize={{ base: 'xs', md: 'sm' }}
+                  fontWeight={metric === 'perf_relative' ? 'bold' : 'medium'}
+                  color={metric === 'perf_relative' ? 'green.600' : 'gray.500'}
+                  transition="all 0.2s"
+                >
+                  Perf %
+                </Text>
+              </HStack>
+            </VStack>
 
             {history.length > 0 ? (
-              <ResponsiveContainer width="100%" height={400}>
-                <LineChart data={enrichedHistory}>
+              <Box height={{ base: '300px', md: '400px' }} width="100%">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={enrichedHistory}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis
                     dataKey="date"
@@ -322,13 +323,14 @@ export default function FundDetailPage({ params }: { params: Promise<{ slug: str
                   />
                 </LineChart>
               </ResponsiveContainer>
+              </Box>
             ) : (
               <Box textAlign="center" py={12}>
-                <Text color="gray.500" fontSize="lg">
-                  📊 Aucun historique disponible pour ce fonds
+                <Text color="gray.500" fontSize={{ base: 'md', md: 'lg' }}>
+                  Aucun historique disponible pour ce fonds
                 </Text>
                 <Text color="gray.400" fontSize="sm" mt={2}>
-                  Les données historiques seront disponibles après le backfill
+                  Les données historiques seront disponibles prochainement
                 </Text>
               </Box>
             )}
@@ -346,7 +348,7 @@ export default function FundDetailPage({ params }: { params: Promise<{ slug: str
 
         <TabPanels>
           <TabPanel>
-            <SimpleGrid columns={2} spacing={4}>
+            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
               <Box>
                 <Text fontWeight="bold" color="gray.600">Code ISIN</Text>
                 <Text>{fund.isin_code || 'N/A'}</Text>
@@ -375,58 +377,58 @@ export default function FundDetailPage({ params }: { params: Promise<{ slug: str
           </TabPanel>
 
           <TabPanel>
-            <SimpleGrid columns={3} spacing={4}>
+            <SimpleGrid columns={{ base: 2, md: 3 }} spacing={4}>
               <Box>
-                <Text fontWeight="bold" color="gray.600">1 Jour</Text>
-                <Text fontSize="xl" color={fund.perf_1d && fund.perf_1d > 0 ? 'green.500' : 'red.500'}>
+                <Text fontWeight="bold" color="gray.600" fontSize={{ base: 'sm', md: 'md' }}>1 Jour</Text>
+                <Text fontSize={{ base: 'lg', md: 'xl' }} color={fund.perf_1d && fund.perf_1d > 0 ? 'green.500' : 'red.500'}>
                   {formatPercent(fund.perf_1d)}
                 </Text>
               </Box>
               <Box>
-                <Text fontWeight="bold" color="gray.600">1 Semaine</Text>
-                <Text fontSize="xl" color={fund.perf_1w && fund.perf_1w > 0 ? 'green.500' : 'red.500'}>
+                <Text fontWeight="bold" color="gray.600" fontSize={{ base: 'sm', md: 'md' }}>1 Semaine</Text>
+                <Text fontSize={{ base: 'lg', md: 'xl' }} color={fund.perf_1w && fund.perf_1w > 0 ? 'green.500' : 'red.500'}>
                   {formatPercent(fund.perf_1w)}
                 </Text>
               </Box>
               <Box>
-                <Text fontWeight="bold" color="gray.600">1 Mois</Text>
-                <Text fontSize="xl" color={fund.perf_1m && fund.perf_1m > 0 ? 'green.500' : 'red.500'}>
+                <Text fontWeight="bold" color="gray.600" fontSize={{ base: 'sm', md: 'md' }}>1 Mois</Text>
+                <Text fontSize={{ base: 'lg', md: 'xl' }} color={fund.perf_1m && fund.perf_1m > 0 ? 'green.500' : 'red.500'}>
                   {formatPercent(fund.perf_1m)}
                 </Text>
               </Box>
               <Box>
-                <Text fontWeight="bold" color="gray.600">3 Mois</Text>
-                <Text fontSize="xl" color={fund.perf_3m && fund.perf_3m > 0 ? 'green.500' : 'red.500'}>
+                <Text fontWeight="bold" color="gray.600" fontSize={{ base: 'sm', md: 'md' }}>3 Mois</Text>
+                <Text fontSize={{ base: 'lg', md: 'xl' }} color={fund.perf_3m && fund.perf_3m > 0 ? 'green.500' : 'red.500'}>
                   {formatPercent(fund.perf_3m)}
                 </Text>
               </Box>
               <Box>
-                <Text fontWeight="bold" color="gray.600">6 Mois</Text>
-                <Text fontSize="xl" color={fund.perf_6m && fund.perf_6m > 0 ? 'green.500' : 'red.500'}>
+                <Text fontWeight="bold" color="gray.600" fontSize={{ base: 'sm', md: 'md' }}>6 Mois</Text>
+                <Text fontSize={{ base: 'lg', md: 'xl' }} color={fund.perf_6m && fund.perf_6m > 0 ? 'green.500' : 'red.500'}>
                   {formatPercent(fund.perf_6m)}
                 </Text>
               </Box>
               <Box>
-                <Text fontWeight="bold" color="gray.600">1 An</Text>
-                <Text fontSize="xl" color={fund.perf_1y && fund.perf_1y > 0 ? 'green.500' : 'red.500'}>
+                <Text fontWeight="bold" color="gray.600" fontSize={{ base: 'sm', md: 'md' }}>1 An</Text>
+                <Text fontSize={{ base: 'lg', md: 'xl' }} color={fund.perf_1y && fund.perf_1y > 0 ? 'green.500' : 'red.500'}>
                   {formatPercent(fund.perf_1y)}
                 </Text>
               </Box>
               <Box>
-                <Text fontWeight="bold" color="gray.600">2 Ans</Text>
-                <Text fontSize="xl" color={fund.perf_2y && fund.perf_2y > 0 ? 'green.500' : 'red.500'}>
+                <Text fontWeight="bold" color="gray.600" fontSize={{ base: 'sm', md: 'md' }}>2 Ans</Text>
+                <Text fontSize={{ base: 'lg', md: 'xl' }} color={fund.perf_2y && fund.perf_2y > 0 ? 'green.500' : 'red.500'}>
                   {formatPercent(fund.perf_2y)}
                 </Text>
               </Box>
               <Box>
-                <Text fontWeight="bold" color="gray.600">3 Ans</Text>
-                <Text fontSize="xl" color={fund.perf_3y && fund.perf_3y > 0 ? 'green.500' : 'red.500'}>
+                <Text fontWeight="bold" color="gray.600" fontSize={{ base: 'sm', md: 'md' }}>3 Ans</Text>
+                <Text fontSize={{ base: 'lg', md: 'xl' }} color={fund.perf_3y && fund.perf_3y > 0 ? 'green.500' : 'red.500'}>
                   {formatPercent(fund.perf_3y)}
                 </Text>
               </Box>
               <Box>
-                <Text fontWeight="bold" color="gray.600">5 Ans</Text>
-                <Text fontSize="xl" color={fund.perf_5y && fund.perf_5y > 0 ? 'green.500' : 'red.500'}>
+                <Text fontWeight="bold" color="gray.600" fontSize={{ base: 'sm', md: 'md' }}>5 Ans</Text>
+                <Text fontSize={{ base: 'lg', md: 'xl' }} color={fund.perf_5y && fund.perf_5y > 0 ? 'green.500' : 'red.500'}>
                   {formatPercent(fund.perf_5y)}
                 </Text>
               </Box>
@@ -434,18 +436,18 @@ export default function FundDetailPage({ params }: { params: Promise<{ slug: str
           </TabPanel>
 
           <TabPanel>
-            <SimpleGrid columns={3} spacing={4}>
+            <SimpleGrid columns={{ base: 1, sm: 3 }} spacing={4}>
               <Box>
-                <Text fontWeight="bold" color="gray.600">Souscription</Text>
-                <Text fontSize="xl">{fund.subscription_fee}%</Text>
+                <Text fontWeight="bold" color="gray.600" fontSize={{ base: 'sm', md: 'md' }}>Souscription</Text>
+                <Text fontSize={{ base: 'lg', md: 'xl' }}>{fund.subscription_fee}%</Text>
               </Box>
               <Box>
-                <Text fontWeight="bold" color="gray.600">Gestion</Text>
-                <Text fontSize="xl">{fund.management_fees}%</Text>
+                <Text fontWeight="bold" color="gray.600" fontSize={{ base: 'sm', md: 'md' }}>Gestion</Text>
+                <Text fontSize={{ base: 'lg', md: 'xl' }}>{fund.management_fees}%</Text>
               </Box>
               <Box>
-                <Text fontWeight="bold" color="gray.600">Rachat</Text>
-                <Text fontSize="xl">{fund.redemption_fee}%</Text>
+                <Text fontWeight="bold" color="gray.600" fontSize={{ base: 'sm', md: 'md' }}>Rachat</Text>
+                <Text fontSize={{ base: 'lg', md: 'xl' }}>{fund.redemption_fee}%</Text>
               </Box>
             </SimpleGrid>
           </TabPanel>

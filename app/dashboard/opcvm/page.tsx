@@ -218,36 +218,38 @@ export default function OPCVMPage() {
       <OPCVMStructuredData funds={displayedFunds} />
       <Container maxW="7xl" px={{ base: 4, md: 8, lg: 12 }}>
         <Box mb={8}>
-        <HStack justify="space-between" mb={2} flexWrap="wrap" gap={2}>
-          <Heading as="h1" size="xl">
+        <Stack direction={{ base: 'column', md: 'row' }} justify="space-between" mb={4} spacing={4}>
+          <Heading as="h1" size={{ base: 'lg', md: 'xl' }}>
             Fonds OPCVM
           </Heading>
-          <HStack gap={2}>
+          <Stack direction={{ base: 'column', sm: 'row' }} spacing={2} flexWrap="wrap">
             <Button
               size="sm"
               onClick={() => window.location.href = '/dashboard/opcvm/comparateur'}
               colorScheme="blue"
-              leftIcon={<Text>📊</Text>}
+              w={{ base: 'full', sm: 'auto' }}
+              fontWeight="600"
             >
               Comparateur
             </Button>
-            {lastUpdate && (
-              <Badge colorScheme="green" px={3} py={1} borderRadius="md" fontSize="sm">
-                🔄 Mis à jour le {lastUpdate}
-              </Badge>
-            )}
             <Button
               size="sm"
               onClick={fetchFunds}
               isLoading={loading}
               colorScheme="purple"
               variant="outline"
+              w={{ base: 'full', sm: 'auto' }}
             >
               Actualiser
             </Button>
-          </HStack>
-        </HStack>
-        <Text color="gray.600" fontSize="lg">
+          </Stack>
+        </Stack>
+        {lastUpdate && (
+          <Badge colorScheme="green" px={3} py={1} borderRadius="md" fontSize="xs" mb={3} display="inline-block">
+            Mis à jour le {lastUpdate}
+          </Badge>
+        )}
+        <Text color="gray.600" fontSize={{ base: 'sm', md: 'lg' }}>
           Affichage de {displayedFunds.length} sur {filteredFunds.length} fonds {filteredFunds.length !== funds.length && `(${funds.length} au total)`}
         </Text>
       </Box>
@@ -417,7 +419,7 @@ export default function OPCVMPage() {
                   {/* VL, Actif Net & Performance YTD */}
                   <HStack
                     spacing={0}
-                    divider={<Box h="60px" w="1px" bg="gray.300" />}
+                    divider={<Box h={{ base: '50px', md: '60px' }} w="1px" bg="gray.300" />}
                     bg="white"
                     border="1px solid"
                     borderColor="gray.200"
@@ -426,16 +428,18 @@ export default function OPCVMPage() {
                   >
                     <VStack
                       flex={1}
-                      py={4}
+                      py={{ base: 3, md: 4 }}
+                      px={{ base: 1, md: 2 }}
                       spacing={1}
                       align="center"
                       _hover={{ bg: 'gray.50' }}
                       transition="all 0.2s"
+                      minW={0}
                     >
-                      <Text fontSize="2xs" color="gray.500" fontWeight="600" textTransform="uppercase" letterSpacing="wide">
-                        Valeur Liquidative
+                      <Text fontSize={{ base: '3xs', md: '2xs' }} color="gray.500" fontWeight="600" textTransform="uppercase" letterSpacing="wide" textAlign="center" noOfLines={2}>
+                        VL
                       </Text>
-                      <Text fontSize="lg" fontWeight="bold" color="gray.900">
+                      <Text fontSize={{ base: 'md', md: 'lg' }} fontWeight="bold" color="gray.900" noOfLines={1}>
                         {fund.nav ? `${fund.nav.toLocaleString('fr-FR', { maximumFractionDigits: 0 })}` : 'N/A'}
                       </Text>
                       <Text fontSize="2xs" color="gray.400" fontWeight="500">MAD</Text>
@@ -443,16 +447,18 @@ export default function OPCVMPage() {
 
                     <VStack
                       flex={1}
-                      py={4}
+                      py={{ base: 3, md: 4 }}
+                      px={{ base: 1, md: 2 }}
                       spacing={1}
                       align="center"
                       _hover={{ bg: 'purple.50' }}
                       transition="all 0.2s"
+                      minW={0}
                     >
-                      <Text fontSize="2xs" color="gray.500" fontWeight="600" textTransform="uppercase" letterSpacing="wide">
+                      <Text fontSize={{ base: '3xs', md: '2xs' }} color="gray.500" fontWeight="600" textTransform="uppercase" letterSpacing="wide" textAlign="center" noOfLines={2}>
                         Actif Net
                       </Text>
-                      <Text fontSize="lg" fontWeight="bold" color="purple.600">
+                      <Text fontSize={{ base: 'md', md: 'lg' }} fontWeight="bold" color="purple.600" noOfLines={1}>
                         {fund.asset_value ? `${(fund.asset_value / 1000000).toFixed(1)}M` : 'N/A'}
                       </Text>
                       <Text fontSize="2xs" color="gray.400" fontWeight="500">MAD</Text>
@@ -460,29 +466,31 @@ export default function OPCVMPage() {
 
                     <VStack
                       flex={1}
-                      py={4}
+                      py={{ base: 3, md: 4 }}
+                      px={{ base: 1, md: 2 }}
                       spacing={1}
                       align="center"
                       bg={fund.ytd_performance && fund.ytd_performance > 0 ? 'green.50' : fund.ytd_performance && fund.ytd_performance < 0 ? 'red.50' : 'gray.50'}
                       _hover={{ bg: fund.ytd_performance && fund.ytd_performance > 0 ? 'green.100' : fund.ytd_performance && fund.ytd_performance < 0 ? 'red.100' : 'gray.100' }}
                       transition="all 0.2s"
+                      minW={0}
                     >
-                      <Text fontSize="2xs" color="gray.500" fontWeight="600" textTransform="uppercase" letterSpacing="wide">
-                        Performance YTD
+                      <Text fontSize={{ base: '3xs', md: '2xs' }} color="gray.500" fontWeight="600" textTransform="uppercase" letterSpacing="wide" textAlign="center" noOfLines={2}>
+                        YTD
                       </Text>
                       <HStack spacing={1}>
                         {fund.ytd_performance && (
-                          <Text fontSize="lg" color={fund.ytd_performance > 0 ? 'green.600' : 'red.600'}>
+                          <Text fontSize={{ base: 'md', md: 'lg' }} color={fund.ytd_performance > 0 ? 'green.600' : 'red.600'}>
                             {fund.ytd_performance > 0 ? '↗' : '↘'}
                           </Text>
                         )}
-                        <Text fontSize="lg" fontWeight="bold" color={fund.ytd_performance && fund.ytd_performance > 0 ? 'green.600' : fund.ytd_performance && fund.ytd_performance < 0 ? 'red.600' : 'gray.600'}>
+                        <Text fontSize={{ base: 'md', md: 'lg' }} fontWeight="bold" color={fund.ytd_performance && fund.ytd_performance > 0 ? 'green.600' : fund.ytd_performance && fund.ytd_performance < 0 ? 'red.600' : 'gray.600'} noOfLines={1}>
                           {fund.ytd_performance !== null && fund.ytd_performance !== undefined
                             ? `${fund.ytd_performance > 0 ? '+' : ''}${fund.ytd_performance.toFixed(2)}%`
                             : 'N/A'}
                         </Text>
                       </HStack>
-                      <Text fontSize="2xs" color="gray.400" fontWeight="500">Année en cours</Text>
+                      <Text fontSize="2xs" color="gray.400" fontWeight="500" display={{ base: 'none', md: 'block' }}>Année en cours</Text>
                     </VStack>
                   </HStack>
 
