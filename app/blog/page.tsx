@@ -18,22 +18,22 @@ export default function BlogPage() {
   const posts = getAllPosts()
 
   return (
-    <Container maxW="7xl" py={12} pt={32}>
-      <VStack align="stretch" spacing={12}>
+    <Container maxW="7xl" py={{ base: 8, md: 12 }} pt={{ base: 24, md: 32 }} px={{ base: 4, md: 8 }}>
+      <VStack align="stretch" spacing={{ base: 8, md: 12 }}>
         {/* Hero Section */}
         <Box
           textAlign="center"
           mb={4}
-          py={12}
-          px={6}
+          py={{ base: 8, md: 12 }}
+          px={{ base: 4, md: 6 }}
           bg="brand.800"
           borderRadius="xl"
           color="white"
         >
-          <Heading size="2xl" mb={4} fontWeight="700">
+          <Heading size={{ base: 'lg', md: '2xl' }} mb={4} fontWeight="700">
             Guides patrimoniaux & investissement
           </Heading>
-          <Text fontSize="lg" maxW="2xl" mx="auto" color="whiteAlpha.900">
+          <Text fontSize={{ base: 'md', md: 'lg' }} maxW="2xl" mx="auto" color="whiteAlpha.900">
             Conseils pratiques, analyses financières et stratégies patrimoniales pour optimiser vos investissements au Maroc
           </Text>
         </Box>
@@ -68,20 +68,20 @@ export default function BlogPage() {
                     />
                   </AspectRatio>
 
-                  <Box p={6}>
+                  <Box p={{ base: 4, md: 6 }}>
                     <VStack align="stretch" spacing={4}>
                       {/* Badge et date */}
                       <HStack spacing={2} flexWrap="wrap">
                         <Badge
                           colorScheme="blue"
-                          fontSize="xs"
+                          fontSize={{ base: '2xs', md: 'xs' }}
                           px={3}
                           py={1}
                           borderRadius="full"
                         >
                           {post.category}
                         </Badge>
-                        <Text fontSize="xs" color="gray.500" fontWeight="500">
+                        <Text fontSize={{ base: '2xs', md: 'xs' }} color="gray.500" fontWeight="500">
                           {new Date(post.date).toLocaleDateString('fr-FR', {
                             day: 'numeric',
                             month: 'short',
@@ -92,7 +92,7 @@ export default function BlogPage() {
 
                       {/* Titre */}
                       <Heading
-                        size="md"
+                        size={{ base: 'sm', md: 'md' }}
                         noOfLines={2}
                         lineHeight="1.3"
                         fontWeight="700"
