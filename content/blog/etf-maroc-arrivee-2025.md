@@ -27,10 +27,7 @@ Mais qu'est-ce qu'un ETF exactement ? Pourquoi est-ce une bonne nouvelle pour la
 
 Un **ETF (Exchange Traded Fund)**, appelé aussi **tracker** ou **fonds indiciel coté**, est un fonds d'investissement qui réplique la performance d'un indice boursier (comme le MASI, le CAC 40, ou le S&P 500) et qui se négocie en Bourse comme une action ordinaire.
 
-<div style="background: #f8fafc; padding: 24px; border-radius: 12px; border-left: 4px solid #64748b; margin: 24px 0;">
-  <strong style="color: #1e293b; font-size: 1.2em;">L'analogie simple</strong><br/>
-  <p style="margin: 12px 0 0 0; color: #475569;">Imaginez que vous voulez investir dans toutes les entreprises du MASI (76 valeurs). Au lieu d'acheter 76 actions différentes, vous achetez <strong>1 seule part d'ETF MASI</strong> qui détient automatiquement ces 76 actions dans les bonnes proportions. Simple, non ?</p>
-</div>
+**L'analogie simple :** Imaginez que vous voulez investir dans toutes les entreprises du MASI (76 valeurs). Au lieu d'acheter 76 actions différentes, vous achetez **1 seule part d'ETF MASI** qui détient automatiquement ces 76 actions dans les bonnes proportions. Simple, non ?
 
 ### Exemple concret pour le Maroc
 
@@ -94,38 +91,15 @@ L'AMMC (Autorité Marocaine du Marché des Capitaux) est actuellement en train d
 
 **Le principal avantage des ETF : des frais de gestion ultra-compétitifs.**
 
-<div style="background: #f8fafc; padding: 24px; border-radius: 12px; margin: 24px 0; border: 1px solid #e2e8f0;">
-  <div style="font-weight: bold; color: #1e293b; margin-bottom: 16px; font-size: 1.1em;">Comparaison des frais annuels moyens</div>
+**Comparaison des frais annuels moyens :**
 
-  <table style="width: 100%; border-collapse: collapse; margin-top: 12px;">
-    <thead>
-      <tr style="background: #e2e8f0;">
-        <th style="padding: 12px; text-align: left; border: 1px solid #cbd5e1;">Type de fonds</th>
-        <th style="padding: 12px; text-align: center; border: 1px solid #cbd5e1;">Frais de gestion</th>
-        <th style="padding: 12px; text-align: center; border: 1px solid #cbd5e1;">Impact sur 100 000 DH/an</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td style="padding: 12px; border: 1px solid #cbd5e1;">OPCVM actions actif</td>
-        <td style="padding: 12px; text-align: center; border: 1px solid #cbd5e1;">2% - 3%</td>
-        <td style="padding: 12px; text-align: center; border: 1px solid #cbd5e1;">2 000 - 3 000 DH</td>
-      </tr>
-      <tr style="background: #f8fafc;">
-        <td style="padding: 12px; border: 1px solid #cbd5e1;">OPCVM obligataire</td>
-        <td style="padding: 12px; text-align: center; border: 1px solid #cbd5e1;">1% - 1,5%</td>
-        <td style="padding: 12px; text-align: center; border: 1px solid #cbd5e1;">1 000 - 1 500 DH</td>
-      </tr>
-      <tr>
-        <td style="padding: 12px; border: 1px solid #cbd5e1;"><strong>ETF (estimation)</strong></td>
-        <td style="padding: 12px; text-align: center; border: 1px solid #cbd5e1;"><strong>0,2% - 0,5%</strong></td>
-        <td style="padding: 12px; text-align: center; border: 1px solid #cbd5e1;"><strong>200 - 500 DH</strong></td>
-      </tr>
-    </tbody>
-  </table>
+| Type de fonds | Frais de gestion | Impact sur 100 000 DH/an |
+|---------------|------------------|--------------------------|
+| OPCVM actions actif | 2% - 3% | 2 000 - 3 000 DH |
+| OPCVM obligataire | 1% - 1,5% | 1 000 - 1 500 DH |
+| **ETF (estimation)** | **0,2% - 0,5%** | **200 - 500 DH** |
 
-  <p style="margin: 12px 0 0 0; color: #64748b; font-size: 0.95em;">Sur 10 ans, avec 100 000 DH investis, la différence de frais entre un OPCVM à 2,5% et un ETF à 0,3% représente environ <strong>22 000 DH d'économies</strong>.</p>
-</div>
+**Sur 10 ans, avec 100 000 DH investis, la différence de frais entre un OPCVM à 2,5% et un ETF à 0,3% représente environ 22 000 DH d'économies.**
 
 ### 2. Une diversification instantanée
 
@@ -163,8 +137,8 @@ Un ETF ne cherche **pas** à battre l'indice. Il cherche à **répliquer** l'ind
 
 Les deux ont leur place dans un portefeuille équilibré. Voici un comparatif rapide.
 
-| Critère | **OPCVM actif** | **ETF (passif)** |
-|---------|-----------------|------------------|
+| Critère | OPCVM actif | ETF (passif) |
+|---------|-------------|--------------|
 | **Objectif** | Battre l'indice | Répliquer l'indice |
 | **Frais annuels** | 1,5% - 3% | 0,2% - 0,5% |
 | **Gestion** | Active (gérant sélectionne) | Passive (suit l'indice) |
@@ -173,9 +147,7 @@ Les deux ont leur place dans un portefeuille équilibré. Voici un comparatif ra
 | **Performance** | Peut surperformer (rare) ou sous-performer | Réplique l'indice (prévisible) |
 | **Adapté pour** | Recherche de surperformance, niches | Diversification, long terme, frais bas |
 
-<div style="background: #fff7ed; padding: 20px; border-radius: 12px; border-left: 4px solid #f59e0b; margin: 20px 0;">
-  <strong style="color: #92400e;">Notre point de vue :</strong> Les ETF et les OPCVM sont complémentaires. Un portefeuille optimal pourrait contenir 60-70% d'ETF (base diversifiée, frais bas) et 30-40% d'OPCVM actifs bien sélectionnés (sur des niches ou des marchés inefficients où la gestion active apporte de la valeur).
-</div>
+**Notre point de vue :** Les ETF et les OPCVM sont complémentaires. Un portefeuille optimal pourrait contenir 60-70% d'ETF (base diversifiée, frais bas) et 30-40% d'OPCVM actifs bien sélectionnés (sur des niches ou des marchés inefficients où la gestion active apporte de la valeur).
 
 ---
 
@@ -219,8 +191,8 @@ Les ETF seront-ils traités comme des actions (20% de plus-value) ou comme des O
 
 **Comment suivre l'actualité ?**
 
-- Site de l'AMMC : [www.ammc.ma](https://www.ammc.ma)
-- Site de la Bourse de Casablanca : [www.casablanca-bourse.com](https://www.casablanca-bourse.com)
+- Site de l'AMMC : www.ammc.ma
+- Site de la Bourse de Casablanca : www.casablanca-bourse.com
 - Messidor Patrimoine (nous publierons un guide complet dès le lancement)
 
 ---
@@ -253,21 +225,13 @@ L'introduction d'ETF et de produits dérivés rapproche la Bourse de Casablanca 
 
 Dès le lancement officiel des ETF au Maroc, **Messidor Patrimoine** publiera :
 
-✅ **Un guide complet** : Comment investir dans les ETF marocains (procédure, courtiers, fiscalité, exemples concrets)
+**Un guide complet :** Comment investir dans les ETF marocains (procédure, courtiers, fiscalité, exemples concrets)
 
-✅ **Des comparatifs détaillés** : Analyse de chaque ETF lancé (performance, frais, composition, liquidité)
+**Des comparatifs détaillés :** Analyse de chaque ETF lancé (performance, frais, composition, liquidité)
 
-✅ **Des allocations types** : Portefeuilles modèles combinant ETF, OPCVM, actions, OPCI selon votre profil
+**Des allocations types :** Portefeuilles modèles combinant ETF, OPCVM, actions, OPCI selon votre profil
 
-✅ **Un accompagnement personnalisé** : Nos conseillers vous aideront à intégrer les ETF dans votre stratégie patrimoniale globale
-
-<div style="background: #1e3a8a; color: white; padding: 32px; border-radius: 12px; text-align: center; margin: 48px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-  <h3 style="font-size: 1.4em; font-weight: 700; margin-bottom: 12px; color: white;">Soyez informé du lancement des ETF au Maroc</h3>
-  <p style="color: rgba(255,255,255,0.9); margin-bottom: 24px; font-size: 1.05em;">Contactez Messidor Patrimoine pour recevoir notre guide complet dès la sortie des premiers ETF et bénéficier d'un accompagnement sur-mesure.</p>
-  <a href="https://calendly.com/kamil-messidor" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: white; color: #1e3a8a; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 1.1em; transition: all 0.2s;">
-    Prendre rendez-vous →
-  </a>
-</div>
+**Un accompagnement personnalisé :** Nos conseillers vous aideront à intégrer les ETF dans votre stratégie patrimoniale globale
 
 ---
 
@@ -299,3 +263,7 @@ L'arrivée des ETF au Maroc marque un tournant pour l'investissement boursier da
 ---
 
 *Les informations contenues dans cet article sont basées sur les annonces officielles et la législation en vigueur à la date de publication. Les détails pratiques (ETF lancés, frais, procédures) seront confirmés lors du lancement officiel fin 2025.*
+
+**Besoin d'accompagnement pour préparer vos investissements ETF ?**
+
+[Prendre rendez-vous avec Messidor Patrimoine](https://calendly.com/kamil-messidor)
