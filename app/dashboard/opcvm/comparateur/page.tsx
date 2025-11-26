@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import {
   Box,
-  Container,
   Heading,
   Text,
   Card,
@@ -16,35 +15,25 @@ import {
   InputGroup,
   InputLeftElement,
   IconButton,
-  Badge,
   Table,
   Thead,
   Tbody,
   Tr,
   Th,
   Td,
-  Stat,
-  StatLabel,
-  StatNumber,
-  StatArrow,
   NumberInput,
   NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
   Slider,
   SliderTrack,
   SliderFilledTrack,
   SliderThumb,
   Switch,
-  Tabs,
-  TabList,
-  TabPanels,
-  Tab,
-  TabPanel,
   useToast,
+  Skeleton,
+  Spinner,
+  Divider,
 } from '@chakra-ui/react'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, ReferenceLine } from 'recharts'
 import { createClient } from '@/lib/supabase/client'
 import type { Fund } from '@/lib/types/fund.types'
 
@@ -52,73 +41,123 @@ interface PortfolioFund {
   fund: Fund
   allocationPercent: number
   allocationAmount: number
-  history: Array<{ date: string; nav: number; perf_relative: number }>
+}
+
+interface FundHistoryData {
+  date: string
+  nav: number
+  perf_relative: number
 }
 
 interface PortfolioHistory {
   date: string
-  [key: string]: number | string // fund_id: performance value
+  portfolio: number
+  [key: string]: number | string
+}
+
+// Couleurs sobres pour les graphiques
+const CHART_COLORS = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#84cc16']
+const CATEGORY_COLORS: Record<string, string> = {
+  'ACTIONS': '#ef4444',
+  'MONÉTAIRE': '#22c55e',
+  'OCT': '#3b82f6',
+  'OMLT': '#6366f1',
+  'DIVERSIFIÉ': '#8b5cf6',
+  'Diversifié': '#8b5cf6',
+  'CONTRACTUEL': '#f59e0b',
+}
+
+// Fonction d'interpolation linéaire
+const interpolateData = (
+  sortedDates: string[],
+  fundDataMap: Map<string, number>
+): Map<string, number> => {
+  const result = new Map<string, number>()
+  fundDataMap.forEach((value, key) => result.set(key, value))
+
+  for (let i = 0; i < sortedDates.length; i++) {
+    const currentDate = sortedDates[i]
+    if (result.has(currentDate)) continue
+
+    let prevValue: number | null = null
+    let nextValue: number | null = null
+    let prevDate: string | null = null
+    let nextDate: string | null = null
+
+    for (let j = i - 1; j >= 0; j--) {
+      if (result.has(sortedDates[j])) {
+        prevDate = sortedDates[j]
+        prevValue = result.get(prevDate)!
+        break
+      }
+    }
+
+    for (let j = i + 1; j < sortedDates.length; j++) {
+      if (result.has(sortedDates[j])) {
+        nextDate = sortedDates[j]
+        nextValue = result.get(nextDate)!
+        break
+      }
+    }
+
+    if (prevValue !== null && nextValue !== null && prevDate && nextDate) {
+      const ratio = (new Date(currentDate).getTime() - new Date(prevDate).getTime()) /
+                   (new Date(nextDate).getTime() - new Date(prevDate).getTime())
+      result.set(currentDate, prevValue + (nextValue - prevValue) * ratio)
+    } else if (prevValue !== null) {
+      result.set(currentDate, prevValue)
+    } else if (nextValue !== null) {
+      result.set(currentDate, nextValue)
+    }
+  }
+
+  return result
 }
 
 export default function ComparateurPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<Fund[]>([])
   const [portfolioFunds, setPortfolioFunds] = useState<PortfolioFund[]>([])
-  const [totalAmount, setTotalAmount] = useState(100000) // Montant total par défaut
+  const [totalAmount, setTotalAmount] = useState(100000)
   const [period, setPeriod] = useState<'1m' | '3m' | '6m' | '1y' | '3y'>('1y')
-  const [showAmount, setShowAmount] = useState(false) // Switch % / MAD
-  const [portfolioHistory, setPortfolioHistory] = useState<PortfolioHistory[]>([])
+  const [showAmount, setShowAmount] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [loadingFunds, setLoadingFunds] = useState(true)
   const [suggestedFunds, setSuggestedFunds] = useState<Fund[]>([])
-  const [topPerformers, setTopPerformers] = useState<Fund[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [rawHistoriesMap, setRawHistoriesMap] = useState<Map<string, FundHistoryData[]>>(new Map())
 
   const supabase = createClient()
   const toast = useToast()
+  const loadingRef = useRef(false)
 
-  // Charger les fonds suggérés au démarrage
   useEffect(() => {
     loadSuggestedFunds()
   }, [])
 
-  const loadSuggestedFunds = async () => {
-    // Top performers (meilleure perf 1Y)
-    const { data: topData } = await supabase
-      .from('funds')
-      .select('*')
-      .eq('type', 'OPCVM')
-      .eq('is_active', true)
-      .not('perf_1y', 'is', null)
-      .order('perf_1y', { ascending: false })
-      .limit(6)
+  const loadSuggestedFunds = useCallback(async () => {
+    setLoadingFunds(true)
+    try {
+      const { data: allData } = await supabase
+        .from('funds')
+        .select('*')
+        .eq('type', 'OPCVM')
+        .eq('is_active', true)
+        .limit(200)
 
-    setTopPerformers(topData || [])
+      const sorted = (allData || []).sort((a, b) => {
+        if (a.perf_1y === null && b.perf_1y === null) return (b.asset_value || 0) - (a.asset_value || 0)
+        if (a.perf_1y === null) return 1
+        if (b.perf_1y === null) return -1
+        return (b.perf_1y || 0) - (a.perf_1y || 0)
+      })
 
-    // Charger tous les fonds actifs
-    const { data: allData } = await supabase
-      .from('funds')
-      .select('*')
-      .eq('type', 'OPCVM')
-      .eq('is_active', true)
-      .limit(200)
+      setSuggestedFunds(sorted)
+    } finally {
+      setLoadingFunds(false)
+    }
+  }, [supabase])
 
-    // Trier côté client : perf 1Y décroissante, puis actif net décroissant (critère secondaire)
-    const sorted = (allData || []).sort((a, b) => {
-      // Fonds sans perf_1y à la fin
-      if (a.perf_1y === null && b.perf_1y === null) {
-        // Si pas de perf, trier par actif net
-        return (b.asset_value || 0) - (a.asset_value || 0)
-      }
-      if (a.perf_1y === null) return 1
-      if (b.perf_1y === null) return -1
-      // Sinon tri par perf décroissante
-      return (b.perf_1y || 0) - (a.perf_1y || 0)
-    })
-
-    setSuggestedFunds(sorted)
-  }
-
-  // Recherche de fonds
   useEffect(() => {
     if (searchQuery.length < 2) {
       setSearchResults([])
@@ -141,1191 +180,1162 @@ export default function ComparateurPage() {
     return () => clearTimeout(debounce)
   }, [searchQuery, supabase])
 
-  // Charger l'historique des fonds sélectionnés
+  const dateRange = useMemo(() => {
+    const endDate = new Date()
+    const startDate = new Date()
+
+    switch (period) {
+      case '1m': startDate.setMonth(startDate.getMonth() - 1); break
+      case '3m': startDate.setMonth(startDate.getMonth() - 3); break
+      case '6m': startDate.setMonth(startDate.getMonth() - 6); break
+      case '1y': startDate.setFullYear(startDate.getFullYear() - 1); break
+      case '3y': startDate.setFullYear(startDate.getFullYear() - 3); break
+    }
+
+    return { start: startDate.toISOString().split('T')[0], end: endDate.toISOString().split('T')[0] }
+  }, [period])
+
+  const fundIds = useMemo(() => portfolioFunds.map(f => f.fund.id).join(','), [portfolioFunds])
+
   useEffect(() => {
     if (portfolioFunds.length === 0) {
-      setPortfolioHistory([])
+      setRawHistoriesMap(new Map())
       return
     }
-    loadPortfolioHistory()
-  }, [portfolioFunds.map(f => f.fund.id).join(','), period])
 
-  // Recalculer la performance du portefeuille quand l'allocation change
-  useEffect(() => {
-    if (portfolioHistory.length > 0 && portfolioFunds.length > 0) {
-      // Recalculer seulement les poids, pas recharger les données
-      const updatedHistory = portfolioHistory.map(entry => {
-        let weightedPerf = 0
-        let totalWeight = 0
+    if (loadingRef.current) return
+    loadingRef.current = true
 
-        portfolioFunds.forEach(pf => {
-          const fundPerf = entry[pf.fund.id] as number
-          if (typeof fundPerf === 'number' && pf.allocationPercent > 0) {
-            weightedPerf += fundPerf * (pf.allocationPercent / 100)
-            totalWeight += pf.allocationPercent
-          }
-        })
+    const loadHistory = async () => {
+      setLoading(true)
+      try {
+        const newHistoriesMap = new Map<string, FundHistoryData[]>()
 
-        return {
-          ...entry,
-          portfolio: totalWeight > 0 ? weightedPerf : 0
-        }
-      })
+        await Promise.all(
+          portfolioFunds.map(async (pf) => {
+            const { data } = await supabase
+              .from('fund_performance_history')
+              .select('date, nav')
+              .eq('fund_id', pf.fund.id)
+              .gte('date', dateRange.start)
+              .lte('date', dateRange.end)
+              .order('date', { ascending: true })
 
-      setPortfolioHistory(updatedHistory)
-    }
-  }, [portfolioFunds.map(f => `${f.fund.id}:${f.allocationPercent}`).join(',')])
+            const historyData = data || []
+            const firstNav = historyData[0]?.nav
 
-  const loadPortfolioHistory = async () => {
-    if (portfolioFunds.length === 0) return
-
-    setLoading(true)
-    try {
-      const endDate = new Date()
-      const startDate = new Date()
-
-      switch (period) {
-        case '1m': startDate.setMonth(startDate.getMonth() - 1); break
-        case '3m': startDate.setMonth(startDate.getMonth() - 3); break
-        case '6m': startDate.setMonth(startDate.getMonth() - 6); break
-        case '1y': startDate.setFullYear(startDate.getFullYear() - 1); break
-        case '3y': startDate.setFullYear(startDate.getFullYear() - 3); break
-      }
-
-      // Charger l'historique pour chaque fonds
-      const historiesMap = new Map<string, Array<{ date: string; nav: number; perf_relative: number }>>()
-
-      await Promise.all(
-        portfolioFunds.map(async (pf) => {
-          const { data } = await supabase
-            .from('fund_performance_history')
-            .select('date, nav')
-            .eq('fund_id', pf.fund.id)
-            .gte('date', startDate.toISOString().split('T')[0])
-            .lte('date', endDate.toISOString().split('T')[0])
-            .order('date', { ascending: true })
-
-          const historyData = data || []
-          const history = historyData.map((item, index) => {
-            const perfRelative = index === 0 || !historyData[0]?.nav || !item.nav
-              ? 0
-              : ((item.nav - historyData[0].nav) / historyData[0].nav) * 100
-
-            return {
+            const history: FundHistoryData[] = historyData.map((item) => ({
               date: item.date,
               nav: item.nav,
-              perf_relative: perfRelative,
-            }
+              perf_relative: firstNav && item.nav ? ((item.nav - firstNav) / firstNav) * 100 : 0,
+            }))
+
+            newHistoriesMap.set(pf.fund.id, history)
           })
+        )
 
-          historiesMap.set(pf.fund.id, history)
-        })
-      )
-
-      // Calculer l'historique du portefeuille avec les nouvelles données
-      calculatePortfolioHistoryFromMap(historiesMap)
-    } catch (error) {
-      console.error('Error loading history:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Calculer la performance historique du portefeuille à partir d'une map
-  const calculatePortfolioHistoryFromMap = (historiesMap: Map<string, Array<{ date: string; nav: number; perf_relative: number }>>) => {
-    if (portfolioFunds.length === 0 || historiesMap.size === 0) {
-      setPortfolioHistory([])
-      return
+        setRawHistoriesMap(newHistoriesMap)
+      } catch (error) {
+        console.error('Error loading history:', error)
+      } finally {
+        setLoading(false)
+        loadingRef.current = false
+      }
     }
 
-    // Trouver toutes les dates communes
+    loadHistory()
+  }, [fundIds, dateRange.start, dateRange.end, supabase])
+
+  const portfolioHistory = useMemo<PortfolioHistory[]>(() => {
+    if (portfolioFunds.length === 0 || rawHistoriesMap.size === 0) return []
+
     const allDates = new Set<string>()
-    historiesMap.forEach(history => history.forEach(h => allDates.add(h.date)))
+    rawHistoriesMap.forEach(history => history.forEach(h => allDates.add(h.date)))
     const sortedDates = Array.from(allDates).sort()
 
-    // Calculer la performance pondérée pour chaque date
-    const history: PortfolioHistory[] = sortedDates.map(date => {
-      const entry: PortfolioHistory = { date }
+    if (sortedDates.length === 0) return []
 
-      portfolioFunds.forEach(pf => {
-        const fundHistory = historiesMap.get(pf.fund.id)
-        const dataPoint = fundHistory?.find(h => h.date === date)
-        if (dataPoint) {
-          entry[pf.fund.id] = dataPoint.perf_relative
-        }
-      })
+    const interpolatedMaps = new Map<string, Map<string, number>>()
 
-      // Calculer la performance du portefeuille (moyenne pondérée)
+    portfolioFunds.forEach(pf => {
+      const fundHistory = rawHistoriesMap.get(pf.fund.id) || []
+      const fundDataMap = new Map<string, number>()
+      fundHistory.forEach(h => fundDataMap.set(h.date, h.perf_relative))
+      interpolatedMaps.set(pf.fund.id, interpolateData(sortedDates, fundDataMap))
+    })
+
+    return sortedDates.map(date => {
+      const entry: PortfolioHistory = { date, portfolio: 0 }
       let weightedPerf = 0
       let totalWeight = 0
 
       portfolioFunds.forEach(pf => {
-        const fundHistory = historiesMap.get(pf.fund.id)
-        const dataPoint = fundHistory?.find(h => h.date === date)
-        if (dataPoint && pf.allocationPercent > 0) {
-          weightedPerf += dataPoint.perf_relative * (pf.allocationPercent / 100)
-          totalWeight += pf.allocationPercent
+        const perfValue = interpolatedMaps.get(pf.fund.id)?.get(date)
+        if (perfValue !== undefined) {
+          entry[pf.fund.id] = perfValue
+          if (pf.allocationPercent > 0) {
+            weightedPerf += perfValue * (pf.allocationPercent / 100)
+            totalWeight += pf.allocationPercent
+          }
         }
       })
 
-      entry['portfolio'] = totalWeight > 0 ? weightedPerf : 0
-
+      entry.portfolio = totalWeight > 0 ? weightedPerf : 0
       return entry
     })
+  }, [rawHistoriesMap, portfolioFunds])
 
-    setPortfolioHistory(history)
-  }
-
-  // Calculer la performance historique du portefeuille
-  const calculatePortfolioHistory = (funds: PortfolioFund[]) => {
-    if (funds.length === 0 || funds.every(f => f.history.length === 0)) {
-      setPortfolioHistory([])
-      return
-    }
-
-    // Trouver toutes les dates communes
-    const allDates = new Set<string>()
-    funds.forEach(f => f.history.forEach(h => allDates.add(h.date)))
-    const sortedDates = Array.from(allDates).sort()
-
-    // Calculer la performance pondérée pour chaque date
-    const history: PortfolioHistory[] = sortedDates.map(date => {
-      const entry: PortfolioHistory = { date }
-
-      funds.forEach(pf => {
-        const dataPoint = pf.history.find(h => h.date === date)
-        if (dataPoint) {
-          entry[pf.fund.id] = dataPoint.perf_relative
-        }
-      })
-
-      // Calculer la performance du portefeuille (moyenne pondérée)
-      let weightedPerf = 0
-      let totalWeight = 0
-
-      funds.forEach(pf => {
-        const dataPoint = pf.history.find(h => h.date === date)
-        if (dataPoint && pf.allocationPercent > 0) {
-          weightedPerf += dataPoint.perf_relative * (pf.allocationPercent / 100)
-          totalWeight += pf.allocationPercent
-        }
-      })
-
-      entry['portfolio'] = totalWeight > 0 ? weightedPerf : 0
-
-      return entry
-    })
-
-    setPortfolioHistory(history)
-  }
-
-  // Ajouter un fonds au portefeuille
-  const addFund = (fund: Fund) => {
+  const addFund = useCallback((fund: Fund) => {
     if (portfolioFunds.some(pf => pf.fund.id === fund.id)) {
-      toast({
-        title: 'Fonds déjà ajouté',
-        status: 'warning',
-        duration: 2000,
-      })
+      toast({ title: 'Fonds déjà ajouté', status: 'warning', duration: 2000 })
       return
     }
 
     const newAllocationPercent = portfolioFunds.length === 0 ? 100 : 0
-    const newAllocationAmount = (totalAmount * newAllocationPercent) / 100
-
-    setPortfolioFunds([
-      ...portfolioFunds,
-      {
-        fund,
-        allocationPercent: newAllocationPercent,
-        allocationAmount: newAllocationAmount,
-        history: [],
-      },
-    ])
+    setPortfolioFunds([...portfolioFunds, { fund, allocationPercent: newAllocationPercent, allocationAmount: (totalAmount * newAllocationPercent) / 100 }])
     setSearchQuery('')
     setSearchResults([])
+  }, [portfolioFunds, totalAmount, toast])
 
-    toast({
-      title: 'Fonds ajouté',
-      status: 'success',
-      duration: 2000,
-    })
-  }
+  const removeFund = useCallback((fundId: string) => {
+    setPortfolioFunds(prev => prev.filter(pf => pf.fund.id !== fundId))
+    setRawHistoriesMap(prev => { const m = new Map(prev); m.delete(fundId); return m })
+  }, [])
 
-  // Retirer un fonds
-  const removeFund = (fundId: string) => {
-    setPortfolioFunds(portfolioFunds.filter(pf => pf.fund.id !== fundId))
-  }
+  const updateAllocationPercent = useCallback((fundId: string, percent: number) => {
+    setPortfolioFunds(prev => prev.map(pf => pf.fund.id === fundId ? { ...pf, allocationPercent: Math.max(0, Math.min(100, percent)), allocationAmount: (totalAmount * percent) / 100 } : pf))
+  }, [totalAmount])
 
-  // Mettre à jour l'allocation en %
-  const updateAllocationPercent = (fundId: string, percent: number) => {
-    setPortfolioFunds(
-      portfolioFunds.map(pf =>
-        pf.fund.id === fundId
-          ? {
-              ...pf,
-              allocationPercent: percent,
-              allocationAmount: (totalAmount * percent) / 100,
-            }
-          : pf
-      )
-    )
-  }
-
-  // Mettre à jour l'allocation en MAD
-  const updateAllocationAmount = (fundId: string, amount: number) => {
+  const updateAllocationAmount = useCallback((fundId: string, amount: number) => {
     const percent = totalAmount > 0 ? (amount / totalAmount) * 100 : 0
-    setPortfolioFunds(
-      portfolioFunds.map(pf =>
-        pf.fund.id === fundId
-          ? {
-              ...pf,
-              allocationPercent: percent,
-              allocationAmount: amount,
-            }
-          : pf
-      )
-    )
-  }
+    setPortfolioFunds(prev => prev.map(pf => pf.fund.id === fundId ? { ...pf, allocationPercent: percent, allocationAmount: amount } : pf))
+  }, [totalAmount])
 
-  // Répartir équitablement
-  const distributeEqually = () => {
+  const distributeEqually = useCallback(() => {
     if (portfolioFunds.length === 0) return
     const equalPercent = 100 / portfolioFunds.length
-    setPortfolioFunds(
-      portfolioFunds.map(pf => ({
-        ...pf,
-        allocationPercent: equalPercent,
-        allocationAmount: (totalAmount * equalPercent) / 100,
-      }))
-    )
-  }
+    setPortfolioFunds(prev => prev.map(pf => ({ ...pf, allocationPercent: equalPercent, allocationAmount: (totalAmount * equalPercent) / 100 })))
+  }, [portfolioFunds.length, totalAmount])
 
-  const totalAllocation = portfolioFunds.reduce((sum, pf) => sum + pf.allocationPercent, 0)
-  const totalAllocatedAmount = portfolioFunds.reduce((sum, pf) => sum + pf.allocationAmount, 0)
+  const totalAllocation = useMemo(() => portfolioFunds.reduce((sum, pf) => sum + pf.allocationPercent, 0), [portfolioFunds])
+  const portfolioPerformance = useMemo(() => portfolioHistory.length > 0 ? portfolioHistory[portfolioHistory.length - 1]?.portfolio || 0 : 0, [portfolioHistory])
+  const portfolioValue = useMemo(() => totalAmount * (1 + portfolioPerformance / 100), [totalAmount, portfolioPerformance])
+  const portfolioGain = useMemo(() => portfolioValue - totalAmount, [portfolioValue, totalAmount])
 
-  // Performance du portefeuille
-  const portfolioPerformance = portfolioHistory.length > 0
-    ? (portfolioHistory[portfolioHistory.length - 1]?.portfolio as number) || 0
-    : 0
+  const formatCurrency = useCallback((value: number) => `${value.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} MAD`, [])
+  const formatPercent = useCallback((value: number | null | undefined) => value !== null && value !== undefined ? `${value >= 0 ? '+' : ''}${value.toFixed(2)}%` : '-', [])
 
-  const portfolioValue = totalAmount * (1 + portfolioPerformance / 100)
-  const portfolioGain = portfolioValue - totalAmount
+  const filteredFunds = useMemo(() => {
+    return suggestedFunds.filter(f => {
+      if (selectedCategory === 'all') return true
+      if (selectedCategory === 'DIVERSIFIÉ') return f.classification === 'DIVERSIFIÉ' || f.classification === 'Diversifié'
+      return f.classification === selectedCategory
+    })
+  }, [suggestedFunds, selectedCategory])
 
-  const formatCurrency = (value: number) => {
-    return `${value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MAD`
-  }
+  const categoryData = useMemo(() => {
+    const map = new Map<string, number>()
+    portfolioFunds.forEach(pf => {
+      const cat = pf.fund.classification || 'Autre'
+      map.set(cat, (map.get(cat) || 0) + pf.allocationPercent)
+    })
+    return Array.from(map.entries()).map(([name, value]) => ({ name, value })).filter(c => c.value > 0)
+  }, [portfolioFunds])
 
-  const formatPercent = (value: number) => {
-    return `${value > 0 ? '+' : ''}${value.toFixed(2)}%`
-  }
-
-  // Couleurs pour les courbes
-  const colors = ['#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#ec4899', '#14b8a6', '#f97316']
+  const categories = [
+    { key: 'all', label: 'Tous' },
+    { key: 'ACTIONS', label: 'Actions' },
+    { key: 'MONÉTAIRE', label: 'Monétaire' },
+    { key: 'OCT', label: 'Oblig. CT' },
+    { key: 'OMLT', label: 'Oblig. MLT' },
+    { key: 'DIVERSIFIÉ', label: 'Diversifié' },
+    { key: 'CONTRACTUEL', label: 'Contractuel' },
+  ]
 
   return (
-    <Box px={{ base: 4, md: 6, lg: 8 }} py={8} maxW="100%" mx="auto">
+    <Box px={{ base: 4, md: 6 }} py={6} maxW="1600px" mx="auto">
       <VStack align="stretch" spacing={6}>
-        {/* En-tête */}
+        {/* Header */}
         <Box>
-          <Heading size="xl" mb={2}>Comparateur & Constructeur de Portefeuille</Heading>
-          <Text color="gray.600">
-            Comparez les performances de plusieurs fonds et construisez votre portefeuille optimal
+          <Heading size="lg" fontWeight="600" color="gray.900">Comparateur de Portefeuille</Heading>
+          <Text fontSize="sm" color="gray.500" mt={1}>
+            Comparez et construisez votre allocation optimale
           </Text>
         </Box>
 
-        {/* Layout 3 colonnes */}
-        <SimpleGrid columns={{ base: 1, lg: 3 }} spacing={4} alignItems="start">
-          {/* COLONNE 1 : Sélection des fonds */}
-          <VStack align="stretch" spacing={4} position="sticky" top={4} maxH="calc(100vh - 100px)" overflowY="auto">
-            {/* Recherche et ajout de fonds */}
-            <Card shadow="sm" borderWidth="1px">
-          <CardBody p={6}>
-            <VStack align="stretch" spacing={5}>
-              <VStack align="stretch" spacing={2}>
+        <SimpleGrid columns={{ base: 1, lg: 3 }} spacing={5} alignItems="start">
+          {/* COLONNE 1 : Sélection */}
+          <Card variant="outline" shadow="sm">
+            <CardBody p={5}>
+              <VStack align="stretch" spacing={5}>
                 <HStack justify="space-between">
-                  <Heading size="md" fontWeight="600">Sélectionner des fonds</Heading>
+                  <Text fontWeight="600" fontSize="md" color="gray.800">Sélectionner des fonds</Text>
                   {portfolioFunds.length > 0 && (
-                    <Badge
-                      colorScheme="purple"
-                      fontSize="xs"
-                      px={2.5}
-                      py={1}
-                      borderRadius="full"
-                      fontWeight="600"
-                    >
-                      {portfolioFunds.length}
-                    </Badge>
+                    <Box px={2.5} py={1} bg="purple.500" borderRadius="full">
+                      <Text fontSize="xs" color="white" fontWeight="600">{portfolioFunds.length} sélectionné{portfolioFunds.length > 1 ? 's' : ''}</Text>
+                    </Box>
                   )}
                 </HStack>
-                <Text fontSize="sm" color="gray.500">
-                  Recherchez ou parcourez par catégorie
-                </Text>
-              </VStack>
 
-              <InputGroup size="md">
-                <InputLeftElement pointerEvents="none" color="gray.400">
-                  🔍
-                </InputLeftElement>
-                <Input
-                  placeholder="Rechercher un fonds..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  borderRadius="lg"
-                  bg="gray.50"
-                  border="none"
-                  _placeholder={{ color: 'gray.400' }}
-                  _focus={{ bg: 'white', shadow: 'sm', borderColor: 'purple.200', borderWidth: '1px' }}
-                />
-              </InputGroup>
+                <InputGroup size="md">
+                  <InputLeftElement pointerEvents="none" color="gray.400">
+                    <Text fontSize="sm">🔍</Text>
+                  </InputLeftElement>
+                  <Input
+                    placeholder="Rechercher un fonds..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    borderRadius="lg"
+                    fontSize="sm"
+                    bg="gray.50"
+                    border="none"
+                    _focus={{ bg: 'white', boxShadow: '0 0 0 2px #805AD5' }}
+                    _placeholder={{ color: 'gray.400' }}
+                  />
+                </InputGroup>
 
-              {/* Résultats de recherche */}
-              {searchResults.length > 0 && (
-                <VStack align="stretch" spacing={3}>
-                  <Text fontSize="xs" fontWeight="600" color="gray.500" textTransform="uppercase" letterSpacing="wide">
-                    Résultats ({searchResults.length})
-                  </Text>
-                  <VStack align="stretch" spacing={2} maxH="400px" overflowY="auto" pr={1}>
-                    {searchResults.map(fund => (
-                      <Box
-                        key={fund.id}
-                        p={3}
-                        bg="white"
-                        borderRadius="lg"
-                        cursor="pointer"
-                        _hover={{ bg: 'purple.50', shadow: 'sm', transform: 'translateY(-1px)' }}
-                        transition="all 0.2s"
-                        border="1px solid"
-                        borderColor="gray.200"
-                        onClick={() => addFund(fund)}
-                      >
-                        <VStack align="stretch" spacing={2}>
+                {searchResults.length > 0 && (
+                  <VStack align="stretch" spacing={2} maxH="350px" overflowY="auto">
+                    {searchResults.map(fund => {
+                      const isSelected = portfolioFunds.some(pf => pf.fund.id === fund.id)
+                      return (
+                        <Box
+                          key={fund.id}
+                          p={3}
+                          borderRadius="lg"
+                          cursor="pointer"
+                          bg={isSelected ? 'purple.50' : 'white'}
+                          border="2px solid"
+                          borderColor={isSelected ? 'purple.500' : 'gray.200'}
+                          _hover={{ borderColor: isSelected ? 'purple.600' : 'purple.300', bg: isSelected ? 'purple.100' : 'gray.50' }}
+                          transition="all 0.15s"
+                          onClick={() => isSelected ? removeFund(fund.id) : addFund(fund)}
+                        >
                           <HStack justify="space-between" align="start">
-                            <Text fontWeight="600" fontSize="sm" noOfLines={1} flex={1}>
-                              {fund.name}
-                            </Text>
-                            <IconButton
-                              aria-label="Ajouter"
-                              icon={<Text fontSize="lg">+</Text>}
-                              size="xs"
-                              colorScheme="purple"
-                              variant="ghost"
-                              borderRadius="full"
-                            />
+                            <Box flex={1} minW={0}>
+                              <Text fontSize="sm" fontWeight="600" color="gray.800" noOfLines={1} mb={1}>{fund.name}</Text>
+                              <HStack spacing={3}>
+                                <Text fontSize="xs" color="gray.500" fontWeight="500">{fund.classification}</Text>
+                                <Text fontSize="xs" fontWeight="600" color={fund.perf_1y && fund.perf_1y > 0 ? 'green.600' : 'red.500'}>
+                                  1Y: {formatPercent(fund.perf_1y)}
+                                </Text>
+                              </HStack>
+                            </Box>
+                            {isSelected ? (
+                              <Box p={1.5} borderRadius="md" bg="purple.500" color="white">
+                                <Text fontSize="xs" fontWeight="bold">✓</Text>
+                              </Box>
+                            ) : (
+                              <Box p={1.5} borderRadius="md" bg="gray.100" color="gray.500">
+                                <Text fontSize="sm" fontWeight="bold">+</Text>
+                              </Box>
+                            )}
                           </HStack>
-                          <HStack spacing={2} flexWrap="wrap">
-                            <Badge colorScheme="purple" fontSize="2xs" borderRadius="md">{fund.classification}</Badge>
-                            <Text fontSize="2xs" color="gray.500">{fund.code}</Text>
-                            <Badge
-                              colorScheme={fund.perf_1y && fund.perf_1y > 0 ? 'green' : 'red'}
-                              fontSize="2xs"
-                              borderRadius="md"
-                            >
-                              1Y: {formatPercent(fund.perf_1y || 0)}
-                            </Badge>
-                          </HStack>
-                          <HStack spacing={3} fontSize="2xs" color="gray.600">
-                            <HStack spacing={1}>
-                              <Text fontWeight="600">AUM:</Text>
-                              <Text color="purple.600" fontWeight="600">
-                                {fund.asset_value ? `${(fund.asset_value / 1000000).toFixed(0)}M` : 'N/A'}
-                              </Text>
-                            </HStack>
-                            <HStack spacing={1}>
-                              <Text fontWeight="600">YTD:</Text>
-                              <Text color={fund.ytd_performance && fund.ytd_performance > 0 ? 'green.700' : 'red.600'} fontWeight="600">
-                                {formatPercent(fund.ytd_performance || 0)}
-                              </Text>
-                            </HStack>
-                            <HStack spacing={1}>
-                              <Text fontWeight="600">3Y:</Text>
-                              <Text color={fund.perf_3y && fund.perf_3y > 0 ? 'green.700' : 'red.600'} fontWeight="600">
-                                {fund.perf_3y ? formatPercent(fund.perf_3y) : 'N/A'}
-                              </Text>
-                            </HStack>
-                          </HStack>
-                        </VStack>
-                      </Box>
-                    ))}
+                        </Box>
+                      )
+                    })}
                   </VStack>
-                </VStack>
-              )}
+                )}
 
-              {/* Suggestions si pas de recherche */}
-              {searchQuery.length === 0 && (
-                <VStack align="stretch" spacing={4}>
-                  {/* Top Performers */}
-                  {topPerformers.length > 0 && (
-                    <VStack align="stretch" spacing={3}>
-                      <HStack>
-                        <Box fontSize="sm">🔥</Box>
-                        <Text fontSize="xs" fontWeight="600" color="gray.500" textTransform="uppercase" letterSpacing="wide">
-                          Top Performers
-                        </Text>
+                {searchQuery.length === 0 && (
+                  <>
+                    {/* Filtres par catégorie */}
+                    <Box>
+                      <HStack spacing={2} flexWrap="wrap" pb={1}>
+                        {categories.map(cat => {
+                          const isActive = selectedCategory === cat.key
+                          return (
+                            <Button
+                              key={cat.key}
+                              size="sm"
+                              variant="unstyled"
+                              onClick={() => setSelectedCategory(cat.key)}
+                              fontWeight="500"
+                              borderRadius="full"
+                              px={3}
+                              py={1}
+                              h="auto"
+                              bg={isActive ? 'gray.800' : 'gray.100'}
+                              color={isActive ? 'white' : 'gray.600'}
+                              _hover={{ bg: isActive ? 'gray.700' : 'gray.200' }}
+                              transition="all 0.15s"
+                            >
+                              {cat.label}
+                            </Button>
+                          )
+                        })}
                       </HStack>
-                      <SimpleGrid columns={{ base: 1 }} spacing={2}>
-                        {topPerformers.map(fund => (
-                          <Box
-                            key={fund.id}
-                            p={3}
-                            bg="gradient-to-r from-green-50 to-emerald-50"
-                            borderRadius="lg"
-                            cursor="pointer"
-                            _hover={{ shadow: 'sm', transform: 'translateY(-1px)', bg: 'green.100' }}
-                            transition="all 0.2s"
-                            border="1px solid"
-                            borderColor="green.200"
-                            onClick={() => addFund(fund)}
-                          >
+                    </Box>
+
+                    {loadingFunds ? (
+                      <VStack spacing={3}>
+                        {[1, 2, 3, 4, 5].map(i => (
+                          <Skeleton key={i} h="70px" borderRadius="lg" />
+                        ))}
+                      </VStack>
+                    ) : (
+                      <VStack align="stretch" spacing={0}>
+                        {/* Section Top Performers (seulement si catégorie "Tous") */}
+                        {selectedCategory === 'all' && (
+                          <Box mb={4}>
+                            <HStack mb={2}>
+                              <Text fontSize="xs" fontWeight="600" color="orange.500">🏆 TOP PERFORMERS</Text>
+                            </HStack>
                             <VStack align="stretch" spacing={2}>
-                              <HStack justify="space-between" align="start">
-                                <VStack align="start" spacing={0} flex={1} minW={0}>
-                                  <Text fontWeight="600" fontSize="sm" noOfLines={1}>{fund.name}</Text>
-                                  <HStack spacing={2} mt={1}>
-                                    <Badge colorScheme="green" fontSize="2xs" borderRadius="md" fontWeight="600">
-                                      1Y: {formatPercent(fund.perf_1y || 0)}
-                                    </Badge>
-                                    <Text fontSize="2xs" color="gray.600">{fund.classification}</Text>
-                                  </HStack>
-                                </VStack>
-                                <IconButton
-                                  aria-label="Ajouter"
-                                  icon={<Text fontSize="lg">+</Text>}
-                                  size="xs"
-                                  colorScheme="green"
-                                  variant="ghost"
-                                  borderRadius="full"
-                                />
-                              </HStack>
-                              <HStack spacing={3} fontSize="2xs" color="gray.600">
-                                <HStack spacing={1}>
-                                  <Text fontWeight="600">AUM:</Text>
-                                  <Text color="purple.600" fontWeight="600">
-                                    {fund.asset_value ? `${(fund.asset_value / 1000000).toFixed(0)}M` : 'N/A'}
-                                  </Text>
-                                </HStack>
-                                <HStack spacing={1}>
-                                  <Text fontWeight="600">YTD:</Text>
-                                  <Text color={fund.ytd_performance && fund.ytd_performance > 0 ? 'green.700' : 'red.600'} fontWeight="600">
-                                    {formatPercent(fund.ytd_performance || 0)}
-                                  </Text>
-                                </HStack>
-                                <HStack spacing={1}>
-                                  <Text fontWeight="600">3Y:</Text>
-                                  <Text color={fund.perf_3y && fund.perf_3y > 0 ? 'green.700' : 'red.600'} fontWeight="600">
-                                    {fund.perf_3y ? formatPercent(fund.perf_3y) : 'N/A'}
-                                  </Text>
-                                </HStack>
-                              </HStack>
+                              {filteredFunds.slice(0, 5).map((fund, index) => {
+                                const isSelected = portfolioFunds.some(pf => pf.fund.id === fund.id)
+                                const selectedIndex = portfolioFunds.findIndex(pf => pf.fund.id === fund.id)
+                                return (
+                                  <Box
+                                    key={fund.id}
+                                    p={3}
+                                    borderRadius="lg"
+                                    cursor="pointer"
+                                    bg={isSelected ? 'purple.50' : 'orange.50'}
+                                    border="2px solid"
+                                    borderColor={isSelected ? 'purple.500' : 'orange.200'}
+                                    _hover={{
+                                      borderColor: isSelected ? 'purple.600' : 'orange.400',
+                                      transform: 'translateX(2px)'
+                                    }}
+                                    transition="all 0.15s"
+                                    onClick={() => isSelected ? removeFund(fund.id) : addFund(fund)}
+                                    position="relative"
+                                  >
+                                    {/* Badge de rang */}
+                                    <Box
+                                      position="absolute"
+                                      top={-2}
+                                      left={3}
+                                      bg={index === 0 ? 'yellow.400' : index === 1 ? 'gray.400' : 'orange.400'}
+                                      color={index === 0 ? 'yellow.900' : 'white'}
+                                      px={2}
+                                      py={0.5}
+                                      borderRadius="full"
+                                      fontSize="2xs"
+                                      fontWeight="bold"
+                                    >
+                                      #{index + 1}
+                                    </Box>
+                                    <HStack justify="space-between" align="start">
+                                      <Box flex={1} minW={0} pt={1}>
+                                        <Text fontSize="sm" fontWeight="600" color="gray.800" noOfLines={1} mb={1}>{fund.name}</Text>
+                                        <HStack spacing={3} flexWrap="wrap">
+                                          <Text fontSize="xs" color="gray.500" fontWeight="500">{fund.classification}</Text>
+                                          <HStack spacing={1}>
+                                            <Text fontSize="xs" fontWeight="700" color="green.600">
+                                              1Y: {formatPercent(fund.perf_1y)}
+                                            </Text>
+                                          </HStack>
+                                          <HStack spacing={1}>
+                                            <Text fontSize="xs" fontWeight="500" color={fund.ytd_performance && fund.ytd_performance > 0 ? 'green.600' : 'red.500'}>
+                                              YTD: {formatPercent(fund.ytd_performance)}
+                                            </Text>
+                                          </HStack>
+                                        </HStack>
+                                      </Box>
+                                      {isSelected ? (
+                                        <VStack spacing={0}>
+                                          <Box p={1.5} borderRadius="md" bg="purple.500" color="white">
+                                            <Text fontSize="xs" fontWeight="bold">✓</Text>
+                                          </Box>
+                                          <Box
+                                            w={3}
+                                            h={3}
+                                            borderRadius="full"
+                                            bg={CHART_COLORS[selectedIndex % CHART_COLORS.length]}
+                                            mt={1}
+                                          />
+                                        </VStack>
+                                      ) : (
+                                        <Box p={1.5} borderRadius="md" bg="orange.200" color="orange.700">
+                                          <Text fontSize="sm" fontWeight="bold">+</Text>
+                                        </Box>
+                                      )}
+                                    </HStack>
+                                  </Box>
+                                )
+                              })}
                             </VStack>
                           </Box>
-                        ))}
-                      </SimpleGrid>
-                    </VStack>
-                  )}
+                        )}
 
-                  {/* Onglets par catégorie */}
-                  <VStack align="stretch" spacing={3}>
-                    <HStack>
-                      <Box fontSize="sm">💼</Box>
-                      <Text fontSize="xs" fontWeight="600" color="gray.500" textTransform="uppercase" letterSpacing="wide">
-                        Par catégorie
-                      </Text>
-                    </HStack>
-
-                    <HStack spacing={2} flexWrap="wrap">
-                      {[
-                        { key: 'all', label: 'Populaires' },
-                        { key: 'ACTIONS', label: 'Actions' },
-                        { key: 'MONÉTAIRE', label: 'Monétaire' },
-                        { key: 'OCT', label: 'Obligations CT' },
-                        { key: 'OMLT', label: 'Obligations MLT' },
-                        { key: 'DIVERSIFIÉ', label: 'Diversifié' },
-                        { key: 'CONTRACTUEL', label: 'Contractuel' },
-                      ].map(cat => {
-                        const count = suggestedFunds.filter(f => {
-                          if (cat.key === 'all') return true
-                          if (cat.key === 'DIVERSIFIÉ') {
-                            return f.classification === 'DIVERSIFIÉ' || f.classification === 'Diversifié'
-                          }
-                          return f.classification === cat.key
-                        }).length
-
-                        return (
-                          <Button
-                            key={cat.key}
-                            size="xs"
-                            variant={selectedCategory === cat.key ? 'solid' : 'outline'}
-                            colorScheme="purple"
-                            onClick={() => setSelectedCategory(cat.key)}
-                            borderRadius="full"
-                            fontWeight={selectedCategory === cat.key ? '600' : '500'}
-                            rightIcon={
-                              <Badge
-                                ml={1}
-                                colorScheme={selectedCategory === cat.key ? 'whiteAlpha' : 'purple'}
-                                fontSize="2xs"
-                                borderRadius="full"
-                              >
-                                {count}
-                              </Badge>
-                            }
-                          >
-                            {cat.label}
-                          </Button>
-                        )
-                      })}
-                    </HStack>
-
-                    {(() => {
-                      const filteredFunds = suggestedFunds.filter(f => {
-                        if (selectedCategory === 'all') return true
-                        if (selectedCategory === 'DIVERSIFIÉ') {
-                          return f.classification === 'DIVERSIFIÉ' || f.classification === 'Diversifié'
-                        }
-                        return f.classification === selectedCategory
-                      })
-
-                      return (
-                        <VStack align="stretch" spacing={2}>
-                          <Text fontSize="2xs" color="gray.500" fontWeight="500">
-                            {filteredFunds.length} fonds disponible{filteredFunds.length > 1 ? 's' : ''}
-                          </Text>
-                          <Box
-                            maxH="400px"
-                            overflowY="auto"
-                            pr={1}
-                            css={{
-                              '&::-webkit-scrollbar': {
-                                width: '6px',
-                              },
-                              '&::-webkit-scrollbar-track': {
-                                background: '#f7fafc',
-                                borderRadius: '10px',
-                              },
-                              '&::-webkit-scrollbar-thumb': {
-                                background: '#cbd5e0',
-                                borderRadius: '10px',
-                              },
-                              '&::-webkit-scrollbar-thumb:hover': {
-                                background: '#a0aec0',
-                              },
-                            }}
-                          >
-                            <VStack align="stretch" spacing={2}>
-                              {filteredFunds.map(fund => (
+                        {/* Liste principale */}
+                        <Box>
+                          <HStack mb={2}>
+                            <Text fontSize="xs" fontWeight="600" color="gray.500">
+                              {selectedCategory === 'all' ? 'TOUS LES FONDS' : categories.find(c => c.key === selectedCategory)?.label.toUpperCase()}
+                            </Text>
+                            <Text fontSize="xs" color="gray.400">
+                              ({selectedCategory === 'all' ? filteredFunds.length - 5 : filteredFunds.length} fonds)
+                            </Text>
+                          </HStack>
+                          <VStack align="stretch" spacing={2} maxH="350px" overflowY="auto" pr={1}>
+                            {(selectedCategory === 'all' ? filteredFunds.slice(5) : filteredFunds).map((fund) => {
+                              const isSelected = portfolioFunds.some(pf => pf.fund.id === fund.id)
+                              const selectedIndex = portfolioFunds.findIndex(pf => pf.fund.id === fund.id)
+                              return (
                                 <Box
                                   key={fund.id}
                                   p={3}
-                                  bg="white"
                                   borderRadius="lg"
                                   cursor="pointer"
-                                  _hover={{ bg: 'purple.50', shadow: 'sm', transform: 'translateY(-1px)' }}
-                                  transition="all 0.2s"
-                                  border="1px solid"
-                                  borderColor="gray.200"
-                                  onClick={() => addFund(fund)}
+                                  bg={isSelected ? 'purple.50' : 'white'}
+                                  border="2px solid"
+                                  borderColor={isSelected ? 'purple.500' : 'gray.200'}
+                                  _hover={{
+                                    borderColor: isSelected ? 'purple.600' : 'gray.400',
+                                    bg: isSelected ? 'purple.100' : 'gray.50'
+                                  }}
+                                  transition="all 0.15s"
+                                  onClick={() => isSelected ? removeFund(fund.id) : addFund(fund)}
                                 >
-                                  <VStack align="stretch" spacing={2}>
-                                    <HStack justify="space-between">
-                                      <Text fontWeight="600" fontSize="sm" noOfLines={1} flex={1}>
-                                        {fund.name}
-                                      </Text>
-                                      <IconButton
-                                        aria-label="Ajouter"
-                                        icon={<Text fontSize="lg">+</Text>}
-                                        size="xs"
-                                        colorScheme="purple"
-                                        variant="ghost"
-                                        borderRadius="full"
-                                      />
-                                    </HStack>
-                                    <HStack spacing={2} flexWrap="wrap">
-                                      <Badge colorScheme="purple" fontSize="2xs" borderRadius="md">{fund.classification}</Badge>
-                                      <Text fontSize="2xs" color="gray.500">{fund.code}</Text>
-                                      <Badge
-                                        colorScheme={fund.perf_1y && fund.perf_1y > 0 ? 'green' : 'red'}
-                                        fontSize="2xs"
-                                        borderRadius="md"
-                                      >
-                                        1Y: {formatPercent(fund.perf_1y || 0)}
-                                      </Badge>
-                                    </HStack>
-                                    <HStack spacing={3} fontSize="2xs" color="gray.600">
-                                      <HStack spacing={1}>
-                                        <Text fontWeight="600">AUM:</Text>
-                                        <Text color="purple.600" fontWeight="600">
-                                          {fund.asset_value ? `${(fund.asset_value / 1000000).toFixed(0)}M` : 'N/A'}
-                                        </Text>
+                                  <HStack justify="space-between" align="start">
+                                    <Box flex={1} minW={0}>
+                                      <Text fontSize="sm" fontWeight="600" color="gray.800" noOfLines={1} mb={1}>{fund.name}</Text>
+                                      <HStack spacing={3} flexWrap="wrap">
+                                        <Text fontSize="xs" color="gray.500" fontWeight="500">{fund.classification}</Text>
+                                        <HStack spacing={1}>
+                                          <Text fontSize="xs" color="gray.400">1Y:</Text>
+                                          <Text fontSize="xs" fontWeight="700" color={fund.perf_1y && fund.perf_1y > 0 ? 'green.600' : 'red.500'}>
+                                            {formatPercent(fund.perf_1y)}
+                                          </Text>
+                                        </HStack>
+                                        <HStack spacing={1}>
+                                          <Text fontSize="xs" color="gray.400">YTD:</Text>
+                                          <Text fontSize="xs" fontWeight="500" color={fund.ytd_performance && fund.ytd_performance > 0 ? 'green.600' : 'red.500'}>
+                                            {formatPercent(fund.ytd_performance)}
+                                          </Text>
+                                        </HStack>
                                       </HStack>
-                                      <HStack spacing={1}>
-                                        <Text fontWeight="600">YTD:</Text>
-                                        <Text color={fund.ytd_performance && fund.ytd_performance > 0 ? 'green.700' : 'red.600'} fontWeight="600">
-                                          {formatPercent(fund.ytd_performance || 0)}
-                                        </Text>
-                                      </HStack>
-                                      <HStack spacing={1}>
-                                        <Text fontWeight="600">3Y:</Text>
-                                        <Text color={fund.perf_3y && fund.perf_3y > 0 ? 'green.700' : 'red.600'} fontWeight="600">
-                                          {fund.perf_3y ? formatPercent(fund.perf_3y) : 'N/A'}
-                                        </Text>
-                                      </HStack>
-                                    </HStack>
-                                  </VStack>
+                                    </Box>
+                                    {isSelected ? (
+                                      <VStack spacing={0}>
+                                        <Box p={1.5} borderRadius="md" bg="purple.500" color="white">
+                                          <Text fontSize="xs" fontWeight="bold">✓</Text>
+                                        </Box>
+                                        <Box
+                                          w={3}
+                                          h={3}
+                                          borderRadius="full"
+                                          bg={CHART_COLORS[selectedIndex % CHART_COLORS.length]}
+                                          mt={1}
+                                        />
+                                      </VStack>
+                                    ) : (
+                                      <Box p={1.5} borderRadius="md" bg="gray.100" color="gray.500" _hover={{ bg: 'purple.100', color: 'purple.600' }}>
+                                        <Text fontSize="sm" fontWeight="bold">+</Text>
+                                      </Box>
+                                    )}
+                                  </HStack>
                                 </Box>
-                              ))}
-                            </VStack>
-                          </Box>
-                        </VStack>
-                      )
-                    })()}
-                  </VStack>
+                              )
+                            })}
+                          </VStack>
+                        </Box>
+                      </VStack>
+                    )}
+                  </>
+                )}
+              </VStack>
+            </CardBody>
+          </Card>
 
-                  <Text fontSize="xs" color="gray.500" textAlign="center">
-                    💡 Astuce : Utilisez la recherche ci-dessus pour trouver un fonds spécifique
-                  </Text>
-                </VStack>
-              )}
-            </VStack>
-          </CardBody>
-        </Card>
-          </VStack>
-
-          {/* COLONNE 2 : Stats et Analyses */}
+          {/* COLONNE 2 : Stats + Répartition */}
           <VStack align="stretch" spacing={4}>
-        {portfolioFunds.length > 0 ? (
-          <>
-            {/* Stats du portefeuille */}
-            <VStack align="stretch" spacing={4}>
-              <Card>
-                <CardBody>
-                  <Stat>
-                    <StatLabel>Montant investi</StatLabel>
-                    <StatNumber fontSize="xl">
-                      <NumberInput
-                        value={totalAmount}
-                        onChange={(_, val) => setTotalAmount(val)}
-                        min={0}
-                        step={1000}
-                      >
-                        <NumberInputField />
-                        <NumberInputStepper>
-                          <NumberIncrementStepper />
-                          <NumberDecrementStepper />
-                        </NumberInputStepper>
-                      </NumberInput>
-                    </StatNumber>
-                  </Stat>
-                </CardBody>
-              </Card>
+            {portfolioFunds.length > 0 ? (
+              <>
+                {/* Stats principales */}
+                <Card variant="outline" shadow="sm">
+                  <CardBody p={5}>
+                    <VStack align="stretch" spacing={5}>
+                      <Box>
+                        <Text fontSize="xs" color="gray.500" fontWeight="500" mb={2}>MONTANT INVESTI</Text>
+                        <NumberInput
+                          value={totalAmount}
+                          onChange={(_, val) => setTotalAmount(val || 0)}
+                          min={0}
+                          step={10000}
+                          size="lg"
+                        >
+                          <NumberInputField
+                            fontWeight="700"
+                            fontSize="xl"
+                            border="none"
+                            bg="gray.50"
+                            borderRadius="lg"
+                            _focus={{ bg: 'white', boxShadow: '0 0 0 2px #805AD5' }}
+                          />
+                        </NumberInput>
+                      </Box>
 
-              <Card>
-                <CardBody>
-                  <Stat>
-                    <StatLabel>Valeur actuelle</StatLabel>
-                    <StatNumber fontSize="xl">{formatCurrency(portfolioValue)}</StatNumber>
-                  </Stat>
-                </CardBody>
-              </Card>
+                      <Divider />
 
-              <Card>
-                <CardBody>
-                  <Stat>
-                    <StatLabel>Gain/Perte</StatLabel>
-                    <StatNumber fontSize="xl" color={portfolioGain >= 0 ? 'green.500' : 'red.500'}>
-                      {portfolioGain >= 0 && <StatArrow type="increase" />}
-                      {portfolioGain < 0 && <StatArrow type="decrease" />}
-                      {formatCurrency(Math.abs(portfolioGain))}
-                    </StatNumber>
-                  </Stat>
-                </CardBody>
-              </Card>
+                      <SimpleGrid columns={2} spacing={4}>
+                        <Box p={3} bg="gray.50" borderRadius="lg">
+                          <Text fontSize="xs" color="gray.500" mb={1}>Valeur estimée</Text>
+                          <Text fontSize="lg" fontWeight="700" color="gray.800">{formatCurrency(portfolioValue)}</Text>
+                        </Box>
+                        <Box p={3} bg={portfolioPerformance >= 0 ? 'green.50' : 'red.50'} borderRadius="lg">
+                          <Text fontSize="xs" color="gray.500" mb={1}>Performance</Text>
+                          <Text fontSize="lg" fontWeight="700" color={portfolioPerformance >= 0 ? 'green.600' : 'red.600'}>
+                            {formatPercent(portfolioPerformance)}
+                          </Text>
+                        </Box>
+                      </SimpleGrid>
 
-              <Card>
-                <CardBody>
-                  <Stat>
-                    <StatLabel>Performance</StatLabel>
-                    <StatNumber fontSize="xl" color={portfolioPerformance >= 0 ? 'green.500' : 'red.500'}>
-                      {formatPercent(portfolioPerformance)}
-                    </StatNumber>
-                  </Stat>
-                </CardBody>
-              </Card>
-            </VStack>
+                      <Box p={4} bg={portfolioGain >= 0 ? 'green.500' : 'red.500'} borderRadius="lg" color="white">
+                        <HStack justify="space-between">
+                          <Text fontSize="sm" fontWeight="500">
+                            {portfolioGain >= 0 ? 'Gain estimé' : 'Perte estimée'}
+                          </Text>
+                          <Text fontSize="lg" fontWeight="700">
+                            {portfolioGain >= 0 ? '+' : ''}{formatCurrency(portfolioGain)}
+                          </Text>
+                        </HStack>
+                      </Box>
+                    </VStack>
+                  </CardBody>
+                </Card>
 
-            {/* Répartition du risque et des catégories */}
-            <VStack align="stretch" spacing={4}>
-              {/* Répartition du risque (SRI) */}
-              <Card>
-                <CardBody>
-                  <VStack align="stretch" spacing={4}>
-                    <HStack>
-                      <Text fontSize="sm">⚠️</Text>
-                      <Heading size="sm">Répartition du Risque (SRI)</Heading>
-                    </HStack>
-
-                    {(() => {
-                      // Calculer la répartition du risque pondérée
-                      const riskDistribution = portfolioFunds.map(pf => ({
-                        name: pf.fund.name,
-                        risk: pf.fund.risk_level || 0,
-                        allocation: pf.allocationPercent,
-                        value: (pf.fund.risk_level || 0) * (pf.allocationPercent / 100),
-                      }))
-
-                      const totalRisk = riskDistribution.reduce((sum, r) => sum + r.value, 0)
-                      const avgRisk = riskDistribution.reduce((sum, r) => sum + r.allocation, 0) > 0
-                        ? totalRisk / (riskDistribution.reduce((sum, r) => sum + r.allocation, 0) / 100)
-                        : 0
-
-                      // Répartition par niveau de risque (1-7)
-                      const riskLevels = [1, 2, 3, 4, 5, 6, 7].map(level => {
-                        const total = portfolioFunds
-                          .filter(pf => (pf.fund.risk_level || 0) === level)
-                          .reduce((sum, pf) => sum + pf.allocationPercent, 0)
-                        return { level: `SRI ${level}`, value: total }
-                      }).filter(r => r.value > 0)
-
-                      return (
-                        <>
-                          <Box textAlign="center">
-                            <Text fontSize="xs" color="gray.600">Niveau de risque moyen du portefeuille</Text>
-                            <HStack justify="center" mt={2}>
-                              <Text fontSize="3xl" fontWeight="bold" color={avgRisk <= 2 ? 'green.500' : avgRisk <= 4 ? 'yellow.500' : 'red.500'}>
-                                {avgRisk.toFixed(1)}
-                              </Text>
-                              <Text fontSize="lg" color="gray.500">/7</Text>
-                            </HStack>
-                          </Box>
-
-                          {riskLevels.length > 0 ? (
-                            <ResponsiveContainer width="100%" height={250}>
-                              <BarChart data={riskLevels} layout="vertical">
-                                <XAxis type="number" unit="%" />
-                                <YAxis type="category" dataKey="level" width={60} />
-                                <Tooltip formatter={(value: number) => `${value.toFixed(1)}%`} />
-                                <Bar dataKey="value" fill="#805ad5" radius={[0, 8, 8, 0]} />
-                              </BarChart>
-                            </ResponsiveContainer>
-                          ) : (
-                            <Text fontSize="sm" color="gray.500" textAlign="center">
-                              Aucune donnée de risque disponible
-                            </Text>
-                          )}
-                        </>
-                      )
-                    })()}
-                  </VStack>
-                </CardBody>
-              </Card>
-
-              {/* Répartition par catégories */}
-              <Card>
-                <CardBody>
-                  <VStack align="stretch" spacing={4}>
-                    <HStack>
-                      <Text fontSize="sm">📊</Text>
-                      <Heading size="sm">Répartition par Catégorie</Heading>
-                    </HStack>
-
-                    {(() => {
-                      // Regrouper par catégorie
-                      const categoryMap = new Map<string, number>()
-                      portfolioFunds.forEach(pf => {
-                        const category = pf.fund.classification || 'Non classé'
-                        categoryMap.set(category, (categoryMap.get(category) || 0) + pf.allocationPercent)
-                      })
-
-                      const categoryData = Array.from(categoryMap.entries())
-                        .map(([name, value]) => ({ name, value }))
-                        .filter(c => c.value > 0)
-                        .sort((a, b) => b.value - a.value)
-
-                      // Couleurs pour le camembert
-                      const CATEGORY_COLORS: Record<string, string> = {
-                        'ACTIONS': '#f56565',
-                        'MONÉTAIRE': '#48bb78',
-                        'OCT': '#4299e1',
-                        'OMLT': '#3182ce',
-                        'DIVERSIFIÉ': '#9f7aea',
-                        'Diversifié': '#9f7aea',
-                        'CONTRACTUEL': '#ed8936',
-                      }
-
-                      return categoryData.length > 0 ? (
-                        <>
-                          <ResponsiveContainer width="100%" height={200}>
+                {/* Répartition par catégorie */}
+                {categoryData.length > 0 && (
+                  <Card variant="outline" shadow="sm">
+                    <CardBody p={4}>
+                      <Text fontSize="sm" fontWeight="600" color="gray.700" mb={3}>Répartition</Text>
+                      <HStack spacing={4}>
+                        <Box w="120px" h="120px">
+                          <ResponsiveContainer>
                             <PieChart>
                               <Pie
                                 data={categoryData}
                                 cx="50%"
                                 cy="50%"
-                                labelLine={false}
-                                label={(entry: any) => `${entry.name}: ${Number(entry.value).toFixed(0)}%`}
-                                outerRadius={80}
-                                fill="#8884d8"
+                                innerRadius={30}
+                                outerRadius={50}
                                 dataKey="value"
                               >
-                                {categoryData.map((entry, index) => (
-                                  <Cell key={`cell-${index}`} fill={CATEGORY_COLORS[entry.name] || '#718096'} />
+                                {categoryData.map((entry, i) => (
+                                  <Cell key={i} fill={CATEGORY_COLORS[entry.name] || '#94a3b8'} />
                                 ))}
                               </Pie>
-                              <Tooltip formatter={(value: number) => `${value.toFixed(1)}%`} />
                             </PieChart>
                           </ResponsiveContainer>
-
-                          <VStack align="stretch" spacing={1}>
-                            {categoryData.map((cat, index) => (
-                              <HStack key={cat.name} justify="space-between" fontSize="sm">
-                                <HStack>
-                                  <Box w={3} h={3} borderRadius="sm" bg={CATEGORY_COLORS[cat.name] || '#718096'} />
-                                  <Text>{cat.name}</Text>
-                                </HStack>
-                                <Text fontWeight="600">{cat.value.toFixed(1)}%</Text>
+                        </Box>
+                        <VStack align="stretch" spacing={1} flex={1}>
+                          {categoryData.map((cat) => (
+                            <HStack key={cat.name} justify="space-between" fontSize="xs">
+                              <HStack spacing={2}>
+                                <Box w={2} h={2} borderRadius="sm" bg={CATEGORY_COLORS[cat.name] || '#94a3b8'} />
+                                <Text color="gray.600">{cat.name}</Text>
                               </HStack>
-                            ))}
-                          </VStack>
-                        </>
-                      ) : (
-                        <Text fontSize="sm" color="gray.500" textAlign="center">
-                          Aucune allocation définie
-                        </Text>
+                              <Text fontWeight="500" color="gray.800">{cat.value.toFixed(0)}%</Text>
+                            </HStack>
+                          ))}
+                        </VStack>
+                      </HStack>
+                    </CardBody>
+                  </Card>
+                )}
+
+                {/* Allocation */}
+                <Card variant="outline" shadow="sm">
+                  <CardBody p={5}>
+                    <HStack justify="space-between" mb={3}>
+                      <Text fontSize="md" fontWeight="600" color="gray.800">Allocation</Text>
+                      <HStack spacing={2} bg="gray.100" px={3} py={1} borderRadius="full">
+                        <Text fontSize="sm" fontWeight={!showAmount ? '600' : '400'} color={!showAmount ? 'gray.800' : 'gray.400'}>%</Text>
+                        <Switch size="sm" colorScheme="purple" isChecked={showAmount} onChange={(e) => setShowAmount(e.target.checked)} />
+                        <Text fontSize="sm" fontWeight={showAmount ? '600' : '400'} color={showAmount ? 'gray.800' : 'gray.400'}>MAD</Text>
+                      </HStack>
+                    </HStack>
+
+                    {/* Boutons de répartition intelligente */}
+                    {portfolioFunds.length >= 2 && (() => {
+                      // Analyser les types de fonds
+                      const hasLowRisk = portfolioFunds.some(pf =>
+                        ['MONÉTAIRE', 'OCT'].includes(pf.fund.classification || '')
+                      )
+                      const hasMediumRisk = portfolioFunds.some(pf =>
+                        ['OMLT', 'DIVERSIFIÉ', 'Diversifié', 'CONTRACTUEL'].includes(pf.fund.classification || '')
+                      )
+                      const hasHighRisk = portfolioFunds.some(pf =>
+                        ['ACTIONS'].includes(pf.fund.classification || '')
+                      )
+
+                      const applyProfile = (profile: 'prudent' | 'equilibre' | 'dynamique') => {
+                        const weights: Record<string, number> = {}
+
+                        portfolioFunds.forEach(pf => {
+                          const classification = pf.fund.classification || ''
+                          const isLowRisk = ['MONÉTAIRE', 'OCT'].includes(classification)
+                          const isMediumRisk = ['OMLT', 'DIVERSIFIÉ', 'Diversifié', 'CONTRACTUEL'].includes(classification)
+                          const isHighRisk = ['ACTIONS'].includes(classification)
+
+                          if (profile === 'prudent') {
+                            if (isLowRisk) weights[pf.fund.id] = 60
+                            else if (isMediumRisk) weights[pf.fund.id] = 30
+                            else if (isHighRisk) weights[pf.fund.id] = 10
+                            else weights[pf.fund.id] = 20
+                          } else if (profile === 'equilibre') {
+                            if (isLowRisk) weights[pf.fund.id] = 30
+                            else if (isMediumRisk) weights[pf.fund.id] = 40
+                            else if (isHighRisk) weights[pf.fund.id] = 30
+                            else weights[pf.fund.id] = 33
+                          } else { // dynamique
+                            if (isLowRisk) weights[pf.fund.id] = 10
+                            else if (isMediumRisk) weights[pf.fund.id] = 30
+                            else if (isHighRisk) weights[pf.fund.id] = 60
+                            else weights[pf.fund.id] = 40
+                          }
+                        })
+
+                        // Normaliser pour que le total = 100%
+                        const total = Object.values(weights).reduce((a, b) => a + b, 0)
+                        const normalizedWeights: Record<string, number> = {}
+                        Object.keys(weights).forEach(id => {
+                          normalizedWeights[id] = (weights[id] / total) * 100
+                        })
+
+                        setPortfolioFunds(prev => prev.map(pf => ({
+                          ...pf,
+                          allocationPercent: normalizedWeights[pf.fund.id] || 0,
+                          allocationAmount: (totalAmount * (normalizedWeights[pf.fund.id] || 0)) / 100
+                        })))
+                      }
+
+                      return (
+                        <Box mb={4} p={3} bg="gray.50" borderRadius="lg">
+                          <Text fontSize="xs" fontWeight="600" color="gray.500" mb={2}>RÉPARTITION SUGGÉRÉE</Text>
+                          <SimpleGrid columns={4} spacing={2}>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={distributeEqually}
+                              borderRadius="lg"
+                              fontWeight="500"
+                              fontSize="xs"
+                              h="auto"
+                              py={2}
+                              borderColor="gray.300"
+                              _hover={{ bg: 'gray.100' }}
+                            >
+                              <VStack spacing={0}>
+                                <Text>⚖️</Text>
+                                <Text>Égale</Text>
+                              </VStack>
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => applyProfile('prudent')}
+                              borderRadius="lg"
+                              fontWeight="500"
+                              fontSize="xs"
+                              h="auto"
+                              py={2}
+                              borderColor="green.300"
+                              color="green.700"
+                              _hover={{ bg: 'green.50' }}
+                            >
+                              <VStack spacing={0}>
+                                <Text>🛡️</Text>
+                                <Text>Prudent</Text>
+                              </VStack>
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => applyProfile('equilibre')}
+                              borderRadius="lg"
+                              fontWeight="500"
+                              fontSize="xs"
+                              h="auto"
+                              py={2}
+                              borderColor="blue.300"
+                              color="blue.700"
+                              _hover={{ bg: 'blue.50' }}
+                            >
+                              <VStack spacing={0}>
+                                <Text>⚡</Text>
+                                <Text>Équilibré</Text>
+                              </VStack>
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => applyProfile('dynamique')}
+                              borderRadius="lg"
+                              fontWeight="500"
+                              fontSize="xs"
+                              h="auto"
+                              py={2}
+                              borderColor="orange.300"
+                              color="orange.700"
+                              _hover={{ bg: 'orange.50' }}
+                            >
+                              <VStack spacing={0}>
+                                <Text>🚀</Text>
+                                <Text>Dynamique</Text>
+                              </VStack>
+                            </Button>
+                          </SimpleGrid>
+                          <Text fontSize="2xs" color="gray.400" mt={2} textAlign="center">
+                            Basé sur : Monétaire/OCT = faible risque • Obligations/Diversifié = moyen • Actions = élevé
+                          </Text>
+                        </Box>
                       )
                     })()}
+
+                    <VStack align="stretch" spacing={3}>
+                      {portfolioFunds.map((pf, index) => (
+                        <Box
+                          key={pf.fund.id}
+                          p={4}
+                          bg="white"
+                          borderRadius="lg"
+                          border="1px solid"
+                          borderColor="gray.200"
+                          borderLeft="4px solid"
+                          borderLeftColor={CHART_COLORS[index % CHART_COLORS.length]}
+                        >
+                          <HStack justify="space-between" mb={3}>
+                            <Box flex={1} minW={0}>
+                              <HStack spacing={2}>
+                                <Text fontSize="sm" fontWeight="600" color="gray.800" noOfLines={1}>{pf.fund.name}</Text>
+                                {pf.fund.classification === 'ACTIONS' && (
+                                  <Box px={1.5} py={0.5} bg="red.100" borderRadius="md">
+                                    <Text fontSize="2xs" color="red.700" fontWeight="600">Risqué</Text>
+                                  </Box>
+                                )}
+                                {['MONÉTAIRE', 'OCT'].includes(pf.fund.classification || '') && (
+                                  <Box px={1.5} py={0.5} bg="green.100" borderRadius="md">
+                                    <Text fontSize="2xs" color="green.700" fontWeight="600">Sécurisé</Text>
+                                  </Box>
+                                )}
+                              </HStack>
+                              <Text fontSize="xs" color="gray.500">{pf.fund.classification}</Text>
+                            </Box>
+                            <IconButton
+                              aria-label="Retirer"
+                              icon={<Text fontSize="md">×</Text>}
+                              size="sm"
+                              variant="ghost"
+                              colorScheme="red"
+                              onClick={() => removeFund(pf.fund.id)}
+                            />
+                          </HStack>
+
+                          {!showAmount ? (
+                            <HStack spacing={3}>
+                              <Slider
+                                flex={1}
+                                value={pf.allocationPercent}
+                                onChange={(val) => updateAllocationPercent(pf.fund.id, val)}
+                                min={0}
+                                max={100}
+                                colorScheme="purple"
+                              >
+                                <SliderTrack bg="gray.200" h="6px" borderRadius="full">
+                                  <SliderFilledTrack bg={CHART_COLORS[index % CHART_COLORS.length]} />
+                                </SliderTrack>
+                                <SliderThumb boxSize={5} />
+                              </Slider>
+                              <InputGroup size="sm" maxW="80px">
+                                <NumberInput
+                                  value={pf.allocationPercent.toFixed(0)}
+                                  onChange={(valueString) => {
+                                    const val = parseFloat(valueString) || 0
+                                    updateAllocationPercent(pf.fund.id, val)
+                                  }}
+                                  min={0}
+                                  max={100}
+                                  size="sm"
+                                >
+                                  <NumberInputField
+                                    textAlign="center"
+                                    fontWeight="700"
+                                    borderRadius="lg"
+                                    bg="gray.50"
+                                    px={2}
+                                  />
+                                </NumberInput>
+                              </InputGroup>
+                              <Text fontSize="sm" fontWeight="600" color="gray.500">%</Text>
+                            </HStack>
+                          ) : (
+                            <HStack spacing={3}>
+                              <NumberInput
+                                flex={1}
+                                value={pf.allocationAmount.toFixed(0)}
+                                onChange={(_, val) => updateAllocationAmount(pf.fund.id, val)}
+                                min={0}
+                                size="md"
+                              >
+                                <NumberInputField borderRadius="lg" fontWeight="600" />
+                              </NumberInput>
+                              <Text fontSize="sm" color="gray.500" fontWeight="500">MAD</Text>
+                              <Box bg="gray.100" px={2} py={1} borderRadius="md">
+                                <Text fontSize="xs" fontWeight="600" color="gray.600">({pf.allocationPercent.toFixed(0)}%)</Text>
+                              </Box>
+                            </HStack>
+                          )}
+                        </Box>
+                      ))}
+
+                      <Box
+                        p={3}
+                        borderRadius="lg"
+                        bg={Math.abs(totalAllocation - 100) < 0.5 ? 'green.500' : 'orange.500'}
+                        color="white"
+                      >
+                        <HStack justify="space-between">
+                          <Text fontSize="sm" fontWeight="500">Total alloué</Text>
+                          <HStack spacing={2}>
+                            <Text fontSize="lg" fontWeight="700">
+                              {totalAllocation.toFixed(0)}%
+                            </Text>
+                            {Math.abs(totalAllocation - 100) >= 0.5 && (
+                              <Text fontSize="xs" opacity={0.9}>
+                                ({totalAllocation > 100 ? 'surallocation' : 'sous-allocation'})
+                              </Text>
+                            )}
+                          </HStack>
+                        </HStack>
+                      </Box>
+                    </VStack>
+                  </CardBody>
+                </Card>
+              </>
+            ) : (
+              <Card variant="outline" shadow="sm">
+                <CardBody p={8} textAlign="center">
+                  <Text color="gray.400" fontSize="sm">Sélectionnez des fonds pour commencer</Text>
+                </CardBody>
+              </Card>
+            )}
+          </VStack>
+
+          {/* COLONNE 3 : Graphique + Tableau */}
+          <VStack align="stretch" spacing={4}>
+            {portfolioFunds.length > 0 ? (
+              <>
+                {/* Graphique */}
+                <Card variant="outline" shadow="sm">
+                  <CardBody p={5}>
+                    <HStack justify="space-between" mb={4} flexWrap="wrap" gap={2}>
+                      <VStack align="start" spacing={0}>
+                        <Text fontSize="md" fontWeight="600" color="gray.800">Performance comparée</Text>
+                        <HStack spacing={2} mt={1}>
+                          <Box w={3} h={3} bg="gray.800" borderRadius="sm" />
+                          <Text fontSize="sm" color="gray.600">Portefeuille:</Text>
+                          <Text fontSize="sm" fontWeight="700" color={portfolioPerformance >= 0 ? 'green.600' : 'red.500'}>
+                            {formatPercent(portfolioPerformance)}
+                          </Text>
+                        </HStack>
+                      </VStack>
+                      <HStack spacing={1} bg="gray.100" p={1} borderRadius="lg">
+                        {(['1m', '3m', '6m', '1y', '3y'] as const).map(p => (
+                          <Button
+                            key={p}
+                            size="sm"
+                            variant={period === p ? 'solid' : 'ghost'}
+                            colorScheme={period === p ? 'purple' : 'gray'}
+                            onClick={() => setPeriod(p)}
+                            fontWeight="600"
+                            borderRadius="md"
+                            minW="42px"
+                          >
+                            {p.toUpperCase()}
+                          </Button>
+                        ))}
+                      </HStack>
+                    </HStack>
+
+                    <Box position="relative">
+                      {loading && (
+                        <Box position="absolute" inset={0} bg="whiteAlpha.900" zIndex={10} display="flex" alignItems="center" justifyContent="center" borderRadius="lg">
+                          <VStack spacing={2}>
+                            <Spinner size="lg" color="purple.500" thickness="3px" />
+                            <Text fontSize="sm" color="gray.500">Chargement...</Text>
+                          </VStack>
+                        </Box>
+                      )}
+
+                      {portfolioHistory.length > 0 ? (
+                        <ResponsiveContainer width="100%" height={320}>
+                          <LineChart data={portfolioHistory} margin={{ top: 10, right: 10, left: -15, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                            <XAxis
+                              dataKey="date"
+                              tickFormatter={(d) => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                              stroke="#94a3b8"
+                              fontSize={11}
+                              tickLine={false}
+                              axisLine={{ stroke: '#e2e8f0' }}
+                            />
+                            <YAxis
+                              tickFormatter={(v) => `${v > 0 ? '+' : ''}${v.toFixed(0)}%`}
+                              stroke="#94a3b8"
+                              fontSize={11}
+                              tickLine={false}
+                              axisLine={false}
+                            />
+                            <ReferenceLine y={0} stroke="#94a3b8" strokeDasharray="3 3" />
+                            <Tooltip
+                              contentStyle={{
+                                fontSize: '13px',
+                                borderRadius: '12px',
+                                border: '1px solid #e2e8f0',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                padding: '12px'
+                              }}
+                              labelFormatter={(d) => new Date(d as string).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'long' })}
+                              formatter={(value: number, name: string) => [
+                                <Text as="span" fontWeight="700" color={value >= 0 ? 'green.600' : 'red.500'}>{formatPercent(value)}</Text>,
+                                name
+                              ]}
+                            />
+                            <Legend
+                              wrapperStyle={{ fontSize: '12px', paddingTop: '15px' }}
+                              formatter={(value) => <Text as="span" color="gray.600">{value.length > 25 ? value.slice(0, 25) + '...' : value}</Text>}
+                            />
+                            <Line
+                              type="monotone"
+                              dataKey="portfolio"
+                              stroke="#1f2937"
+                              strokeWidth={3}
+                              name="Portefeuille"
+                              dot={false}
+                              activeDot={{ r: 6, fill: '#1f2937', stroke: 'white', strokeWidth: 2 }}
+                            />
+                            {portfolioFunds.map((pf, i) => (
+                              <Line
+                                key={pf.fund.id}
+                                type="monotone"
+                                dataKey={pf.fund.id}
+                                stroke={CHART_COLORS[i % CHART_COLORS.length]}
+                                strokeWidth={2}
+                                name={pf.fund.name.length > 25 ? pf.fund.name.slice(0, 25) + '...' : pf.fund.name}
+                                dot={false}
+                                activeDot={{ r: 5, fill: CHART_COLORS[i % CHART_COLORS.length], stroke: 'white', strokeWidth: 2 }}
+                              />
+                            ))}
+                          </LineChart>
+                        </ResponsiveContainer>
+                      ) : (
+                        <Box h="320px" display="flex" alignItems="center" justifyContent="center" bg="gray.50" borderRadius="lg">
+                          <VStack spacing={2}>
+                            <Spinner size="lg" color="purple.500" thickness="3px" />
+                            <Text fontSize="sm" color="gray.500">Chargement de l'historique...</Text>
+                          </VStack>
+                        </Box>
+                      )}
+                    </Box>
+                  </CardBody>
+                </Card>
+
+                {/* Tableau */}
+                <Card variant="outline" shadow="sm">
+                  <CardBody p={5}>
+                    <Text fontSize="md" fontWeight="600" color="gray.800" mb={4}>Comparatif détaillé</Text>
+                    <Box overflowX="auto">
+                      <Table size="sm" variant="simple">
+                        <Thead>
+                          <Tr bg="gray.50">
+                            <Th fontSize="xs" color="gray.600" borderColor="gray.200" py={3}>Fonds</Th>
+                            <Th fontSize="xs" color="gray.600" borderColor="gray.200" py={3} isNumeric>Alloc.</Th>
+                            <Th fontSize="xs" color="gray.600" borderColor="gray.200" py={3} isNumeric>YTD</Th>
+                            <Th fontSize="xs" color="gray.600" borderColor="gray.200" py={3} isNumeric>1Y</Th>
+                            <Th fontSize="xs" color="gray.600" borderColor="gray.200" py={3} isNumeric>3Y</Th>
+                          </Tr>
+                        </Thead>
+                        <Tbody>
+                          {portfolioFunds.map((pf, index) => (
+                            <Tr key={pf.fund.id} _hover={{ bg: 'gray.50' }}>
+                              <Td borderColor="gray.100" py={3}>
+                                <HStack spacing={2}>
+                                  <Box w={2} h={2} borderRadius="full" bg={CHART_COLORS[index % CHART_COLORS.length]} />
+                                  <Text fontSize="sm" fontWeight="500" color="gray.800" noOfLines={1}>{pf.fund.name}</Text>
+                                </HStack>
+                              </Td>
+                              <Td borderColor="gray.100" py={3} isNumeric>
+                                <Text fontSize="sm" fontWeight="600" color="purple.600">{pf.allocationPercent.toFixed(0)}%</Text>
+                              </Td>
+                              <Td borderColor="gray.100" py={3} isNumeric>
+                                <Text fontSize="sm" fontWeight="600" color={pf.fund.ytd_performance && pf.fund.ytd_performance > 0 ? 'green.600' : 'red.500'}>
+                                  {formatPercent(pf.fund.ytd_performance)}
+                                </Text>
+                              </Td>
+                              <Td borderColor="gray.100" py={3} isNumeric>
+                                <Text fontSize="sm" fontWeight="600" color={pf.fund.perf_1y && pf.fund.perf_1y > 0 ? 'green.600' : 'red.500'}>
+                                  {formatPercent(pf.fund.perf_1y)}
+                                </Text>
+                              </Td>
+                              <Td borderColor="gray.100" py={3} isNumeric>
+                                <Text fontSize="sm" fontWeight="600" color={pf.fund.perf_3y && pf.fund.perf_3y > 0 ? 'green.600' : 'red.500'}>
+                                  {formatPercent(pf.fund.perf_3y)}
+                                </Text>
+                              </Td>
+                            </Tr>
+                          ))}
+                        </Tbody>
+                      </Table>
+                    </Box>
+                  </CardBody>
+                </Card>
+
+                {/* Performance Annualisée */}
+                {portfolioHistory.length > 0 && (
+                  <Card variant="outline" shadow="sm">
+                    <CardBody p={5}>
+                      <HStack justify="space-between" mb={4}>
+                        <VStack align="start" spacing={0}>
+                          <Text fontSize="md" fontWeight="600" color="gray.800">Performance Annualisée</Text>
+                          <Text fontSize="xs" color="gray.500">
+                            Rendement moyen par an sur la période {period.toUpperCase()}
+                          </Text>
+                        </VStack>
+                        <Box px={3} py={1} bg="purple.50" borderRadius="full">
+                          <Text fontSize="xs" color="purple.700" fontWeight="600">CAGR</Text>
+                        </Box>
+                      </HStack>
+
+                      {(() => {
+                        // Calculer le nombre d'années pour la période
+                        const yearsMap: Record<string, number> = {
+                          '1m': 1/12,
+                          '3m': 0.25,
+                          '6m': 0.5,
+                          '1y': 1,
+                          '3y': 3
+                        }
+                        const years = yearsMap[period]
+
+                        // Fonction pour calculer le CAGR
+                        const calculateCAGR = (perfCumulative: number, years: number): number => {
+                          if (years <= 0 || perfCumulative <= -100) return 0
+                          // CAGR = ((1 + perf/100)^(1/years) - 1) * 100
+                          const totalReturn = 1 + perfCumulative / 100
+                          if (totalReturn <= 0) return -100
+                          return (Math.pow(totalReturn, 1 / years) - 1) * 100
+                        }
+
+                        // Calculer la perf du portefeuille sur la période
+                        const portfolioCAGR = calculateCAGR(portfolioPerformance, years)
+
+                        // Calculer pour chaque fonds
+                        const fundsCAGR = portfolioFunds.map((pf, index) => {
+                          const lastEntry = portfolioHistory[portfolioHistory.length - 1]
+                          const fundPerf = lastEntry?.[pf.fund.id] as number || 0
+                          return {
+                            fund: pf.fund,
+                            perfCumulative: fundPerf,
+                            cagr: calculateCAGR(fundPerf, years),
+                            allocation: pf.allocationPercent,
+                            colorIndex: index
+                          }
+                        }).sort((a, b) => b.cagr - a.cagr)
+
+                        return (
+                          <VStack align="stretch" spacing={4}>
+                            {/* Performance du portefeuille */}
+                            <Box p={4} bg="gray.800" borderRadius="lg" color="white">
+                              <HStack justify="space-between">
+                                <VStack align="start" spacing={0}>
+                                  <Text fontSize="sm" fontWeight="500" opacity={0.8}>Portefeuille</Text>
+                                  <HStack spacing={3} align="baseline">
+                                    <Text fontSize="2xl" fontWeight="700">
+                                      {portfolioCAGR >= 0 ? '+' : ''}{portfolioCAGR.toFixed(2)}%
+                                    </Text>
+                                    <Text fontSize="sm" opacity={0.7}>/an</Text>
+                                  </HStack>
+                                </VStack>
+                                <VStack align="end" spacing={0}>
+                                  <Text fontSize="xs" opacity={0.6}>Perf. cumulée</Text>
+                                  <Text fontSize="md" fontWeight="600">
+                                    {formatPercent(portfolioPerformance)}
+                                  </Text>
+                                </VStack>
+                              </HStack>
+                            </Box>
+
+                            {/* Classement des fonds par CAGR */}
+                            <Box>
+                              <Text fontSize="xs" fontWeight="600" color="gray.500" mb={3}>CLASSEMENT PAR RENDEMENT ANNUALISÉ</Text>
+                              <VStack align="stretch" spacing={2}>
+                                {fundsCAGR.map((item, rank) => (
+                                  <Box
+                                    key={item.fund.id}
+                                    p={3}
+                                    bg="white"
+                                    border="1px solid"
+                                    borderColor="gray.200"
+                                    borderRadius="lg"
+                                    borderLeft="4px solid"
+                                    borderLeftColor={CHART_COLORS[item.colorIndex % CHART_COLORS.length]}
+                                  >
+                                    <HStack justify="space-between">
+                                      <HStack spacing={3}>
+                                        <Box
+                                          w={6}
+                                          h={6}
+                                          borderRadius="full"
+                                          bg={rank === 0 ? 'yellow.400' : rank === 1 ? 'gray.300' : rank === 2 ? 'orange.300' : 'gray.100'}
+                                          display="flex"
+                                          alignItems="center"
+                                          justifyContent="center"
+                                        >
+                                          <Text fontSize="xs" fontWeight="bold" color={rank < 3 ? 'white' : 'gray.600'}>
+                                            {rank + 1}
+                                          </Text>
+                                        </Box>
+                                        <Box>
+                                          <Text fontSize="sm" fontWeight="600" color="gray.800" noOfLines={1}>{item.fund.name}</Text>
+                                          <Text fontSize="xs" color="gray.500">{item.allocation.toFixed(0)}% du portefeuille</Text>
+                                        </Box>
+                                      </HStack>
+                                      <VStack align="end" spacing={0}>
+                                        <Text fontSize="lg" fontWeight="700" color={item.cagr >= 0 ? 'green.600' : 'red.500'}>
+                                          {item.cagr >= 0 ? '+' : ''}{item.cagr.toFixed(2)}%
+                                        </Text>
+                                        <Text fontSize="xs" color="gray.400">/an</Text>
+                                      </VStack>
+                                    </HStack>
+                                  </Box>
+                                ))}
+                              </VStack>
+                            </Box>
+
+                            {/* Note explicative */}
+                            <Box p={3} bg="blue.50" borderRadius="lg">
+                              <HStack spacing={2} align="start">
+                                <Text fontSize="sm">💡</Text>
+                                <Text fontSize="xs" color="blue.700">
+                                  <Text as="span" fontWeight="600">CAGR (Taux de croissance annuel composé)</Text> : représente le rendement annuel moyen que vous auriez obtenu si la croissance avait été constante chaque année.
+                                  {years < 1 && " Note: Pour les périodes inférieures à 1 an, le CAGR est extrapolé sur une base annuelle."}
+                                </Text>
+                              </HStack>
+                            </Box>
+                          </VStack>
+                        )
+                      })()}
+                    </CardBody>
+                  </Card>
+                )}
+              </>
+            ) : (
+              <Card variant="outline" shadow="sm">
+                <CardBody py={16} textAlign="center">
+                  <VStack spacing={3}>
+                    <Box p={4} bg="gray.100" borderRadius="full">
+                      <Text fontSize="2xl">📊</Text>
+                    </Box>
+                    <Text color="gray.500" fontSize="sm">Sélectionnez des fonds pour voir les graphiques</Text>
                   </VStack>
                 </CardBody>
               </Card>
-            </VStack>
-          </>
-        ) : (
-          <Card>
-            <CardBody py={12}>
-              <VStack spacing={3}>
-                <Text fontSize="4xl">📊</Text>
-                <Text color="gray.600" textAlign="center">
-                  Sélectionnez des fonds pour voir les statistiques et analyses
-                </Text>
-              </VStack>
-            </CardBody>
-          </Card>
-        )}
-          </VStack>
-
-          {/* COLONNE 3 : Graphiques, Allocation et Tableau */}
-          <VStack align="stretch" spacing={4}>
-        {portfolioFunds.length > 0 ? (
-          <>
-            {/* Graphique de comparaison */}
-            <Card>
-              <CardBody>
-                <VStack align="stretch" spacing={4}>
-                  <HStack justify="space-between" flexWrap="wrap">
-                    <Heading size="md">Comparaison des Performances</Heading>
-                    <HStack spacing={2}>
-                      {(['1m', '3m', '6m', '1y', '3y'] as const).map(p => (
-                        <Button
-                          key={p}
-                          size="sm"
-                          variant={period === p ? 'solid' : 'outline'}
-                          colorScheme="purple"
-                          onClick={() => setPeriod(p)}
-                        >
-                          {p.toUpperCase()}
-                        </Button>
-                      ))}
-                    </HStack>
-                  </HStack>
-
-                  {portfolioHistory.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={400}>
-                      <LineChart data={portfolioHistory}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis
-                          dataKey="date"
-                          tickFormatter={(date) => new Date(date).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' })}
-                        />
-                        <YAxis
-                          tickFormatter={(value) => `${value > 0 ? '+' : ''}${value.toFixed(1)}%`}
-                        />
-                        <Tooltip
-                          labelFormatter={(date) => new Date(date).toLocaleDateString('fr-FR')}
-                          formatter={(value: number) => formatPercent(value)}
-                        />
-                        <Legend />
-
-                        {/* Ligne du portefeuille */}
-                        <Line
-                          type="monotone"
-                          dataKey="portfolio"
-                          stroke="#000000"
-                          strokeWidth={3}
-                          name="Portefeuille"
-                          dot={false}
-                          connectNulls={true}
-                        />
-
-                        {/* Lignes des fonds individuels */}
-                        {portfolioFunds.map((pf, index) => (
-                          <Line
-                            key={pf.fund.id}
-                            type="monotone"
-                            dataKey={pf.fund.id}
-                            stroke={colors[index % colors.length]}
-                            strokeWidth={2}
-                            name={pf.fund.name}
-                            dot={false}
-                            connectNulls={true}
-                          />
-                        ))}
-                      </LineChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <Box textAlign="center" py={12}>
-                      <Text color="gray.500">Chargement des données...</Text>
-                    </Box>
-                  )}
-                </VStack>
-              </CardBody>
-            </Card>
-
-            {/* Allocation du portefeuille */}
-            <Card>
-              <CardBody>
-                <VStack align="stretch" spacing={4}>
-                  <HStack justify="space-between">
-                    <Heading size="md">Allocation du Portefeuille</Heading>
-                    <HStack>
-                      <Button size="sm" onClick={distributeEqually} colorScheme="blue">
-                        Répartir équitablement
-                      </Button>
-                      <HStack spacing={3} px={3} py={1} bg="gray.50" borderRadius="md">
-                        <Text fontSize="sm" fontWeight={!showAmount ? 'bold' : 'medium'}>%</Text>
-                        <Switch
-                          colorScheme="purple"
-                          isChecked={showAmount}
-                          onChange={(e) => setShowAmount(e.target.checked)}
-                        />
-                        <Text fontSize="sm" fontWeight={showAmount ? 'bold' : 'medium'}>MAD</Text>
-                      </HStack>
-                    </HStack>
-                  </HStack>
-
-                  {portfolioFunds.map((pf, index) => (
-                    <Box key={pf.fund.id} p={4} bg="white" borderRadius="lg" border="1px solid" borderColor="gray.200" shadow="sm">
-                      <VStack align="stretch" spacing={3}>
-                        <HStack justify="space-between">
-                          <Box flex={1}>
-                            <Text fontWeight="bold" fontSize="md">{pf.fund.name}</Text>
-                            <HStack spacing={2} mt={1}>
-                              <Badge colorScheme="purple" fontSize="xs">{pf.fund.classification}</Badge>
-                              <Badge colorScheme={pf.fund.risk_level && pf.fund.risk_level > 5 ? 'red' : 'green'} fontSize="xs">
-                                Risque {pf.fund.risk_level}/7
-                              </Badge>
-                              <Text fontSize="xs" color="gray.500">Code: {pf.fund.code}</Text>
-                            </HStack>
-                          </Box>
-                          <IconButton
-                            aria-label="Retirer"
-                            icon={<Text>🗑️</Text>}
-                            size="sm"
-                            variant="ghost"
-                            colorScheme="red"
-                            onClick={() => removeFund(pf.fund.id)}
-                          />
-                        </HStack>
-
-                        {/* Infos clés du fonds */}
-                        <SimpleGrid columns={4} spacing={3} p={3} bg="gray.50" borderRadius="md">
-                          <VStack spacing={0} align="center">
-                            <Text fontSize="2xs" color="gray.500" fontWeight="600" textTransform="uppercase">Actif Net</Text>
-                            <Text fontSize="sm" fontWeight="bold" color="purple.600">
-                              {pf.fund.asset_value ? `${(pf.fund.asset_value / 1000000).toFixed(1)}M` : 'N/A'}
-                            </Text>
-                          </VStack>
-                          <VStack spacing={0} align="center">
-                            <Text fontSize="2xs" color="gray.500" fontWeight="600" textTransform="uppercase">Perf YTD</Text>
-                            <Text fontSize="sm" fontWeight="bold" color={pf.fund.ytd_performance && pf.fund.ytd_performance > 0 ? 'green.600' : 'red.600'}>
-                              {pf.fund.ytd_performance !== null && pf.fund.ytd_performance !== undefined
-                                ? `${pf.fund.ytd_performance > 0 ? '+' : ''}${pf.fund.ytd_performance.toFixed(2)}%`
-                                : 'N/A'}
-                            </Text>
-                          </VStack>
-                          <VStack spacing={0} align="center">
-                            <Text fontSize="2xs" color="gray.500" fontWeight="600" textTransform="uppercase">Perf 1 an</Text>
-                            <Text fontSize="sm" fontWeight="bold" color={pf.fund.perf_1y && pf.fund.perf_1y > 0 ? 'green.600' : 'red.600'}>
-                              {pf.fund.perf_1y !== null && pf.fund.perf_1y !== undefined
-                                ? `${pf.fund.perf_1y > 0 ? '+' : ''}${pf.fund.perf_1y.toFixed(2)}%`
-                                : 'N/A'}
-                            </Text>
-                          </VStack>
-                          <VStack spacing={0} align="center">
-                            <Text fontSize="2xs" color="gray.500" fontWeight="600" textTransform="uppercase">Perf 3 ans</Text>
-                            <Text fontSize="sm" fontWeight="bold" color={pf.fund.perf_3y && pf.fund.perf_3y > 0 ? 'green.600' : 'red.600'}>
-                              {pf.fund.perf_3y !== null && pf.fund.perf_3y !== undefined
-                                ? `${pf.fund.perf_3y > 0 ? '+' : ''}${pf.fund.perf_3y.toFixed(2)}%`
-                                : 'N/A'}
-                            </Text>
-                          </VStack>
-                        </SimpleGrid>
-
-                        {!showAmount ? (
-                          <HStack spacing={4}>
-                            <Slider
-                              flex={1}
-                              value={pf.allocationPercent}
-                              onChange={(val) => updateAllocationPercent(pf.fund.id, val)}
-                              min={0}
-                              max={100}
-                              step={1}
-                              colorScheme="purple"
-                            >
-                              <SliderTrack>
-                                <SliderFilledTrack />
-                              </SliderTrack>
-                              <SliderThumb boxSize={6}>
-                                <Box color="purple.500" fontSize="xs" fontWeight="bold">
-                                  {pf.allocationPercent.toFixed(0)}
-                                </Box>
-                              </SliderThumb>
-                            </Slider>
-                            <NumberInput
-                              value={pf.allocationPercent.toFixed(2)}
-                              onChange={(_, val) => updateAllocationPercent(pf.fund.id, val)}
-                              min={0}
-                              max={100}
-                              step={1}
-                              w="100px"
-                            >
-                              <NumberInputField />
-                            </NumberInput>
-                            <Text fontWeight="bold" minW="30px">%</Text>
-                          </HStack>
-                        ) : (
-                          <HStack spacing={4}>
-                            <NumberInput
-                              flex={1}
-                              value={pf.allocationAmount.toFixed(0)}
-                              onChange={(_, val) => updateAllocationAmount(pf.fund.id, val)}
-                              min={0}
-                              max={totalAmount}
-                              step={1000}
-                            >
-                              <NumberInputField />
-                            </NumberInput>
-                            <Text fontWeight="bold" minW="50px">MAD</Text>
-                            <Text color="gray.600" minW="60px">({pf.allocationPercent.toFixed(1)}%)</Text>
-                          </HStack>
-                        )}
-                      </VStack>
-                    </Box>
-                  ))}
-
-                  {/* Total allocation */}
-                  <Box
-                    p={4}
-                    bg={Math.abs(totalAllocation - 100) < 0.01 ? 'green.50' : 'orange.50'}
-                    borderRadius="md"
-                    borderWidth={2}
-                    borderColor={Math.abs(totalAllocation - 100) < 0.01 ? 'green.500' : 'orange.500'}
-                  >
-                    <HStack justify="space-between">
-                      <Text fontWeight="bold">Total alloué</Text>
-                      <HStack>
-                        <Text fontWeight="bold" fontSize="lg">
-                          {totalAllocation.toFixed(2)}%
-                        </Text>
-                        {!showAmount && Math.abs(totalAllocation - 100) > 0.01 && (
-                          <Badge colorScheme="orange">
-                            {totalAllocation > 100 ? 'Surallocation' : 'Sous-allocation'}
-                          </Badge>
-                        )}
-                      </HStack>
-                    </HStack>
-                  </Box>
-                </VStack>
-              </CardBody>
-            </Card>
-
-            {/* Tableau comparatif */}
-            <Card>
-              <CardBody>
-                <VStack align="stretch" spacing={4}>
-                  <Heading size="md">Tableau Comparatif</Heading>
-                  <Box overflowX="auto">
-                    <Table variant="simple" size="sm">
-                      <Thead>
-                        <Tr>
-                          <Th>Fonds</Th>
-                          <Th>Allocation</Th>
-                          <Th isNumeric>VL</Th>
-                          <Th isNumeric>1M</Th>
-                          <Th isNumeric>3M</Th>
-                          <Th isNumeric>6M</Th>
-                          <Th isNumeric>YTD</Th>
-                          <Th isNumeric>1Y</Th>
-                          <Th isNumeric>3Y</Th>
-                          <Th>Risque</Th>
-                        </Tr>
-                      </Thead>
-                      <Tbody>
-                        {portfolioFunds.map(pf => (
-                          <Tr key={pf.fund.id}>
-                            <Td>
-                              <VStack align="start" spacing={0}>
-                                <Text fontWeight="bold" fontSize="sm">{pf.fund.name}</Text>
-                                <Text fontSize="xs" color="gray.600">{pf.fund.code}</Text>
-                              </VStack>
-                            </Td>
-                            <Td>
-                              <Badge colorScheme="purple">
-                                {pf.allocationPercent.toFixed(1)}%
-                              </Badge>
-                            </Td>
-                            <Td isNumeric>{formatCurrency(pf.fund.nav || 0)}</Td>
-                            <Td isNumeric color={pf.fund.perf_1m && pf.fund.perf_1m > 0 ? 'green.500' : 'red.500'}>
-                              {formatPercent(pf.fund.perf_1m || 0)}
-                            </Td>
-                            <Td isNumeric color={pf.fund.perf_3m && pf.fund.perf_3m > 0 ? 'green.500' : 'red.500'}>
-                              {formatPercent(pf.fund.perf_3m || 0)}
-                            </Td>
-                            <Td isNumeric color={pf.fund.perf_6m && pf.fund.perf_6m > 0 ? 'green.500' : 'red.500'}>
-                              {formatPercent(pf.fund.perf_6m || 0)}
-                            </Td>
-                            <Td isNumeric color={pf.fund.ytd_performance && pf.fund.ytd_performance > 0 ? 'green.500' : 'red.500'}>
-                              {formatPercent(pf.fund.ytd_performance || 0)}
-                            </Td>
-                            <Td isNumeric color={pf.fund.perf_1y && pf.fund.perf_1y > 0 ? 'green.500' : 'red.500'}>
-                              {formatPercent(pf.fund.perf_1y || 0)}
-                            </Td>
-                            <Td isNumeric color={pf.fund.perf_3y && pf.fund.perf_3y > 0 ? 'green.500' : 'red.500'}>
-                              {formatPercent(pf.fund.perf_3y || 0)}
-                            </Td>
-                            <Td>
-                              <Badge colorScheme={pf.fund.risk_level && pf.fund.risk_level > 5 ? 'red' : 'green'}>
-                                {pf.fund.risk_level}/7
-                              </Badge>
-                            </Td>
-                          </Tr>
-                        ))}
-                      </Tbody>
-                    </Table>
-                  </Box>
-                </VStack>
-              </CardBody>
-            </Card>
-          </>
-        ) : (
-          <Card>
-            <CardBody py={12}>
-              <VStack spacing={3}>
-                <Text fontSize="4xl">📈</Text>
-                <Text color="gray.600" textAlign="center">
-                  Sélectionnez des fonds pour voir les graphiques et comparaisons
-                </Text>
-              </VStack>
-            </CardBody>
-          </Card>
-        )}
+            )}
           </VStack>
         </SimpleGrid>
       </VStack>

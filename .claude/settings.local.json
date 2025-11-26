@@ -33,7 +33,9 @@
       "WebFetch(domain:www.oc.gov.ma)",
       "WebFetch(domain:www.seloger.com)",
       "WebFetch(domain:www.ammc.ma)",
-      "WebFetch(domain:medias24.com)"
+      "WebFetch(domain:medias24.com)",
+      "WebFetch(domain:www.yabiladi.com)",
+      "WebFetch(domain:agenz.ma)"
     ],
     "deny": [],
     "ask": []
