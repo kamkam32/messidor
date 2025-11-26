@@ -35,7 +35,8 @@
       "WebFetch(domain:www.ammc.ma)",
       "WebFetch(domain:medias24.com)",
       "WebFetch(domain:www.yabiladi.com)",
-      "WebFetch(domain:agenz.ma)"
+      "WebFetch(domain:agenz.ma)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []

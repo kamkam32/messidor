@@ -4,7 +4,7 @@ slug: "immobilier-maroc-2025-physique-cote-opci-comparatif"
 date: "2025-11-26T10:00:00.000Z"
 author: "Équipe Messidor Patrimoine"
 category: "Analyses"
-image: "/images/immobilier-comparatif.jpg"
+image: "/images/immobilier maroc.jpg"
 excerpt: "Rendement locatif de 3-4% net pour un appartement contre 6-9% pour les OPCI. L'immobilier coté bondit de 14% en 2025. Analyse comparative des trois façons d'investir dans la pierre au Maroc."
 keywords: ["immobilier maroc 2025", "investir immobilier maroc", "opci maroc rendement", "immobilier coté bourse casablanca", "addoha alliances rds", "rendement locatif maroc", "placement immobilier maroc"]
 ---
