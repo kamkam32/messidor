@@ -37,6 +37,7 @@ import {
   FormControl,
   FormLabel,
   Progress,
+  Avatar,
 } from '@chakra-ui/react'
 import { FaLock } from 'react-icons/fa'
 
@@ -719,162 +720,174 @@ function SimulateurContent() {
 
             <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
               {/* ALI */}
-              <Card borderWidth="2px" borderColor="blue.400" overflow="hidden">
-                <Box bg="blue.500" py={3} px={4}>
-                  <Text fontSize="xl" fontWeight="bold" color="white" textAlign="center">Ali</Text>
+              <Card borderWidth="1px" borderColor="gray.200" overflow="hidden" shadow="sm">
+                <Box bg="gray.700" py={4} px={4}>
+                  <VStack spacing={2}>
+                    <Avatar size="xl" name="Ali" src="/images/ali.jpg" />
+                    <Text fontSize="lg" fontWeight="semibold" color="white">Ali</Text>
+                  </VStack>
                 </Box>
                 <CardBody>
                   {/* Ce qu'il reçoit */}
-                  <Box bg="green.50" p={4} borderRadius="md" mb={3}>
-                    <Text fontSize="xs" color="green.600" fontWeight="semibold" textTransform="uppercase" mb={1}>Prix de vente</Text>
-                    <Text fontSize="2xl" fontWeight="bold" color="green.700">{formatNumber(valeurAli)} MAD</Text>
+                  <Box p={4} borderRadius="md" mb={3} borderWidth="1px" borderColor="gray.100">
+                    <Text fontSize="xs" color="gray.500" fontWeight="medium" textTransform="uppercase" mb={1}>Prix de vente</Text>
+                    <Text fontSize="2xl" fontWeight="bold" color="gray.800">{formatNumber(valeurAli)} MAD</Text>
                   </Box>
 
                   {/* Frais à déduire */}
-                  <Box bg="red.50" p={4} borderRadius="md" mb={3}>
-                    <Text fontSize="xs" color="red.600" fontWeight="semibold" textTransform="uppercase" mb={2}>Frais à déduire</Text>
+                  <Box bg="gray.50" p={4} borderRadius="md" mb={3}>
+                    <Text fontSize="xs" color="gray.500" fontWeight="medium" textTransform="uppercase" mb={2}>Frais à déduire</Text>
                     <HStack justify="space-between" mb={1}>
                       <Text fontSize="sm" color="gray.600">TPI ({formatPercent((tpiAli / valeurAli) * 100)}%)</Text>
-                      <Text fontSize="sm" fontWeight="bold" color="red.600">-{formatNumber(tpiAli)} MAD</Text>
+                      <Text fontSize="sm" fontWeight="medium" color="gray.700">-{formatNumber(tpiAli)} MAD</Text>
                     </HStack>
                     <HStack justify="space-between">
                       <Text fontSize="sm" color="gray.600">Commission ({commission}%)</Text>
-                      <Text fontSize="sm" fontWeight="bold" color="red.600">-{formatNumber(commissionAli)} MAD</Text>
+                      <Text fontSize="sm" fontWeight="medium" color="gray.700">-{formatNumber(commissionAli)} MAD</Text>
                     </HStack>
-                    <Divider my={2} />
+                    <Divider my={2} borderColor="gray.200" />
                     <HStack justify="space-between">
-                      <Text fontSize="sm" fontWeight="bold" color="red.700">Total frais</Text>
-                      <Text fontSize="md" fontWeight="bold" color="red.700">-{formatNumber(tpiAli + commissionAli)} MAD</Text>
+                      <Text fontSize="sm" fontWeight="semibold" color="gray.700">Total frais</Text>
+                      <Text fontSize="md" fontWeight="semibold" color="gray.800">-{formatNumber(tpiAli + commissionAli)} MAD</Text>
                     </HStack>
                   </Box>
 
                   {/* Net */}
-                  <Box bg="blue.100" p={4} borderRadius="md" mb={3}>
-                    <Text fontSize="xs" color="blue.700" fontWeight="semibold" textTransform="uppercase" mb={1}>Il te reste net</Text>
-                    <Text fontSize="2xl" fontWeight="bold" color="blue.800">{formatNumber(valeurAli - tpiAli - commissionAli)} MAD</Text>
-                    <Text fontSize="xs" color="blue.600">soit {formatPercent(((valeurAli - tpiAli - commissionAli) / valeurAli) * 100)}% du prix de vente</Text>
+                  <Box bg="teal.50" p={4} borderRadius="md" mb={3} borderWidth="1px" borderColor="teal.100">
+                    <Text fontSize="xs" color="teal.600" fontWeight="medium" textTransform="uppercase" mb={1}>Net à percevoir</Text>
+                    <Text fontSize="2xl" fontWeight="bold" color="teal.700">{formatNumber(valeurAli - tpiAli - commissionAli)} MAD</Text>
+                    <Text fontSize="xs" color="teal.500">{formatPercent(((valeurAli - tpiAli - commissionAli) / valeurAli) * 100)}% du prix de vente</Text>
                   </Box>
 
                   {/* Impact DGI */}
-                  <Box bg="orange.50" p={4} borderRadius="md" borderWidth="1px" borderColor="orange.200">
-                    <HStack mb={2}>
-                      <Box w="8px" h="8px" borderRadius="full" bg="orange.400" />
-                      <Text fontSize="xs" color="orange.700" fontWeight="semibold" textTransform="uppercase">Si la DGI rectifie</Text>
+                  <Box bg="orange.50" p={4} borderRadius="md" borderWidth="2px" borderColor="orange.200">
+                    <HStack spacing={2} mb={3}>
+                      <Box w="10px" h="10px" borderRadius="full" bg="orange.400" />
+                      <Text fontSize="sm" color="orange.700" fontWeight="semibold" textTransform="uppercase">Si rectification DGI</Text>
                     </HStack>
-                    <Text fontSize="lg" fontWeight="bold" color="orange.700">+{formatNumber(tpiAliDGI - tpiAli)} MAD</Text>
-                    <Box mt={2} p={2} bg="orange.100" borderRadius="md">
-                      <Text fontSize="lg" fontWeight="bold" color="orange.800" textAlign="center">
-                        +{formatPercent(valeurAli > 0 ? ((tpiAliDGI - tpiAli) / valeurAli) * 100 : 0)}%
-                      </Text>
-                      <Text fontSize="xs" color="orange.600" textAlign="center">de ta vente en plus d'impôts</Text>
+                    <HStack justify="space-between" align="baseline" mb={3}>
+                      <Text fontSize="sm" color="gray.600">TPI supplémentaire</Text>
+                      <Text fontSize="md" fontWeight="semibold" color="gray.700">+{formatNumber(tpiAliDGI - tpiAli)} MAD</Text>
+                    </HStack>
+                    <Box bg="orange.100" p={3} borderRadius="md" textAlign="center">
+                      <Text fontSize="2xl" fontWeight="bold" color="orange.700">+{formatPercent(valeurAli > 0 ? ((tpiAliDGI - tpiAli) / valeurAli) * 100 : 0)}%</Text>
+                      <Text fontSize="xs" color="orange.600">du prix de vente</Text>
                     </Box>
                   </Box>
                 </CardBody>
               </Card>
 
               {/* AMINA */}
-              <Card borderWidth="2px" borderColor="purple.400" overflow="hidden">
-                <Box bg="purple.500" py={3} px={4}>
-                  <Text fontSize="xl" fontWeight="bold" color="white" textAlign="center">Amina</Text>
+              <Card borderWidth="1px" borderColor="gray.200" overflow="hidden" shadow="sm">
+                <Box bg="gray.700" py={4} px={4}>
+                  <VStack spacing={2}>
+                    <Avatar size="xl" name="Amina" src="/images/Amina_Slaoui_by_MediaCommunity.jpg" />
+                    <Text fontSize="lg" fontWeight="semibold" color="white">Amina</Text>
+                  </VStack>
                 </Box>
                 <CardBody>
                   {/* Ce qu'elle reçoit */}
-                  <Box bg="green.50" p={4} borderRadius="md" mb={3}>
-                    <Text fontSize="xs" color="green.600" fontWeight="semibold" textTransform="uppercase" mb={1}>Prix de vente</Text>
-                    <Text fontSize="2xl" fontWeight="bold" color="green.700">{formatNumber(valeurAmina)} MAD</Text>
+                  <Box p={4} borderRadius="md" mb={3} borderWidth="1px" borderColor="gray.100">
+                    <Text fontSize="xs" color="gray.500" fontWeight="medium" textTransform="uppercase" mb={1}>Prix de vente</Text>
+                    <Text fontSize="2xl" fontWeight="bold" color="gray.800">{formatNumber(valeurAmina)} MAD</Text>
                   </Box>
 
                   {/* Frais à déduire */}
-                  <Box bg="red.50" p={4} borderRadius="md" mb={3}>
-                    <Text fontSize="xs" color="red.600" fontWeight="semibold" textTransform="uppercase" mb={2}>Frais à déduire</Text>
+                  <Box bg="gray.50" p={4} borderRadius="md" mb={3}>
+                    <Text fontSize="xs" color="gray.500" fontWeight="medium" textTransform="uppercase" mb={2}>Frais à déduire</Text>
                     <HStack justify="space-between" mb={1}>
                       <Text fontSize="sm" color="gray.600">TPI ({formatPercent((tpiAmina / valeurAmina) * 100)}%)</Text>
-                      <Text fontSize="sm" fontWeight="bold" color="red.600">-{formatNumber(tpiAmina)} MAD</Text>
+                      <Text fontSize="sm" fontWeight="medium" color="gray.700">-{formatNumber(tpiAmina)} MAD</Text>
                     </HStack>
                     <HStack justify="space-between">
                       <Text fontSize="sm" color="gray.600">Commission ({commission}%)</Text>
-                      <Text fontSize="sm" fontWeight="bold" color="red.600">-{formatNumber(commissionAmina)} MAD</Text>
+                      <Text fontSize="sm" fontWeight="medium" color="gray.700">-{formatNumber(commissionAmina)} MAD</Text>
                     </HStack>
-                    <Divider my={2} />
+                    <Divider my={2} borderColor="gray.200" />
                     <HStack justify="space-between">
-                      <Text fontSize="sm" fontWeight="bold" color="red.700">Total frais</Text>
-                      <Text fontSize="md" fontWeight="bold" color="red.700">-{formatNumber(tpiAmina + commissionAmina)} MAD</Text>
+                      <Text fontSize="sm" fontWeight="semibold" color="gray.700">Total frais</Text>
+                      <Text fontSize="md" fontWeight="semibold" color="gray.800">-{formatNumber(tpiAmina + commissionAmina)} MAD</Text>
                     </HStack>
                   </Box>
 
                   {/* Net */}
-                  <Box bg="purple.100" p={4} borderRadius="md" mb={3}>
-                    <Text fontSize="xs" color="purple.700" fontWeight="semibold" textTransform="uppercase" mb={1}>Il te reste net</Text>
-                    <Text fontSize="2xl" fontWeight="bold" color="purple.800">{formatNumber(valeurAmina - tpiAmina - commissionAmina)} MAD</Text>
-                    <Text fontSize="xs" color="purple.600">soit {formatPercent(((valeurAmina - tpiAmina - commissionAmina) / valeurAmina) * 100)}% du prix de vente</Text>
+                  <Box bg="teal.50" p={4} borderRadius="md" mb={3} borderWidth="1px" borderColor="teal.100">
+                    <Text fontSize="xs" color="teal.600" fontWeight="medium" textTransform="uppercase" mb={1}>Net à percevoir</Text>
+                    <Text fontSize="2xl" fontWeight="bold" color="teal.700">{formatNumber(valeurAmina - tpiAmina - commissionAmina)} MAD</Text>
+                    <Text fontSize="xs" color="teal.500">{formatPercent(((valeurAmina - tpiAmina - commissionAmina) / valeurAmina) * 100)}% du prix de vente</Text>
                   </Box>
 
                   {/* Impact DGI */}
-                  <Box bg="orange.50" p={4} borderRadius="md" borderWidth="1px" borderColor="orange.200">
-                    <HStack mb={2}>
-                      <Box w="8px" h="8px" borderRadius="full" bg="orange.400" />
-                      <Text fontSize="xs" color="orange.700" fontWeight="semibold" textTransform="uppercase">Si la DGI rectifie</Text>
+                  <Box bg="orange.50" p={4} borderRadius="md" borderWidth="2px" borderColor="orange.200">
+                    <HStack spacing={2} mb={3}>
+                      <Box w="10px" h="10px" borderRadius="full" bg="orange.400" />
+                      <Text fontSize="sm" color="orange.700" fontWeight="semibold" textTransform="uppercase">Si rectification DGI</Text>
                     </HStack>
-                    <Text fontSize="lg" fontWeight="bold" color="orange.700">+{formatNumber(tpiAminaDGI - tpiAmina)} MAD</Text>
-                    <Box mt={2} p={2} bg="orange.100" borderRadius="md">
-                      <Text fontSize="lg" fontWeight="bold" color="orange.800" textAlign="center">
-                        +{formatPercent(valeurAmina > 0 ? ((tpiAminaDGI - tpiAmina) / valeurAmina) * 100 : 0)}%
-                      </Text>
-                      <Text fontSize="xs" color="orange.600" textAlign="center">de ta vente en plus d'impôts</Text>
+                    <HStack justify="space-between" align="baseline" mb={3}>
+                      <Text fontSize="sm" color="gray.600">TPI supplémentaire</Text>
+                      <Text fontSize="md" fontWeight="semibold" color="gray.700">+{formatNumber(tpiAminaDGI - tpiAmina)} MAD</Text>
+                    </HStack>
+                    <Box bg="orange.100" p={3} borderRadius="md" textAlign="center">
+                      <Text fontSize="2xl" fontWeight="bold" color="orange.700">+{formatPercent(valeurAmina > 0 ? ((tpiAminaDGI - tpiAmina) / valeurAmina) * 100 : 0)}%</Text>
+                      <Text fontSize="xs" color="orange.600">du prix de vente</Text>
                     </Box>
                   </Box>
                 </CardBody>
               </Card>
 
               {/* LEILA */}
-              <Card borderWidth="2px" borderColor="pink.400" overflow="hidden">
-                <Box bg="pink.500" py={3} px={4}>
-                  <Text fontSize="xl" fontWeight="bold" color="white" textAlign="center">Leila</Text>
+              <Card borderWidth="1px" borderColor="gray.200" overflow="hidden" shadow="sm">
+                <Box bg="gray.700" py={4} px={4}>
+                  <VStack spacing={2}>
+                    <Avatar size="xl" name="Leila" src="/images/leila.jpg" />
+                    <Text fontSize="lg" fontWeight="semibold" color="white">Leila</Text>
+                  </VStack>
                 </Box>
                 <CardBody>
                   {/* Ce qu'elle reçoit */}
-                  <Box bg="green.50" p={4} borderRadius="md" mb={3}>
-                    <Text fontSize="xs" color="green.600" fontWeight="semibold" textTransform="uppercase" mb={1}>Prix de vente</Text>
-                    <Text fontSize="2xl" fontWeight="bold" color="green.700">{formatNumber(valeurLeila)} MAD</Text>
+                  <Box p={4} borderRadius="md" mb={3} borderWidth="1px" borderColor="gray.100">
+                    <Text fontSize="xs" color="gray.500" fontWeight="medium" textTransform="uppercase" mb={1}>Prix de vente</Text>
+                    <Text fontSize="2xl" fontWeight="bold" color="gray.800">{formatNumber(valeurLeila)} MAD</Text>
                   </Box>
 
                   {/* Frais à déduire */}
-                  <Box bg="red.50" p={4} borderRadius="md" mb={3}>
-                    <Text fontSize="xs" color="red.600" fontWeight="semibold" textTransform="uppercase" mb={2}>Frais à déduire</Text>
+                  <Box bg="gray.50" p={4} borderRadius="md" mb={3}>
+                    <Text fontSize="xs" color="gray.500" fontWeight="medium" textTransform="uppercase" mb={2}>Frais à déduire</Text>
                     <HStack justify="space-between" mb={1}>
                       <Text fontSize="sm" color="gray.600">TPI ({formatPercent((tpiLeila / valeurLeila) * 100)}%)</Text>
-                      <Text fontSize="sm" fontWeight="bold" color="red.600">-{formatNumber(tpiLeila)} MAD</Text>
+                      <Text fontSize="sm" fontWeight="medium" color="gray.700">-{formatNumber(tpiLeila)} MAD</Text>
                     </HStack>
                     <HStack justify="space-between">
                       <Text fontSize="sm" color="gray.600">Commission ({commission}%)</Text>
-                      <Text fontSize="sm" fontWeight="bold" color="red.600">-{formatNumber(commissionLeila)} MAD</Text>
+                      <Text fontSize="sm" fontWeight="medium" color="gray.700">-{formatNumber(commissionLeila)} MAD</Text>
                     </HStack>
-                    <Divider my={2} />
+                    <Divider my={2} borderColor="gray.200" />
                     <HStack justify="space-between">
-                      <Text fontSize="sm" fontWeight="bold" color="red.700">Total frais</Text>
-                      <Text fontSize="md" fontWeight="bold" color="red.700">-{formatNumber(tpiLeila + commissionLeila)} MAD</Text>
+                      <Text fontSize="sm" fontWeight="semibold" color="gray.700">Total frais</Text>
+                      <Text fontSize="md" fontWeight="semibold" color="gray.800">-{formatNumber(tpiLeila + commissionLeila)} MAD</Text>
                     </HStack>
                   </Box>
 
                   {/* Net */}
-                  <Box bg="pink.100" p={4} borderRadius="md" mb={3}>
-                    <Text fontSize="xs" color="pink.700" fontWeight="semibold" textTransform="uppercase" mb={1}>Il te reste net</Text>
-                    <Text fontSize="2xl" fontWeight="bold" color="pink.800">{formatNumber(valeurLeila - tpiLeila - commissionLeila)} MAD</Text>
-                    <Text fontSize="xs" color="pink.600">soit {formatPercent(((valeurLeila - tpiLeila - commissionLeila) / valeurLeila) * 100)}% du prix de vente</Text>
+                  <Box bg="teal.50" p={4} borderRadius="md" mb={3} borderWidth="1px" borderColor="teal.100">
+                    <Text fontSize="xs" color="teal.600" fontWeight="medium" textTransform="uppercase" mb={1}>Net à percevoir</Text>
+                    <Text fontSize="2xl" fontWeight="bold" color="teal.700">{formatNumber(valeurLeila - tpiLeila - commissionLeila)} MAD</Text>
+                    <Text fontSize="xs" color="teal.500">{formatPercent(((valeurLeila - tpiLeila - commissionLeila) / valeurLeila) * 100)}% du prix de vente</Text>
                   </Box>
 
                   {/* Impact DGI */}
-                  <Box bg="orange.50" p={4} borderRadius="md" borderWidth="1px" borderColor="orange.200">
-                    <HStack mb={2}>
-                      <Box w="8px" h="8px" borderRadius="full" bg="orange.400" />
-                      <Text fontSize="xs" color="orange.700" fontWeight="semibold" textTransform="uppercase">Si la DGI rectifie</Text>
+                  <Box bg="orange.50" p={4} borderRadius="md" borderWidth="2px" borderColor="orange.200">
+                    <HStack spacing={2} mb={3}>
+                      <Box w="10px" h="10px" borderRadius="full" bg="orange.400" />
+                      <Text fontSize="sm" color="orange.700" fontWeight="semibold" textTransform="uppercase">Si rectification DGI</Text>
                     </HStack>
-                    <Text fontSize="lg" fontWeight="bold" color="orange.700">+{formatNumber(tpiLeilaDGI - tpiLeila)} MAD</Text>
-                    <Box mt={2} p={2} bg="orange.100" borderRadius="md">
-                      <Text fontSize="lg" fontWeight="bold" color="orange.800" textAlign="center">
-                        +{formatPercent(valeurLeila > 0 ? ((tpiLeilaDGI - tpiLeila) / valeurLeila) * 100 : 0)}%
-                      </Text>
-                      <Text fontSize="xs" color="orange.600" textAlign="center">de ta vente en plus d'impôts</Text>
+                    <HStack justify="space-between" align="baseline" mb={3}>
+                      <Text fontSize="sm" color="gray.600">TPI supplémentaire</Text>
+                      <Text fontSize="md" fontWeight="semibold" color="gray.700">+{formatNumber(tpiLeilaDGI - tpiLeila)} MAD</Text>
+                    </HStack>
+                    <Box bg="orange.100" p={3} borderRadius="md" textAlign="center">
+                      <Text fontSize="2xl" fontWeight="bold" color="orange.700">+{formatPercent(valeurLeila > 0 ? ((tpiLeilaDGI - tpiLeila) / valeurLeila) * 100 : 0)}%</Text>
+                      <Text fontSize="xs" color="orange.600">du prix de vente</Text>
                     </Box>
                   </Box>
                 </CardBody>
