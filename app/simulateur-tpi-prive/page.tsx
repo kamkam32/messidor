@@ -144,7 +144,7 @@ function SimulateurContent() {
   const [prixDGI, setPrixDGI] = useState(20000)
   const [anneeVente, setAnneeVente] = useState(2025)
   const [commissionVendeur, setCommissionVendeur] = useState(0.5)
-  const [commissionAcheteur, setCommissionAcheteur] = useState(2.5)
+  const [commissionAcheteur, setCommissionAcheteur] = useState(0.75)
 
   // Lots - surfaces et prix
   const [surface1, setSurface1] = useState(1577)
@@ -272,6 +272,16 @@ function SimulateurContent() {
   const tpiAminaDGI = resultatsDGI.reduce((sum, r) => sum + r.tpiAPayer * r.lot.amina, 0)
   const tpiLeilaDGI = resultatsDGI.reduce((sum, r) => sum + r.tpiAPayer * r.lot.leila, 0)
 
+  // Prix moyen au m²
+  const prixMoyenM2 = totalSurface > 0 ? Math.round(totalValeur / totalSurface) : 0
+
+  // TPI effective à payer = si prix DGI > prix vente, la DGI rectifie
+  const dgiRectifie = prixDGI > prixMoyenM2
+  const tpiAliEffective = dgiRectifie ? tpiAliDGI : tpiAli
+  const tpiAminaEffective = dgiRectifie ? tpiAminaDGI : tpiAmina
+  const tpiLeilaEffective = dgiRectifie ? tpiLeilaDGI : tpiLeila
+  const totalTPIEffective = dgiRectifie ? totalTPIDGI : totalTPI
+
   // Pourcentage TPI par personne
   const tpiAliPercent = totalTPI > 0 ? (tpiAli / totalTPI) * 100 : 0
   const tpiAminaPercent = totalTPI > 0 ? (tpiAmina / totalTPI) * 100 : 0
@@ -292,9 +302,6 @@ function SimulateurContent() {
   // Commission acheteur
   const commissionAcheteurRate = commissionAcheteur / 100
   const totalCommissionAcheteur = totalValeur * commissionAcheteurRate
-
-  // Prix moyen au m²
-  const prixMoyenM2 = totalSurface > 0 ? Math.round(totalValeur / totalSurface) : 0
 
   return (
     <Container maxW="container.xl" py={8}>
@@ -674,116 +681,24 @@ function SimulateurContent() {
           </CardBody>
         </Card>
 
-        {/* IMPACT RECTIFICATION DGI - Section principale */}
-        <Card bg="orange.50" borderWidth="2px" borderColor="orange.300">
+        {/* Calcul TPI détaillé au prix DGI */}
+        <Card bg={bgCard} borderWidth="2px" borderColor="orange.200">
           <CardBody>
-            <Heading size="md" mb={6} color="orange.700">
-              Impact si la DGI rectifie le prix à {formatNumber(prixDGI)} MAD/m²
-            </Heading>
-
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8}>
-              {/* Comparaison côte à côte */}
-              <Box>
-                <SimpleGrid columns={2} spacing={4}>
-                  <Card bg="white">
-                    <CardBody textAlign="center">
-                      <Text fontSize="sm" color="gray.500" mb={1}>TON PRIX</Text>
-                      <Text fontSize="lg" fontWeight="bold" color="gray.700">
-                        {formatNumber(totalValeur)} MAD
-                      </Text>
-                      <Divider my={3} />
-                      <Text fontSize="sm" color="gray.500">TPI à payer</Text>
-                      <Text fontSize="2xl" fontWeight="bold" color="red.600">
-                        {formatNumber(totalTPI)} MAD
-                      </Text>
-                      <Text fontSize="sm" color="gray.500">
-                        ({formatPercent(tpiSurVentePercent)}% du prix de vente)
-                      </Text>
-                    </CardBody>
-                  </Card>
-
-                  <Card bg="orange.100">
-                    <CardBody textAlign="center">
-                      <Text fontSize="sm" color="orange.600" mb={1}>PRIX DGI</Text>
-                      <Text fontSize="lg" fontWeight="bold" color="orange.700">
-                        {formatNumber(totalValeurDGI)} MAD
-                      </Text>
-                      <Divider my={3} />
-                      <Text fontSize="sm" color="orange.600">TPI à payer</Text>
-                      <Text fontSize="2xl" fontWeight="bold" color="orange.700">
-                        {formatNumber(totalTPIDGI)} MAD
-                      </Text>
-                      <Text fontSize="sm" color="orange.600">
-                        ({formatPercent(tpiDGISurVenteDGIPercent)}% du prix de vente)
-                      </Text>
-                    </CardBody>
-                  </Card>
-                </SimpleGrid>
-              </Box>
-
-              {/* Résumé de l'impact */}
-              <Box>
-                <Card bg="white" h="100%">
-                  <CardBody>
-                    <Text fontWeight="bold" color="gray.700" mb={4}>Résumé de l'impact</Text>
-
-                    <VStack spacing={4} align="stretch">
-                      <Box>
-                        <HStack justify="space-between" mb={1}>
-                          <Text fontSize="sm">Différence de TPI</Text>
-                          <Text fontWeight="bold" color="orange.600">+{formatNumber(diffTPI)} MAD</Text>
-                        </HStack>
-                        <Progress value={Math.min(diffTPIPercent, 100)} colorScheme="orange" size="sm" borderRadius="full" />
-                      </Box>
-
-                      <Divider />
-
-                      <SimpleGrid columns={2} spacing={4}>
-                        <Box textAlign="center" p={3} bg="gray.50" borderRadius="md">
-                          <Text fontSize="xs" color="gray.500">% de la TPI initiale</Text>
-                          <Text fontSize="xl" fontWeight="bold" color="orange.600">
-                            +{formatPercent(diffTPIPercent)}%
-                          </Text>
-                        </Box>
-                        <Box textAlign="center" p={3} bg="green.50" borderRadius="md">
-                          <Text fontSize="xs" color="gray.500">% du prix de vente</Text>
-                          <Text fontSize="xl" fontWeight="bold" color="green.600">
-                            +{formatPercent(diffTPISurVente)}%
-                          </Text>
-                        </Box>
-                      </SimpleGrid>
-
-                      <Alert status={diffTPISurVente < 1 ? 'success' : diffTPISurVente < 3 ? 'warning' : 'error'} borderRadius="md">
-                        <AlertIcon />
-                        <Text fontSize="sm">
-                          {diffTPISurVente < 1
-                            ? `Impact faible : même si la DGI rectifie, tu paies seulement ${formatPercent(diffTPISurVente)}% de plus sur ta vente.`
-                            : diffTPISurVente < 3
-                              ? `Impact modéré : la rectification DGI représente ${formatPercent(diffTPISurVente)}% du prix de vente.`
-                              : `Impact significatif : la rectification DGI représente ${formatPercent(diffTPISurVente)}% du prix de vente.`
-                          }
-                        </Text>
-                      </Alert>
-                    </VStack>
-                  </CardBody>
-                </Card>
-              </Box>
-            </SimpleGrid>
-          </CardBody>
-        </Card>
-
-        {/* Calcul TPI détaillé */}
-        <Card bg={bgCard}>
-          <CardBody>
-            <Heading size="md" mb={6} color="brand.700">
-              Calcul TPI détaillé par lot
-            </Heading>
+            <HStack mb={6} spacing={3}>
+              <Heading size="md" color="brand.700">
+                Calcul TPI détaillé par lot
+              </Heading>
+              <Badge colorScheme="orange" fontSize="sm" px={3} py={1}>Prix DGI : {formatNumber(prixDGI)} MAD/m²</Badge>
+            </HStack>
             <Box overflowX="auto">
               <Table size="sm">
-                <Thead bg={bgHeader}>
+                <Thead bg="orange.50">
                   <Tr>
                     <Th>Lot</Th>
-                    <Th isNumeric>Prix vente</Th>
+                    <Th>Type</Th>
+                    <Th isNumeric>Année</Th>
+                    <Th isNumeric>Val. M²</Th>
+                    <Th isNumeric>Prix DGI</Th>
                     <Th isNumeric>Val. déclarée</Th>
                     <Th isNumeric>Coeff</Th>
                     <Th isNumeric>Prix revient</Th>
@@ -794,10 +709,17 @@ function SimulateurContent() {
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {resultats.map((r, i) => (
+                  {resultatsDGI.map((r, i) => (
                     <Tr key={i} bg={r.tpi20 < r.cotisMin ? 'orange.50' : undefined}>
                       <Td fontWeight="bold">{r.lot.nom}</Td>
-                      <Td isNumeric>{formatNumber(r.prixVente)}</Td>
+                      <Td>
+                        <Badge colorScheme={r.lot.type === 'donation' ? 'purple' : 'blue'} variant="subtle">
+                          {r.lot.type === 'donation' ? 'Donation' : 'Héritage'}
+                        </Badge>
+                      </Td>
+                      <Td isNumeric>{r.lot.annee}</Td>
+                      <Td isNumeric>{formatNumber(r.lot.valeurM2)}</Td>
+                      <Td isNumeric fontWeight="medium" color="orange.700">{formatNumber(r.prixVente)}</Td>
                       <Td isNumeric>{formatNumber(r.valeurDeclaree)}</Td>
                       <Td isNumeric>{r.coeff.toFixed(3)}</Td>
                       <Td isNumeric>{formatNumber(r.prixRevient)}</Td>
@@ -814,8 +736,8 @@ function SimulateurContent() {
                 </Tbody>
                 <Tfoot bg="red.600">
                   <Tr>
-                    <Td color="white" fontWeight="bold" colSpan={8}>TOTAL TPI</Td>
-                    <Td isNumeric color="white" fontWeight="bold" fontSize="lg">{formatNumber(totalTPI)} MAD</Td>
+                    <Td color="white" fontWeight="bold" colSpan={11}>TOTAL TPI (prix DGI)</Td>
+                    <Td isNumeric color="white" fontWeight="bold" fontSize="lg">{formatNumber(totalTPIDGI)} MAD</Td>
                   </Tr>
                 </Tfoot>
               </Table>
@@ -823,194 +745,417 @@ function SimulateurContent() {
             <Text fontSize="xs" color="gray.500" mt={2}>
               Les lignes en orange indiquent que la cotisation minimale (3%) s'applique car elle est supérieure à la TPI calculée (20%).
             </Text>
+            <HStack spacing={4} mt={3}>
+              <HStack spacing={2}>
+                <Badge colorScheme="purple" variant="subtle">Donation</Badge>
+                <Text fontSize="xs" color="gray.500">Année: {anneeDonation} | Valeur: {formatNumber(valeurDonation)} MAD/m²</Text>
+              </HStack>
+              <HStack spacing={2}>
+                <Badge colorScheme="blue" variant="subtle">Héritage</Badge>
+                <Text fontSize="xs" color="gray.500">Année: {anneeHeritage} | Valeur: {formatNumber(valeurHeritage)} MAD/m²</Text>
+              </HStack>
+            </HStack>
           </CardBody>
         </Card>
 
-        {/* TPI par personne - Résumé clair */}
+        {/* TPI par personne - Détail complet */}
         <Card bg={bgCard}>
           <CardBody>
-            <Heading size="md" mb={2} color="brand.700">
+            <Heading size="md" mb={6} color="brand.700">
               Récapitulatif par personne
             </Heading>
-            <Text fontSize="sm" color="gray.500" mb={6}>
-              Ce que chacun reçoit et ce qu'il doit payer en impôts
-            </Text>
 
-            <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
+            <SimpleGrid columns={{ base: 1, lg: 3 }} spacing={6}>
               {/* ALI */}
-              <Card borderWidth="1px" borderColor="gray.200" overflow="hidden" shadow="sm">
-                <Box bg="gray.700" py={4} px={4}>
-                  <VStack spacing={2}>
-                    <Avatar size="xl" name="Ali" src="/images/ali.jpg" />
-                    <Text fontSize="lg" fontWeight="semibold" color="white">Ali</Text>
-                  </VStack>
+              <Card borderWidth="1px" borderColor="gray.200" overflow="hidden" shadow="md">
+                <Box bg="blue.600" py={4} px={4}>
+                  <HStack spacing={4}>
+                    <Avatar size="lg" name="Ali" src="/images/ali.jpg" />
+                    <Box>
+                      <Text fontSize="xl" fontWeight="bold" color="white">Ali</Text>
+                      <Text fontSize="sm" color="blue.100">Part de vente : {formatNumber(valeurAli)} MAD</Text>
+                    </Box>
+                  </HStack>
                 </Box>
-                <CardBody>
-                  {/* Ce qu'il reçoit */}
-                  <Box p={4} borderRadius="md" mb={3} borderWidth="1px" borderColor="gray.100">
-                    <Text fontSize="xs" color="gray.500" fontWeight="medium" textTransform="uppercase" mb={1}>Prix de vente</Text>
-                    <Text fontSize="2xl" fontWeight="bold" color="gray.800">{formatNumber(valeurAli)} MAD</Text>
+                <CardBody p={0}>
+                  {/* Tableau comparatif */}
+                  <Table size="sm" variant="simple">
+                    <Thead>
+                      <Tr bg="gray.50">
+                        <Th fontSize="xs" py={3}>Lot</Th>
+                        <Th fontSize="xs" py={3} isNumeric>TPI 20%</Th>
+                        <Th fontSize="xs" py={3} isNumeric>Cotis. 3%</Th>
+                        <Th fontSize="xs" py={3} isNumeric bg="blue.50" color="blue.700">A payer</Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                      {resultats.map((r, i) => r.lot.ali > 0 && (
+                        <Tr key={i}>
+                          <Td fontSize="xs" py={2}>
+                            <Text fontWeight="medium">{r.lot.nom}</Text>
+                            <Text fontSize="xs" color="gray.500">{(r.lot.ali * 100).toFixed(0)}%</Text>
+                          </Td>
+                          <Td fontSize="xs" py={2} isNumeric>
+                            <Text color={r.tpi20 >= r.cotisMin ? 'blue.600' : 'gray.400'} fontWeight={r.tpi20 >= r.cotisMin ? 'semibold' : 'normal'}>
+                              {formatNumber(r.tpi20 * r.lot.ali)}
+                            </Text>
+                          </Td>
+                          <Td fontSize="xs" py={2} isNumeric>
+                            <Text color={r.tpi20 < r.cotisMin ? 'blue.600' : 'gray.400'} fontWeight={r.tpi20 < r.cotisMin ? 'semibold' : 'normal'}>
+                              {formatNumber(r.cotisMin * r.lot.ali)}
+                            </Text>
+                          </Td>
+                          <Td fontSize="xs" py={2} isNumeric bg="blue.50">
+                            <Text fontWeight="bold" color="blue.700">{formatNumber(r.tpiAPayer * r.lot.ali)}</Text>
+                          </Td>
+                        </Tr>
+                      ))}
+                    </Tbody>
+                    <Tfoot>
+                      <Tr bg="blue.600">
+                        <Td colSpan={3} color="white" fontWeight="bold" fontSize="sm">Total TPI</Td>
+                        <Td isNumeric color="white" fontWeight="bold" fontSize="md">{formatNumber(tpiAli)}</Td>
+                      </Tr>
+                    </Tfoot>
+                  </Table>
+
+                  {/* Si DGI rectifie */}
+                  <Box bg="amber.50" borderTop="3px solid" borderColor="amber.400">
+                    <Box px={4} py={2} bg="amber.100">
+                      <Text fontSize="xs" fontWeight="bold" color="amber.800">SI LA DGI RECTIFIE AU PRIX DE {formatNumber(prixDGI)} MAD/M²</Text>
+                    </Box>
+                    <Table size="sm" variant="simple">
+                      <Tbody>
+                        {resultatsDGI.map((r, i) => r.lot.ali > 0 && (
+                          <Tr key={i}>
+                            <Td fontSize="xs" py={2}>
+                              <Text fontWeight="medium">{r.lot.nom}</Text>
+                            </Td>
+                            <Td fontSize="xs" py={2} isNumeric>
+                              <Text color={r.tpi20 >= r.cotisMin ? 'amber.700' : 'gray.400'} fontWeight={r.tpi20 >= r.cotisMin ? 'semibold' : 'normal'}>
+                                {formatNumber(r.tpi20 * r.lot.ali)}
+                              </Text>
+                            </Td>
+                            <Td fontSize="xs" py={2} isNumeric>
+                              <Text color={r.tpi20 < r.cotisMin ? 'amber.700' : 'gray.400'} fontWeight={r.tpi20 < r.cotisMin ? 'semibold' : 'normal'}>
+                                {formatNumber(r.cotisMin * r.lot.ali)}
+                              </Text>
+                            </Td>
+                            <Td fontSize="xs" py={2} isNumeric bg="amber.100">
+                              <Text fontWeight="bold" color="amber.800">{formatNumber(r.tpiAPayer * r.lot.ali)}</Text>
+                            </Td>
+                          </Tr>
+                        ))}
+                      </Tbody>
+                      <Tfoot>
+                        <Tr bg="amber.500">
+                          <Td colSpan={3} color="white" fontWeight="bold" fontSize="sm">Total TPI (DGI)</Td>
+                          <Td isNumeric color="white" fontWeight="bold" fontSize="md">{formatNumber(tpiAliDGI)}</Td>
+                        </Tr>
+                      </Tfoot>
+                    </Table>
                   </Box>
 
-                  {/* Frais à déduire */}
-                  <Box bg="gray.50" p={4} borderRadius="md" mb={3}>
-                    <Text fontSize="xs" color="gray.500" fontWeight="medium" textTransform="uppercase" mb={2}>Frais à déduire</Text>
-                    <HStack justify="space-between" mb={1}>
-                      <Text fontSize="sm" color="gray.600">TPI ({formatPercent((tpiAli / valeurAli) * 100)}%)</Text>
-                      <Text fontSize="sm" fontWeight="medium" color="gray.700">-{formatNumber(tpiAli)} MAD</Text>
-                    </HStack>
-                    <HStack justify="space-between">
-                      <Text fontSize="sm" color="gray.600">Commission ({commissionVendeur}%)</Text>
-                      <Text fontSize="sm" fontWeight="medium" color="gray.700">-{formatNumber(commissionAli)} MAD</Text>
-                    </HStack>
-                    <Divider my={2} borderColor="gray.200" />
-                    <HStack justify="space-between">
-                      <Text fontSize="sm" fontWeight="semibold" color="gray.700">Total frais</Text>
-                      <Text fontSize="md" fontWeight="semibold" color="gray.800">-{formatNumber(tpiAli + commissionAli)} MAD</Text>
-                    </HStack>
-                  </Box>
-
-                  {/* Net */}
-                  <Box bg="teal.50" p={4} borderRadius="md" mb={3} borderWidth="1px" borderColor="teal.100">
-                    <Text fontSize="xs" color="teal.600" fontWeight="medium" textTransform="uppercase" mb={1}>Net à percevoir</Text>
-                    <Text fontSize="2xl" fontWeight="bold" color="teal.700">{formatNumber(valeurAli - tpiAli - commissionAli)} MAD</Text>
-                    <Text fontSize="xs" color="teal.500">{formatPercent(((valeurAli - tpiAli - commissionAli) / valeurAli) * 100)}% du prix de vente</Text>
-                  </Box>
-
-                  {/* Impact DGI */}
-                  <Box bg="orange.50" p={4} borderRadius="md" borderWidth="2px" borderColor="orange.200">
-                    <HStack spacing={2} mb={3}>
-                      <Box w="10px" h="10px" borderRadius="full" bg="orange.400" />
-                      <Text fontSize="sm" color="orange.700" fontWeight="semibold" textTransform="uppercase">Si rectification DGI</Text>
-                    </HStack>
-                    <HStack justify="space-between" align="baseline" mb={3}>
-                      <Text fontSize="sm" color="gray.600">TPI supplémentaire</Text>
-                      <Text fontSize="md" fontWeight="semibold" color="gray.700">+{formatNumber(tpiAliDGI - tpiAli)} MAD</Text>
-                    </HStack>
-                    <Box bg="orange.100" p={3} borderRadius="md" textAlign="center">
-                      <Text fontSize="2xl" fontWeight="bold" color="orange.700">+{formatPercent(valeurAli > 0 ? ((tpiAliDGI - tpiAli) / valeurAli) * 100 : 0)}%</Text>
-                      <Text fontSize="xs" color="orange.600">du prix de vente</Text>
+                  {/* Résumé */}
+                  <Box p={4} bg="gray.50">
+                    <SimpleGrid columns={2} spacing={3}>
+                      <Box>
+                        <Text fontSize="xs" color="gray.500">Commission ({commissionVendeur}%)</Text>
+                        <Text fontSize="sm" fontWeight="medium">-{formatNumber(commissionAli)} MAD</Text>
+                      </Box>
+                      <Box>
+                        <Text fontSize="xs" color="amber.600" fontWeight="semibold">Surcoût si DGI</Text>
+                        <Text fontSize="sm" fontWeight="bold" color="amber.700">+{formatNumber(tpiAliDGI - tpiAli)} MAD</Text>
+                      </Box>
+                    </SimpleGrid>
+                    <Divider my={3} />
+                    <SimpleGrid columns={2} spacing={3}>
+                      <Box p={3} bg="teal.50" borderRadius="md">
+                        <Text fontSize="xs" color="teal.600">Net (prix vente)</Text>
+                        <Text fontSize="lg" fontWeight="bold" color="teal.700">{formatNumber(valeurAli - tpiAli - commissionAli)}</Text>
+                      </Box>
+                      <Box p={3} bg="amber.50" borderRadius="md">
+                        <Text fontSize="xs" color="amber.600">Net (prix DGI)</Text>
+                        <Text fontSize="lg" fontWeight="bold" color="amber.700">{formatNumber(valeurAli - tpiAliDGI - commissionAli)}</Text>
+                      </Box>
+                    </SimpleGrid>
+                    <Box mt={3} p={2} bg="red.50" borderRadius="md" textAlign="center">
+                      <Text fontSize="xs" color="red.600">Impact si rectification DGI</Text>
+                      <Text fontSize="xl" fontWeight="bold" color="red.600">-{formatPercent(valeurAli > 0 ? ((tpiAliDGI - tpiAli) / valeurAli) * 100 : 0)}%</Text>
                     </Box>
                   </Box>
                 </CardBody>
               </Card>
 
               {/* AMINA */}
-              <Card borderWidth="1px" borderColor="gray.200" overflow="hidden" shadow="sm">
-                <Box bg="gray.700" py={4} px={4}>
-                  <VStack spacing={2}>
-                    <Avatar size="xl" name="Amina" src="/images/Amina_Slaoui_by_MediaCommunity.jpg" />
-                    <Text fontSize="lg" fontWeight="semibold" color="white">Amina</Text>
-                  </VStack>
+              <Card borderWidth="1px" borderColor="gray.200" overflow="hidden" shadow="md">
+                <Box bg="purple.600" py={4} px={4}>
+                  <HStack spacing={4}>
+                    <Avatar size="lg" name="Amina" src="/images/Amina_Slaoui_by_MediaCommunity.jpg" />
+                    <Box>
+                      <Text fontSize="xl" fontWeight="bold" color="white">Amina</Text>
+                      <Text fontSize="sm" color="purple.100">Part de vente : {formatNumber(valeurAmina)} MAD</Text>
+                    </Box>
+                  </HStack>
                 </Box>
-                <CardBody>
-                  {/* Ce qu'elle reçoit */}
-                  <Box p={4} borderRadius="md" mb={3} borderWidth="1px" borderColor="gray.100">
-                    <Text fontSize="xs" color="gray.500" fontWeight="medium" textTransform="uppercase" mb={1}>Prix de vente</Text>
-                    <Text fontSize="2xl" fontWeight="bold" color="gray.800">{formatNumber(valeurAmina)} MAD</Text>
+                <CardBody p={0}>
+                  {/* Tableau comparatif */}
+                  <Table size="sm" variant="simple">
+                    <Thead>
+                      <Tr bg="gray.50">
+                        <Th fontSize="xs" py={3}>Lot</Th>
+                        <Th fontSize="xs" py={3} isNumeric>TPI 20%</Th>
+                        <Th fontSize="xs" py={3} isNumeric>Cotis. 3%</Th>
+                        <Th fontSize="xs" py={3} isNumeric bg="purple.50" color="purple.700">A payer</Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                      {resultats.map((r, i) => r.lot.amina > 0 && (
+                        <Tr key={i}>
+                          <Td fontSize="xs" py={2}>
+                            <Text fontWeight="medium">{r.lot.nom}</Text>
+                            <Text fontSize="xs" color="gray.500">{(r.lot.amina * 100).toFixed(0)}%</Text>
+                          </Td>
+                          <Td fontSize="xs" py={2} isNumeric>
+                            <Text color={r.tpi20 >= r.cotisMin ? 'purple.600' : 'gray.400'} fontWeight={r.tpi20 >= r.cotisMin ? 'semibold' : 'normal'}>
+                              {formatNumber(r.tpi20 * r.lot.amina)}
+                            </Text>
+                          </Td>
+                          <Td fontSize="xs" py={2} isNumeric>
+                            <Text color={r.tpi20 < r.cotisMin ? 'purple.600' : 'gray.400'} fontWeight={r.tpi20 < r.cotisMin ? 'semibold' : 'normal'}>
+                              {formatNumber(r.cotisMin * r.lot.amina)}
+                            </Text>
+                          </Td>
+                          <Td fontSize="xs" py={2} isNumeric bg="purple.50">
+                            <Text fontWeight="bold" color="purple.700">{formatNumber(r.tpiAPayer * r.lot.amina)}</Text>
+                          </Td>
+                        </Tr>
+                      ))}
+                    </Tbody>
+                    <Tfoot>
+                      <Tr bg="purple.600">
+                        <Td colSpan={3} color="white" fontWeight="bold" fontSize="sm">Total TPI</Td>
+                        <Td isNumeric color="white" fontWeight="bold" fontSize="md">{formatNumber(tpiAmina)}</Td>
+                      </Tr>
+                    </Tfoot>
+                  </Table>
+
+                  {/* Si DGI rectifie */}
+                  <Box bg="amber.50" borderTop="3px solid" borderColor="amber.400">
+                    <Box px={4} py={2} bg="amber.100">
+                      <Text fontSize="xs" fontWeight="bold" color="amber.800">SI LA DGI RECTIFIE AU PRIX DE {formatNumber(prixDGI)} MAD/M²</Text>
+                    </Box>
+                    <Table size="sm" variant="simple">
+                      <Tbody>
+                        {resultatsDGI.map((r, i) => r.lot.amina > 0 && (
+                          <Tr key={i}>
+                            <Td fontSize="xs" py={2}>
+                              <Text fontWeight="medium">{r.lot.nom}</Text>
+                            </Td>
+                            <Td fontSize="xs" py={2} isNumeric>
+                              <Text color={r.tpi20 >= r.cotisMin ? 'amber.700' : 'gray.400'} fontWeight={r.tpi20 >= r.cotisMin ? 'semibold' : 'normal'}>
+                                {formatNumber(r.tpi20 * r.lot.amina)}
+                              </Text>
+                            </Td>
+                            <Td fontSize="xs" py={2} isNumeric>
+                              <Text color={r.tpi20 < r.cotisMin ? 'amber.700' : 'gray.400'} fontWeight={r.tpi20 < r.cotisMin ? 'semibold' : 'normal'}>
+                                {formatNumber(r.cotisMin * r.lot.amina)}
+                              </Text>
+                            </Td>
+                            <Td fontSize="xs" py={2} isNumeric bg="amber.100">
+                              <Text fontWeight="bold" color="amber.800">{formatNumber(r.tpiAPayer * r.lot.amina)}</Text>
+                            </Td>
+                          </Tr>
+                        ))}
+                      </Tbody>
+                      <Tfoot>
+                        <Tr bg="amber.500">
+                          <Td colSpan={3} color="white" fontWeight="bold" fontSize="sm">Total TPI (DGI)</Td>
+                          <Td isNumeric color="white" fontWeight="bold" fontSize="md">{formatNumber(tpiAminaDGI)}</Td>
+                        </Tr>
+                      </Tfoot>
+                    </Table>
                   </Box>
 
-                  {/* Frais à déduire */}
-                  <Box bg="gray.50" p={4} borderRadius="md" mb={3}>
-                    <Text fontSize="xs" color="gray.500" fontWeight="medium" textTransform="uppercase" mb={2}>Frais à déduire</Text>
-                    <HStack justify="space-between" mb={1}>
-                      <Text fontSize="sm" color="gray.600">TPI ({formatPercent((tpiAmina / valeurAmina) * 100)}%)</Text>
-                      <Text fontSize="sm" fontWeight="medium" color="gray.700">-{formatNumber(tpiAmina)} MAD</Text>
-                    </HStack>
-                    <HStack justify="space-between">
-                      <Text fontSize="sm" color="gray.600">Commission ({commissionVendeur}%)</Text>
-                      <Text fontSize="sm" fontWeight="medium" color="gray.700">-{formatNumber(commissionAmina)} MAD</Text>
-                    </HStack>
-                    <Divider my={2} borderColor="gray.200" />
-                    <HStack justify="space-between">
-                      <Text fontSize="sm" fontWeight="semibold" color="gray.700">Total frais</Text>
-                      <Text fontSize="md" fontWeight="semibold" color="gray.800">-{formatNumber(tpiAmina + commissionAmina)} MAD</Text>
-                    </HStack>
-                  </Box>
-
-                  {/* Net */}
-                  <Box bg="teal.50" p={4} borderRadius="md" mb={3} borderWidth="1px" borderColor="teal.100">
-                    <Text fontSize="xs" color="teal.600" fontWeight="medium" textTransform="uppercase" mb={1}>Net à percevoir</Text>
-                    <Text fontSize="2xl" fontWeight="bold" color="teal.700">{formatNumber(valeurAmina - tpiAmina - commissionAmina)} MAD</Text>
-                    <Text fontSize="xs" color="teal.500">{formatPercent(((valeurAmina - tpiAmina - commissionAmina) / valeurAmina) * 100)}% du prix de vente</Text>
-                  </Box>
-
-                  {/* Impact DGI */}
-                  <Box bg="orange.50" p={4} borderRadius="md" borderWidth="2px" borderColor="orange.200">
-                    <HStack spacing={2} mb={3}>
-                      <Box w="10px" h="10px" borderRadius="full" bg="orange.400" />
-                      <Text fontSize="sm" color="orange.700" fontWeight="semibold" textTransform="uppercase">Si rectification DGI</Text>
-                    </HStack>
-                    <HStack justify="space-between" align="baseline" mb={3}>
-                      <Text fontSize="sm" color="gray.600">TPI supplémentaire</Text>
-                      <Text fontSize="md" fontWeight="semibold" color="gray.700">+{formatNumber(tpiAminaDGI - tpiAmina)} MAD</Text>
-                    </HStack>
-                    <Box bg="orange.100" p={3} borderRadius="md" textAlign="center">
-                      <Text fontSize="2xl" fontWeight="bold" color="orange.700">+{formatPercent(valeurAmina > 0 ? ((tpiAminaDGI - tpiAmina) / valeurAmina) * 100 : 0)}%</Text>
-                      <Text fontSize="xs" color="orange.600">du prix de vente</Text>
+                  {/* Résumé */}
+                  <Box p={4} bg="gray.50">
+                    <SimpleGrid columns={2} spacing={3}>
+                      <Box>
+                        <Text fontSize="xs" color="gray.500">Commission ({commissionVendeur}%)</Text>
+                        <Text fontSize="sm" fontWeight="medium">-{formatNumber(commissionAmina)} MAD</Text>
+                      </Box>
+                      <Box>
+                        <Text fontSize="xs" color="amber.600" fontWeight="semibold">Surcoût si DGI</Text>
+                        <Text fontSize="sm" fontWeight="bold" color="amber.700">+{formatNumber(tpiAminaDGI - tpiAmina)} MAD</Text>
+                      </Box>
+                    </SimpleGrid>
+                    <Divider my={3} />
+                    <SimpleGrid columns={2} spacing={3}>
+                      <Box p={3} bg="teal.50" borderRadius="md">
+                        <Text fontSize="xs" color="teal.600">Net (prix vente)</Text>
+                        <Text fontSize="lg" fontWeight="bold" color="teal.700">{formatNumber(valeurAmina - tpiAmina - commissionAmina)}</Text>
+                      </Box>
+                      <Box p={3} bg="amber.50" borderRadius="md">
+                        <Text fontSize="xs" color="amber.600">Net (prix DGI)</Text>
+                        <Text fontSize="lg" fontWeight="bold" color="amber.700">{formatNumber(valeurAmina - tpiAminaDGI - commissionAmina)}</Text>
+                      </Box>
+                    </SimpleGrid>
+                    <Box mt={3} p={2} bg="red.50" borderRadius="md" textAlign="center">
+                      <Text fontSize="xs" color="red.600">Impact si rectification DGI</Text>
+                      <Text fontSize="xl" fontWeight="bold" color="red.600">-{formatPercent(valeurAmina > 0 ? ((tpiAminaDGI - tpiAmina) / valeurAmina) * 100 : 0)}%</Text>
                     </Box>
                   </Box>
                 </CardBody>
               </Card>
 
               {/* LEILA */}
-              <Card borderWidth="1px" borderColor="gray.200" overflow="hidden" shadow="sm">
-                <Box bg="gray.700" py={4} px={4}>
-                  <VStack spacing={2}>
-                    <Avatar size="xl" name="Leila" src="/images/leila.jpg" />
-                    <Text fontSize="lg" fontWeight="semibold" color="white">Leila</Text>
-                  </VStack>
+              <Card borderWidth="1px" borderColor="gray.200" overflow="hidden" shadow="md">
+                <Box bg="pink.600" py={4} px={4}>
+                  <HStack spacing={4}>
+                    <Avatar size="lg" name="Leila" src="/images/leila.jpg" />
+                    <Box>
+                      <Text fontSize="xl" fontWeight="bold" color="white">Leila</Text>
+                      <Text fontSize="sm" color="pink.100">Part de vente : {formatNumber(valeurLeila)} MAD</Text>
+                    </Box>
+                  </HStack>
                 </Box>
-                <CardBody>
-                  {/* Ce qu'elle reçoit */}
-                  <Box p={4} borderRadius="md" mb={3} borderWidth="1px" borderColor="gray.100">
-                    <Text fontSize="xs" color="gray.500" fontWeight="medium" textTransform="uppercase" mb={1}>Prix de vente</Text>
-                    <Text fontSize="2xl" fontWeight="bold" color="gray.800">{formatNumber(valeurLeila)} MAD</Text>
+                <CardBody p={0}>
+                  {/* Tableau comparatif */}
+                  <Table size="sm" variant="simple">
+                    <Thead>
+                      <Tr bg="gray.50">
+                        <Th fontSize="xs" py={3}>Lot</Th>
+                        <Th fontSize="xs" py={3} isNumeric>TPI 20%</Th>
+                        <Th fontSize="xs" py={3} isNumeric>Cotis. 3%</Th>
+                        <Th fontSize="xs" py={3} isNumeric bg="pink.50" color="pink.700">A payer</Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                      {resultats.map((r, i) => r.lot.leila > 0 && (
+                        <Tr key={i}>
+                          <Td fontSize="xs" py={2}>
+                            <Text fontWeight="medium">{r.lot.nom}</Text>
+                            <Text fontSize="xs" color="gray.500">{(r.lot.leila * 100).toFixed(0)}%</Text>
+                          </Td>
+                          <Td fontSize="xs" py={2} isNumeric>
+                            <Text color={r.tpi20 >= r.cotisMin ? 'pink.600' : 'gray.400'} fontWeight={r.tpi20 >= r.cotisMin ? 'semibold' : 'normal'}>
+                              {formatNumber(r.tpi20 * r.lot.leila)}
+                            </Text>
+                          </Td>
+                          <Td fontSize="xs" py={2} isNumeric>
+                            <Text color={r.tpi20 < r.cotisMin ? 'pink.600' : 'gray.400'} fontWeight={r.tpi20 < r.cotisMin ? 'semibold' : 'normal'}>
+                              {formatNumber(r.cotisMin * r.lot.leila)}
+                            </Text>
+                          </Td>
+                          <Td fontSize="xs" py={2} isNumeric bg="pink.50">
+                            <Text fontWeight="bold" color="pink.700">{formatNumber(r.tpiAPayer * r.lot.leila)}</Text>
+                          </Td>
+                        </Tr>
+                      ))}
+                    </Tbody>
+                    <Tfoot>
+                      <Tr bg="pink.600">
+                        <Td colSpan={3} color="white" fontWeight="bold" fontSize="sm">Total TPI</Td>
+                        <Td isNumeric color="white" fontWeight="bold" fontSize="md">{formatNumber(tpiLeila)}</Td>
+                      </Tr>
+                    </Tfoot>
+                  </Table>
+
+                  {/* Si DGI rectifie */}
+                  <Box bg="amber.50" borderTop="3px solid" borderColor="amber.400">
+                    <Box px={4} py={2} bg="amber.100">
+                      <Text fontSize="xs" fontWeight="bold" color="amber.800">SI LA DGI RECTIFIE AU PRIX DE {formatNumber(prixDGI)} MAD/M²</Text>
+                    </Box>
+                    <Table size="sm" variant="simple">
+                      <Tbody>
+                        {resultatsDGI.map((r, i) => r.lot.leila > 0 && (
+                          <Tr key={i}>
+                            <Td fontSize="xs" py={2}>
+                              <Text fontWeight="medium">{r.lot.nom}</Text>
+                            </Td>
+                            <Td fontSize="xs" py={2} isNumeric>
+                              <Text color={r.tpi20 >= r.cotisMin ? 'amber.700' : 'gray.400'} fontWeight={r.tpi20 >= r.cotisMin ? 'semibold' : 'normal'}>
+                                {formatNumber(r.tpi20 * r.lot.leila)}
+                              </Text>
+                            </Td>
+                            <Td fontSize="xs" py={2} isNumeric>
+                              <Text color={r.tpi20 < r.cotisMin ? 'amber.700' : 'gray.400'} fontWeight={r.tpi20 < r.cotisMin ? 'semibold' : 'normal'}>
+                                {formatNumber(r.cotisMin * r.lot.leila)}
+                              </Text>
+                            </Td>
+                            <Td fontSize="xs" py={2} isNumeric bg="amber.100">
+                              <Text fontWeight="bold" color="amber.800">{formatNumber(r.tpiAPayer * r.lot.leila)}</Text>
+                            </Td>
+                          </Tr>
+                        ))}
+                      </Tbody>
+                      <Tfoot>
+                        <Tr bg="amber.500">
+                          <Td colSpan={3} color="white" fontWeight="bold" fontSize="sm">Total TPI (DGI)</Td>
+                          <Td isNumeric color="white" fontWeight="bold" fontSize="md">{formatNumber(tpiLeilaDGI)}</Td>
+                        </Tr>
+                      </Tfoot>
+                    </Table>
                   </Box>
 
-                  {/* Frais à déduire */}
-                  <Box bg="gray.50" p={4} borderRadius="md" mb={3}>
-                    <Text fontSize="xs" color="gray.500" fontWeight="medium" textTransform="uppercase" mb={2}>Frais à déduire</Text>
-                    <HStack justify="space-between" mb={1}>
-                      <Text fontSize="sm" color="gray.600">TPI ({formatPercent((tpiLeila / valeurLeila) * 100)}%)</Text>
-                      <Text fontSize="sm" fontWeight="medium" color="gray.700">-{formatNumber(tpiLeila)} MAD</Text>
-                    </HStack>
-                    <HStack justify="space-between">
-                      <Text fontSize="sm" color="gray.600">Commission ({commissionVendeur}%)</Text>
-                      <Text fontSize="sm" fontWeight="medium" color="gray.700">-{formatNumber(commissionLeila)} MAD</Text>
-                    </HStack>
-                    <Divider my={2} borderColor="gray.200" />
-                    <HStack justify="space-between">
-                      <Text fontSize="sm" fontWeight="semibold" color="gray.700">Total frais</Text>
-                      <Text fontSize="md" fontWeight="semibold" color="gray.800">-{formatNumber(tpiLeila + commissionLeila)} MAD</Text>
-                    </HStack>
-                  </Box>
-
-                  {/* Net */}
-                  <Box bg="teal.50" p={4} borderRadius="md" mb={3} borderWidth="1px" borderColor="teal.100">
-                    <Text fontSize="xs" color="teal.600" fontWeight="medium" textTransform="uppercase" mb={1}>Net à percevoir</Text>
-                    <Text fontSize="2xl" fontWeight="bold" color="teal.700">{formatNumber(valeurLeila - tpiLeila - commissionLeila)} MAD</Text>
-                    <Text fontSize="xs" color="teal.500">{formatPercent(((valeurLeila - tpiLeila - commissionLeila) / valeurLeila) * 100)}% du prix de vente</Text>
-                  </Box>
-
-                  {/* Impact DGI */}
-                  <Box bg="orange.50" p={4} borderRadius="md" borderWidth="2px" borderColor="orange.200">
-                    <HStack spacing={2} mb={3}>
-                      <Box w="10px" h="10px" borderRadius="full" bg="orange.400" />
-                      <Text fontSize="sm" color="orange.700" fontWeight="semibold" textTransform="uppercase">Si rectification DGI</Text>
-                    </HStack>
-                    <HStack justify="space-between" align="baseline" mb={3}>
-                      <Text fontSize="sm" color="gray.600">TPI supplémentaire</Text>
-                      <Text fontSize="md" fontWeight="semibold" color="gray.700">+{formatNumber(tpiLeilaDGI - tpiLeila)} MAD</Text>
-                    </HStack>
-                    <Box bg="orange.100" p={3} borderRadius="md" textAlign="center">
-                      <Text fontSize="2xl" fontWeight="bold" color="orange.700">+{formatPercent(valeurLeila > 0 ? ((tpiLeilaDGI - tpiLeila) / valeurLeila) * 100 : 0)}%</Text>
-                      <Text fontSize="xs" color="orange.600">du prix de vente</Text>
+                  {/* Résumé */}
+                  <Box p={4} bg="gray.50">
+                    <SimpleGrid columns={2} spacing={3}>
+                      <Box>
+                        <Text fontSize="xs" color="gray.500">Commission ({commissionVendeur}%)</Text>
+                        <Text fontSize="sm" fontWeight="medium">-{formatNumber(commissionLeila)} MAD</Text>
+                      </Box>
+                      <Box>
+                        <Text fontSize="xs" color="amber.600" fontWeight="semibold">Surcoût si DGI</Text>
+                        <Text fontSize="sm" fontWeight="bold" color="amber.700">+{formatNumber(tpiLeilaDGI - tpiLeila)} MAD</Text>
+                      </Box>
+                    </SimpleGrid>
+                    <Divider my={3} />
+                    <SimpleGrid columns={2} spacing={3}>
+                      <Box p={3} bg="teal.50" borderRadius="md">
+                        <Text fontSize="xs" color="teal.600">Net (prix vente)</Text>
+                        <Text fontSize="lg" fontWeight="bold" color="teal.700">{formatNumber(valeurLeila - tpiLeila - commissionLeila)}</Text>
+                      </Box>
+                      <Box p={3} bg="amber.50" borderRadius="md">
+                        <Text fontSize="xs" color="amber.600">Net (prix DGI)</Text>
+                        <Text fontSize="lg" fontWeight="bold" color="amber.700">{formatNumber(valeurLeila - tpiLeilaDGI - commissionLeila)}</Text>
+                      </Box>
+                    </SimpleGrid>
+                    <Box mt={3} p={2} bg="red.50" borderRadius="md" textAlign="center">
+                      <Text fontSize="xs" color="red.600">Impact si rectification DGI</Text>
+                      <Text fontSize="xl" fontWeight="bold" color="red.600">-{formatPercent(valeurLeila > 0 ? ((tpiLeilaDGI - tpiLeila) / valeurLeila) * 100 : 0)}%</Text>
                     </Box>
                   </Box>
                 </CardBody>
               </Card>
             </SimpleGrid>
+
+            {/* Récapitulatif global */}
+            <Card mt={6} bg="gray.800" color="white">
+              <CardBody>
+                <Text fontSize="sm" fontWeight="bold" mb={4} textTransform="uppercase" letterSpacing="wide">Récapitulatif global</Text>
+                <SimpleGrid columns={{ base: 2, md: 4 }} spacing={6}>
+                  <Box p={4} bg="whiteAlpha.100" borderRadius="md">
+                    <Text fontSize="xs" color="gray.400">Total TPI (prix vente)</Text>
+                    <Text fontSize="2xl" fontWeight="bold">{formatNumber(totalTPI)} MAD</Text>
+                    <Text fontSize="xs" color="gray.400">{formatPercent((totalTPI / totalValeur) * 100)}% du prix</Text>
+                  </Box>
+                  <Box p={4} bg="amber.500" borderRadius="md">
+                    <Text fontSize="xs" color="amber.100">Total TPI (prix DGI)</Text>
+                    <Text fontSize="2xl" fontWeight="bold">{formatNumber(totalTPIDGI)} MAD</Text>
+                    <Text fontSize="xs" color="amber.100">{formatPercent((totalTPIDGI / totalValeurDGI) * 100)}% du prix DGI</Text>
+                  </Box>
+                  <Box p={4} bg="red.500" borderRadius="md">
+                    <Text fontSize="xs" color="red.100">Surcoût DGI</Text>
+                    <Text fontSize="2xl" fontWeight="bold">+{formatNumber(totalTPIDGI - totalTPI)} MAD</Text>
+                  </Box>
+                  <Box p={4} bg="red.600" borderRadius="md">
+                    <Text fontSize="xs" color="red.100">Impact sur le net</Text>
+                    <Text fontSize="2xl" fontWeight="bold">-{formatPercent(((totalTPIDGI - totalTPI) / totalValeur) * 100)}%</Text>
+                  </Box>
+                </SimpleGrid>
+              </CardBody>
+            </Card>
           </CardBody>
         </Card>
 
