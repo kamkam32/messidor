@@ -646,7 +646,7 @@ function CalculateurSuccession() {
               value={patrimoine}
               onChange={setPatrimoine}
               step={100000}
-              max={50000000}
+              max={500000000}
               placeholder="2 000 000"
             />
           </FormControl>
@@ -1194,198 +1194,761 @@ function BilanPatrimonial() {
   )
 }
 
-// Simulateur 5: Plus-Value Immobilière
+// Simulateur 5: Plus-Value Immobilière (TPI - Taxe sur le Profit Immobilier)
 function SimulateurPVImmobiliere() {
   const [prixAchat, setPrixAchat] = useState<number>(1000000)
   const [prixVente, setPrixVente] = useState<number>(1500000)
   const [dureeDetention, setDureeDetention] = useState<number>(5)
-  const [fraisAcquisition, setFraisAcquisition] = useState<number>(70000)
+  const [anneeAchat, setAnneeAchat] = useState<number>(2019)
+  const [fraisAcquisitionReels, setFraisAcquisitionReels] = useState<number>(0)
   const [travauxAmeliorations, setTravauxAmeliorations] = useState<number>(0)
+  const [interetsBancaires, setInteretsBancaires] = useState<number>(0)
+  const [fraisCession, setFraisCession] = useState<number>(0)
+  const [estResidencePrincipale, setEstResidencePrincipale] = useState<string>('non')
+  const [typeBien, setTypeBien] = useState<string>('appartement')
+  const [modeAcquisition, setModeAcquisition] = useState<string>('achat')
+  const [valeurSuccession, setValeurSuccession] = useState<number>(0)
+  const [fraisSuccession, setFraisSuccession] = useState<number>(0)
+  const [prixReferenceDGI, setPrixReferenceDGI] = useState<number>(0)
+  const [showOptionsDGI, setShowOptionsDGI] = useState<boolean>(false)
 
-  const plusValueBrute = prixVente - (prixAchat + fraisAcquisition + travauxAmeliorations)
+  const bgCard = useColorModeValue('white', 'gray.800')
+  const borderColor = useColorModeValue('gray.200', 'gray.700')
 
-  // Abattement selon la durée de détention (simplifié)
-  let tauxAbattement = 0
-  if (dureeDetention >= 4 && dureeDetention < 6) {
-    tauxAbattement = 0.1 // 10%
-  } else if (dureeDetention >= 6 && dureeDetention < 8) {
-    tauxAbattement = 0.2 // 20%
-  } else if (dureeDetention >= 8) {
-    tauxAbattement = 0.3 // 30% (abattement prolongé jusqu'en 2030)
+  // Coefficients de réévaluation approximatifs (basés sur l'inflation)
+  // En pratique, ces coefficients sont fixés chaque année par arrêté ministériel
+  const getCoeffReevaluation = (annee: number): number => {
+    const coefficients: { [key: number]: number } = {
+      2024: 1.000, 2023: 1.014, 2022: 1.035, 2021: 1.048,
+      2020: 1.055, 2019: 1.063, 2018: 1.075, 2017: 1.087,
+      2016: 1.104, 2015: 1.120, 2014: 1.125, 2013: 1.145,
+      2012: 1.160, 2011: 1.170, 2010: 1.180, 2009: 1.190,
+      2008: 1.205, 2007: 1.225, 2006: 1.260, 2005: 1.275,
+      2004: 1.295, 2003: 1.310, 2002: 1.325, 2001: 1.345,
+      2000: 1.360,
+    }
+    if (annee >= 2024) return 1.0
+    if (annee < 2000) return 1.36 + (2000 - annee) * 0.03 // Estimation pour années antérieures
+    return coefficients[annee] || 1.0
   }
 
-  const abattement = plusValueBrute * tauxAbattement
-  const plusValueImposable = Math.max(0, plusValueBrute - abattement)
-  const impot = plusValueImposable * FISCALITE.plusValueImmobiliere
-  const netApresFiscalite = plusValueBrute - impot
+  // Déterminer le prix de base selon le mode d'acquisition
+  const estSuccession = modeAcquisition === 'succession' || modeAcquisition === 'donation'
+  const prixBase = estSuccession ? valeurSuccession : prixAchat
+
+  // Forfait frais d'acquisition : 15% du prix d'achat (accordé par l'État)
+  // S'applique aussi aux biens hérités (sur la valeur déclarée à la succession)
+  const forfaitFraisAcquisition = prixBase * 0.15
+
+  // Pour les successions, on ajoute aussi les frais de succession (droits, notaire...)
+  const fraisReelsTotaux = estSuccession
+    ? fraisAcquisitionReels + fraisSuccession
+    : fraisAcquisitionReels
+
+  // On prend le maximum entre le forfait et les frais réels
+  const fraisAcquisitionRetenus = Math.max(forfaitFraisAcquisition, fraisReelsTotaux)
+
+  // Coefficient de réévaluation
+  const coeffReevaluation = getCoeffReevaluation(anneeAchat)
+
+  // Prix de revient réévalué
+  const prixRevientBase = prixBase + fraisAcquisitionRetenus + travauxAmeliorations + (estSuccession ? 0 : interetsBancaires)
+  const prixRevientReevalue = prixRevientBase * coeffReevaluation
+
+  // Prix retenu pour le calcul de la TPI (DGI peut rectifier)
+  const prixRetenuTPI = prixReferenceDGI > 0 ? Math.max(prixVente, prixReferenceDGI) : prixVente
+  const estPrixRectifie = prixReferenceDGI > 0 && prixReferenceDGI > prixVente
+
+  // Plus-value brute (calculée sur le prix retenu par la DGI)
+  const plusValueBrute = prixRetenuTPI - fraisCession - prixRevientReevalue
+
+  // Abattement pour durée de détention : 3% par année au-delà de 5 ans, plafonné à 20%
+  let tauxAbattementDetention = 0
+  if (dureeDetention > 5) {
+    const anneesSupplementaires = dureeDetention - 5
+    tauxAbattementDetention = Math.min(anneesSupplementaires * 0.03, 0.20)
+  }
+
+  const abattementDetention = Math.max(0, plusValueBrute) * tauxAbattementDetention
+  const plusValueApresAbattement = Math.max(0, plusValueBrute - abattementDetention)
+
+  // Calcul TPI : 20% de la plus-value
+  const tpiCalculee = plusValueApresAbattement * 0.20
+
+  // Cotisation minimale : 3% du prix retenu (même sans plus-value !)
+  const cotisationMinimale = prixRetenuTPI * 0.03
+
+  // Vérification exonération résidence principale
+  let exonere = false
+  let tpiExoneration = 0
+  let messageExoneration = ''
+
+  if (estResidencePrincipale === 'oui' && dureeDetention >= 6) {
+    if (prixRetenuTPI <= 4000000) {
+      exonere = true
+      messageExoneration = 'Exonération totale : résidence principale occupée 6+ ans et prix de vente ≤ 4 000 000 MAD'
+    } else {
+      // Exonération partielle : 3% sur le montant excédentaire
+      tpiExoneration = (prixRetenuTPI - 4000000) * 0.03
+      messageExoneration = `Exonération partielle : 3% sur le montant excédant 4 000 000 MAD (${formatNumber(prixRetenuTPI - 4000000)} MAD)`
+    }
+  }
+
+  // Impôt final : maximum entre TPI calculée et cotisation minimale, sauf exonération
+  let impotFinal = 0
+  let estCotisationMinimale = false
+
+  if (exonere) {
+    impotFinal = 0
+  } else if (tpiExoneration > 0) {
+    impotFinal = tpiExoneration
+  } else {
+    if (tpiCalculee < cotisationMinimale) {
+      impotFinal = cotisationMinimale
+      estCotisationMinimale = true
+    } else {
+      impotFinal = tpiCalculee
+    }
+  }
+
+  const netApresFiscalite = prixVente - fraisCession - prixRevientBase - impotFinal
 
   return (
     <Stack spacing={8}>
       <Text fontSize="lg" color="gray.600">
-        Calculez la plus-value et l'impôt dus lors de la vente d'un bien immobilier au Maroc
-        (Loi de Finances 2025 - abattement de 70% prolongé jusqu'en 2030).
+        Calculez la <strong>Taxe sur le Profit Immobilier (TPI)</strong> lors de la vente d'un bien
+        immobilier au Maroc. Simulation complète avec coefficient de réévaluation, abattements pour
+        durée de détention et cotisation minimale de 3%.
       </Text>
 
-      <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8}>
-        <Stack spacing={6}>
-          <FormControl>
-            <FormLabel color="brand.700" fontWeight="500">
-              Prix d'achat (MAD)
-            </FormLabel>
-            <FormattedNumberInput
-              value={prixAchat}
-              onChange={setPrixAchat}
-              step={50000}
-              max={50000000}
-              placeholder="1 000 000"
-            />
-          </FormControl>
+      <SimpleGrid columns={{ base: 1, xl: 2 }} spacing={8}>
+        <VStack spacing={6} align="stretch">
+          {/* Paramètres du bien */}
+          <Card bg={bgCard} borderColor={borderColor} borderWidth="1px">
+            <CardBody>
+              <Heading size="md" mb={6} color="brand.700" fontWeight="600">
+                Informations sur le bien
+              </Heading>
 
-          <FormControl>
-            <FormLabel color="brand.700" fontWeight="500">
-              Prix de vente (MAD)
-            </FormLabel>
-            <FormattedNumberInput
-              value={prixVente}
-              onChange={setPrixVente}
-              step={50000}
-              max={50000000}
-              placeholder="1 500 000"
-            />
-          </FormControl>
+              <VStack spacing={5} align="stretch">
+                <SimpleGrid columns={2} spacing={4}>
+                  <FormControl>
+                    <FormLabel color="brand.700" fontWeight="500">
+                      Type de bien
+                    </FormLabel>
+                    <Select
+                      value={typeBien}
+                      onChange={(e) => setTypeBien(e.target.value)}
+                      bg={useColorModeValue('gray.50', 'gray.700')}
+                    >
+                      <option value="appartement">Appartement</option>
+                      <option value="villa">Villa / Maison</option>
+                      <option value="terrain">Terrain nu</option>
+                      <option value="local">Local commercial</option>
+                    </Select>
+                  </FormControl>
 
-          <FormControl>
-            <FormLabel color="brand.700" fontWeight="500">
-              Durée de détention (années)
-            </FormLabel>
-            <NumberInput
-              value={dureeDetention}
-              onChange={(_, val) => setDureeDetention(val)}
-              min={0}
-              max={50}
-              step={1}
-            >
-              <NumberInputField />
-              <NumberInputStepper>
-                <NumberIncrementStepper />
-                <NumberDecrementStepper />
-              </NumberInputStepper>
-            </NumberInput>
-            <Text fontSize="xs" color="gray.500" mt={1}>
-              Nombre d'années entre l'achat et la vente
-            </Text>
-          </FormControl>
+                  <FormControl>
+                    <FormLabel color="brand.700" fontWeight="500">
+                      Mode d'acquisition
+                    </FormLabel>
+                    <Select
+                      value={modeAcquisition}
+                      onChange={(e) => setModeAcquisition(e.target.value)}
+                      bg={useColorModeValue('gray.50', 'gray.700')}
+                    >
+                      <option value="achat">Achat classique</option>
+                      <option value="succession">Héritage / Succession</option>
+                      <option value="donation">Donation</option>
+                    </Select>
+                  </FormControl>
+                </SimpleGrid>
 
-          <FormControl>
-            <FormLabel color="brand.700" fontWeight="500">
-              Frais d'acquisition (MAD)
-            </FormLabel>
-            <FormattedNumberInput
-              value={fraisAcquisition}
-              onChange={setFraisAcquisition}
-              step={5000}
-              max={prixAchat}
-              placeholder="70 000"
-            />
-            <Text fontSize="xs" color="gray.500" mt={1}>
-              Frais de notaire, droits d'enregistrement (environ 7% du prix)
-            </Text>
-          </FormControl>
+                {estSuccession && (
+                  <Alert status="info" borderRadius="md">
+                    <AlertIcon />
+                    <AlertDescription fontSize="sm">
+                      Pour un bien hérité ou reçu en donation, le prix de référence est la{' '}
+                      <strong>valeur vénale déclarée</strong> dans l'acte de succession/donation.
+                      Le forfait de 15% s'applique sur cette valeur.
+                    </AlertDescription>
+                  </Alert>
+                )}
 
-          <FormControl>
-            <FormLabel color="brand.700" fontWeight="500">
-              Travaux d'amélioration (MAD)
-            </FormLabel>
-            <FormattedNumberInput
-              value={travauxAmeliorations}
-              onChange={setTravauxAmeliorations}
-              step={10000}
-              max={prixAchat}
-              placeholder="0"
-            />
-            <Text fontSize="xs" color="gray.500" mt={1}>
-              Travaux réalisés avec factures (déductibles)
-            </Text>
-          </FormControl>
-        </Stack>
+                <FormControl>
+                  <FormLabel color="brand.700" fontWeight="500">
+                    Résidence principale ?
+                  </FormLabel>
+                  <Select
+                    value={estResidencePrincipale}
+                    onChange={(e) => setEstResidencePrincipale(e.target.value)}
+                    bg={useColorModeValue('gray.50', 'gray.700')}
+                  >
+                    <option value="non">Non</option>
+                    <option value="oui">Oui (occupée au moins 6 ans)</option>
+                  </Select>
+                  <Text fontSize="xs" color="gray.500" mt={1}>
+                    L'exonération s'applique si occupée 6+ ans et prix ≤ 4M MAD
+                  </Text>
+                </FormControl>
 
-        <Box bg="brand.50" p={8} rounded="xl" borderWidth="1px" borderColor="brand.200">
-          <Stack spacing={6}>
-            <Heading size="md" color="brand.700">
-              Calcul de la plus-value
-            </Heading>
+                {/* Champs pour achat classique */}
+                {!estSuccession && (
+                  <SimpleGrid columns={2} spacing={4}>
+                    <FormControl>
+                      <FormLabel color="brand.700" fontWeight="500">
+                        Prix d'achat (MAD)
+                      </FormLabel>
+                      <FormattedNumberInput
+                        value={prixAchat}
+                        onChange={setPrixAchat}
+                        step={50000}
+                        max={500000000}
+                        placeholder="1 000 000"
+                      />
+                    </FormControl>
 
-            <Stat>
-              <StatLabel color="gray.600">Plus-value brute</StatLabel>
-              <StatNumber fontSize="2xl" color="brand.700">
-                {formatNumber(plusValueBrute)} MAD
-              </StatNumber>
-            </Stat>
+                    <FormControl>
+                      <FormLabel color="brand.700" fontWeight="500">
+                        Année d'achat
+                      </FormLabel>
+                      <NumberInput
+                        value={anneeAchat}
+                        onChange={(_, val) => {
+                          setAnneeAchat(val)
+                          setDureeDetention(2025 - val)
+                        }}
+                        min={1970}
+                        max={2024}
+                        step={1}
+                      >
+                        <NumberInputField />
+                        <NumberInputStepper>
+                          <NumberIncrementStepper />
+                          <NumberDecrementStepper />
+                        </NumberInputStepper>
+                      </NumberInput>
+                    </FormControl>
+                  </SimpleGrid>
+                )}
 
-            <Divider />
+                {/* Champs pour succession/donation */}
+                {estSuccession && (
+                  <>
+                    <SimpleGrid columns={2} spacing={4}>
+                      <FormControl>
+                        <FormLabel color="brand.700" fontWeight="500">
+                          Valeur déclarée à la {modeAcquisition === 'succession' ? 'succession' : 'donation'} (MAD)
+                        </FormLabel>
+                        <FormattedNumberInput
+                          value={valeurSuccession}
+                          onChange={setValeurSuccession}
+                          step={50000}
+                          max={500000000}
+                          placeholder="500 000"
+                        />
+                        <Text fontSize="xs" color="gray.500" mt={1}>
+                          Valeur vénale inscrite dans l'inventaire successoral
+                        </Text>
+                      </FormControl>
 
-            <SimpleGrid columns={1} spacing={3}>
-              <HStack justify="space-between">
-                <Text fontSize="sm" color="gray.600">
-                  Abattement ({tauxAbattement * 100}%)
-                </Text>
-                <Text fontSize="sm" fontWeight="semibold" color="accent.600">
-                  -{formatNumber(abattement)} MAD
-                </Text>
-              </HStack>
+                      <FormControl>
+                        <FormLabel color="brand.700" fontWeight="500">
+                          Année de {modeAcquisition === 'succession' ? 'succession' : 'donation'}
+                        </FormLabel>
+                        <NumberInput
+                          value={anneeAchat}
+                          onChange={(_, val) => {
+                            setAnneeAchat(val)
+                            setDureeDetention(2025 - val)
+                          }}
+                          min={1970}
+                          max={2024}
+                          step={1}
+                        >
+                          <NumberInputField />
+                          <NumberInputStepper>
+                            <NumberIncrementStepper />
+                            <NumberDecrementStepper />
+                          </NumberInputStepper>
+                        </NumberInput>
+                      </FormControl>
+                    </SimpleGrid>
 
-              <HStack justify="space-between">
-                <Text fontSize="sm" color="gray.600">
-                  Plus-value imposable
-                </Text>
-                <Text fontSize="sm" fontWeight="semibold">
-                  {formatNumber(plusValueImposable)} MAD
-                </Text>
-              </HStack>
-            </SimpleGrid>
+                    <FormControl>
+                      <FormLabel color="brand.700" fontWeight="500">
+                        Frais de {modeAcquisition === 'succession' ? 'succession' : 'donation'} (MAD)
+                      </FormLabel>
+                      <FormattedNumberInput
+                        value={fraisSuccession}
+                        onChange={setFraisSuccession}
+                        step={5000}
+                        max={valeurSuccession * 0.2}
+                        placeholder="0"
+                      />
+                      <Text fontSize="xs" color="gray.500" mt={1}>
+                        Droits d'enregistrement, frais de notaire, honoraires...
+                      </Text>
+                    </FormControl>
+                  </>
+                )}
 
-            <Divider />
+                <SimpleGrid columns={2} spacing={4}>
+                  <FormControl>
+                    <FormLabel color="brand.700" fontWeight="500">
+                      Prix de vente (MAD)
+                    </FormLabel>
+                    <FormattedNumberInput
+                      value={prixVente}
+                      onChange={setPrixVente}
+                      step={50000}
+                      max={500000000}
+                      placeholder="1 500 000"
+                    />
+                  </FormControl>
 
-            <Stat>
-              <StatLabel color="gray.600">Impôt dû (20%)</StatLabel>
-              <StatNumber fontSize="3xl" color="red.600">
-                {formatNumber(impot)} MAD
-              </StatNumber>
-            </Stat>
+                  <FormControl>
+                    <FormLabel color="brand.700" fontWeight="500">
+                      Durée de détention
+                    </FormLabel>
+                    <NumberInput
+                      value={dureeDetention}
+                      onChange={(_, val) => setDureeDetention(val)}
+                      min={0}
+                      max={50}
+                      step={1}
+                    >
+                      <NumberInputField />
+                      <NumberInputStepper>
+                        <NumberIncrementStepper />
+                        <NumberDecrementStepper />
+                      </NumberInputStepper>
+                    </NumberInput>
+                    <Text fontSize="xs" color="gray.500" mt={1}>
+                      {dureeDetention} an{dureeDetention > 1 ? 's' : ''}
+                    </Text>
+                  </FormControl>
+                </SimpleGrid>
 
-            <Divider />
+                {/* Option discrète pour le prix DGI */}
+                <Box mt={2}>
+                  <Text
+                    fontSize="xs"
+                    color="gray.500"
+                    cursor="pointer"
+                    onClick={() => setShowOptionsDGI(!showOptionsDGI)}
+                    _hover={{ color: 'brand.600' }}
+                  >
+                    {showOptionsDGI ? '▼' : '▶'} Options avancées (prix référentiel DGI)
+                  </Text>
 
-            <Box p={5} bg="accent.50" borderRadius="lg" borderWidth="1px" borderColor="accent.200">
-              <Text fontSize="sm" color="accent.700" fontWeight="600" mb={2}>
-                Plus-value nette après impôt
-              </Text>
-              <Text fontSize="3xl" fontWeight="700" color="accent.700">
-                {formatNumber(netApresFiscalite)} MAD
-              </Text>
-            </Box>
+                  {showOptionsDGI && (
+                    <Box mt={3} p={4} bg="orange.50" borderRadius="md" borderWidth="1px" borderColor="orange.200">
+                      <FormControl>
+                        <FormLabel color="orange.700" fontWeight="500" fontSize="sm">
+                          Prix référentiel DGI (optionnel)
+                        </FormLabel>
+                        <FormattedNumberInput
+                          value={prixReferenceDGI}
+                          onChange={setPrixReferenceDGI}
+                          step={50000}
+                          max={500000000}
+                          placeholder="0"
+                        />
+                        <Text fontSize="xs" color="orange.600" mt={1}>
+                          Si vous connaissez le prix estimé par l'administration fiscale (via avis préalable ou référentiel de zone),
+                          renseignez-le ici. La TPI sera calculée sur le <strong>prix le plus élevé</strong> entre votre prix de vente
+                          et ce référentiel.
+                        </Text>
+                      </FormControl>
+                    </Box>
+                  )}
+                </Box>
+              </VStack>
+            </CardBody>
+          </Card>
 
-            <Alert status="info" borderRadius="md">
-              <AlertIcon />
-              <AlertDescription fontSize="sm">
-                {dureeDetention >= 8
-                  ? `Abattement de 30% applicable (détention ≥ 8 ans). L'abattement de 70% sur les plus-values immobilières est prolongé jusqu'au 31 décembre 2030.`
-                  : dureeDetention >= 6
-                    ? 'Abattement de 20% applicable (détention 6-8 ans).'
-                    : dureeDetention >= 4
-                      ? 'Abattement de 10% applicable (détention 4-6 ans).'
-                      : 'Aucun abattement (détention < 4 ans).'}
-              </AlertDescription>
-            </Alert>
-          </Stack>
-        </Box>
+          {/* Frais déductibles */}
+          <Card bg={bgCard} borderColor={borderColor} borderWidth="1px">
+            <CardBody>
+              <Heading size="md" mb={6} color="brand.700" fontWeight="600">
+                Frais déductibles
+              </Heading>
+
+              <VStack spacing={5} align="stretch">
+                <FormControl>
+                  <FormLabel color="brand.700" fontWeight="500">
+                    Frais d'acquisition réels (MAD)
+                  </FormLabel>
+                  <FormattedNumberInput
+                    value={fraisAcquisitionReels}
+                    onChange={setFraisAcquisitionReels}
+                    step={5000}
+                    max={prixAchat}
+                    placeholder="0"
+                  />
+                  <Text fontSize="xs" color="gray.500" mt={1}>
+                    Notaire, droits d'enregistrement, conservation foncière...
+                    <br />
+                    <strong>Forfait de 15% ({formatNumber(forfaitFraisAcquisition)} MAD) appliqué si plus avantageux</strong>
+                  </Text>
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel color="brand.700" fontWeight="500">
+                    Travaux d'amélioration (MAD)
+                  </FormLabel>
+                  <FormattedNumberInput
+                    value={travauxAmeliorations}
+                    onChange={setTravauxAmeliorations}
+                    step={10000}
+                    max={prixAchat}
+                    placeholder="0"
+                  />
+                  <Text fontSize="xs" color="gray.500" mt={1}>
+                    Travaux réalisés avec factures justificatives
+                  </Text>
+                </FormControl>
+
+                {!estSuccession && (
+                  <FormControl>
+                    <FormLabel color="brand.700" fontWeight="500">
+                      Intérêts bancaires payés (MAD)
+                    </FormLabel>
+                    <FormattedNumberInput
+                      value={interetsBancaires}
+                      onChange={setInteretsBancaires}
+                      step={5000}
+                      max={prixAchat * 2}
+                      placeholder="0"
+                    />
+                    <Text fontSize="xs" color="gray.500" mt={1}>
+                      Si le bien a été acquis avec un crédit immobilier
+                    </Text>
+                  </FormControl>
+                )}
+
+                <FormControl>
+                  <FormLabel color="brand.700" fontWeight="500">
+                    Frais de cession (MAD)
+                  </FormLabel>
+                  <FormattedNumberInput
+                    value={fraisCession}
+                    onChange={setFraisCession}
+                    step={5000}
+                    max={prixVente * 0.1}
+                    placeholder="0"
+                  />
+                  <Text fontSize="xs" color="gray.500" mt={1}>
+                    Frais d'agence immobilière, notaire pour la vente
+                  </Text>
+                </FormControl>
+              </VStack>
+            </CardBody>
+          </Card>
+
+          {/* Informations fiscales */}
+          <Card bg={bgCard} borderColor={borderColor} borderWidth="1px">
+            <CardBody>
+              <Heading size="sm" mb={4} color="brand.700" fontWeight="600">
+                Fiscalité TPI - Loi de Finances 2025
+              </Heading>
+              <VStack spacing={3} align="stretch">
+                <HStack justify="space-between">
+                  <Text fontSize="sm" color="gray.600">
+                    Taux TPI standard
+                  </Text>
+                  <Badge colorScheme="red" fontSize="sm">
+                    20%
+                  </Badge>
+                </HStack>
+                <HStack justify="space-between">
+                  <Text fontSize="sm" color="gray.600">
+                    Cotisation minimale
+                  </Text>
+                  <Badge colorScheme="orange" fontSize="sm">
+                    3% du prix de vente
+                  </Badge>
+                </HStack>
+                <HStack justify="space-between">
+                  <Text fontSize="sm" color="gray.600">
+                    Forfait frais acquisition
+                  </Text>
+                  <Badge colorScheme="blue" fontSize="sm">
+                    15% du prix d'achat
+                  </Badge>
+                </HStack>
+                <HStack justify="space-between">
+                  <Text fontSize="sm" color="gray.600">
+                    Abattement durée détention
+                  </Text>
+                  <Badge colorScheme="green" fontSize="sm">
+                    3%/an après 5 ans (max 20%)
+                  </Badge>
+                </HStack>
+              </VStack>
+            </CardBody>
+          </Card>
+        </VStack>
+
+        {/* Résultats */}
+        <VStack spacing={6} align="stretch">
+          <Card bg={bgCard} borderColor={borderColor} borderWidth="1px">
+            <CardBody>
+              <Heading size="md" mb={6} color="brand.700" fontWeight="600">
+                Calcul détaillé de la TPI
+              </Heading>
+
+              <VStack spacing={4} align="stretch">
+                {/* Détail du prix de revient */}
+                <Box p={4} bg="gray.50" borderRadius="lg">
+                  <Text fontSize="sm" fontWeight="600" color="gray.700" mb={3}>
+                    Prix de revient réévalué {estSuccession && `(${modeAcquisition})`}
+                  </Text>
+                  <VStack spacing={2} align="stretch">
+                    <HStack justify="space-between">
+                      <Text fontSize="sm" color="gray.600">
+                        {estSuccession
+                          ? `Valeur déclarée à la ${modeAcquisition}`
+                          : "Prix d'achat"}
+                      </Text>
+                      <Text fontSize="sm">{formatNumber(prixBase)} MAD</Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <Text fontSize="sm" color="gray.600">
+                        + Frais {estSuccession ? `(${fraisReelsTotaux > forfaitFraisAcquisition ? 'réels' : 'forfait 15%'})` : `acquisition (${fraisAcquisitionReels > forfaitFraisAcquisition ? 'réels' : 'forfait 15%'})`}
+                      </Text>
+                      <Text fontSize="sm">{formatNumber(fraisAcquisitionRetenus)} MAD</Text>
+                    </HStack>
+                    {travauxAmeliorations > 0 && (
+                      <HStack justify="space-between">
+                        <Text fontSize="sm" color="gray.600">+ Travaux</Text>
+                        <Text fontSize="sm">{formatNumber(travauxAmeliorations)} MAD</Text>
+                      </HStack>
+                    )}
+                    {!estSuccession && interetsBancaires > 0 && (
+                      <HStack justify="space-between">
+                        <Text fontSize="sm" color="gray.600">+ Intérêts bancaires</Text>
+                        <Text fontSize="sm">{formatNumber(interetsBancaires)} MAD</Text>
+                      </HStack>
+                    )}
+                    <Divider />
+                    <HStack justify="space-between">
+                      <Text fontSize="sm" color="gray.600">= Prix de revient base</Text>
+                      <Text fontSize="sm" fontWeight="semibold">{formatNumber(prixRevientBase)} MAD</Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <Text fontSize="sm" color="gray.600">× Coefficient réévaluation ({anneeAchat})</Text>
+                      <Text fontSize="sm">{coeffReevaluation.toFixed(3)}</Text>
+                    </HStack>
+                    <Divider />
+                    <HStack justify="space-between">
+                      <Text fontSize="sm" fontWeight="600" color="brand.700">= Prix de revient réévalué</Text>
+                      <Text fontSize="sm" fontWeight="bold" color="brand.700">{formatNumber(prixRevientReevalue)} MAD</Text>
+                    </HStack>
+                  </VStack>
+                </Box>
+
+                {/* Calcul plus-value */}
+                <Box p={4} bg={estPrixRectifie ? 'orange.50' : 'gray.50'} borderRadius="lg" borderWidth={estPrixRectifie ? '1px' : '0'} borderColor="orange.300">
+                  <Text fontSize="sm" fontWeight="600" color={estPrixRectifie ? 'orange.700' : 'gray.700'} mb={3}>
+                    Plus-value imposable {estPrixRectifie && '(prix DGI appliqué)'}
+                  </Text>
+                  <VStack spacing={2} align="stretch">
+                    <HStack justify="space-between">
+                      <Text fontSize="sm" color="gray.600">Prix de vente déclaré</Text>
+                      <Text fontSize="sm">{formatNumber(prixVente)} MAD</Text>
+                    </HStack>
+                    {estPrixRectifie && (
+                      <HStack justify="space-between">
+                        <Text fontSize="sm" color="orange.600" fontWeight="500">Prix retenu (référentiel DGI)</Text>
+                        <Text fontSize="sm" fontWeight="semibold" color="orange.600">{formatNumber(prixRetenuTPI)} MAD</Text>
+                      </HStack>
+                    )}
+                    {fraisCession > 0 && (
+                      <HStack justify="space-between">
+                        <Text fontSize="sm" color="gray.600">- Frais de cession</Text>
+                        <Text fontSize="sm">-{formatNumber(fraisCession)} MAD</Text>
+                      </HStack>
+                    )}
+                    <HStack justify="space-between">
+                      <Text fontSize="sm" color="gray.600">- Prix de revient réévalué</Text>
+                      <Text fontSize="sm">-{formatNumber(prixRevientReevalue)} MAD</Text>
+                    </HStack>
+                    <Divider />
+                    <HStack justify="space-between">
+                      <Text fontSize="sm" fontWeight="600" color={plusValueBrute >= 0 ? 'green.600' : 'red.600'}>
+                        = Plus-value brute
+                      </Text>
+                      <Text fontSize="sm" fontWeight="bold" color={plusValueBrute >= 0 ? 'green.600' : 'red.600'}>
+                        {formatNumber(plusValueBrute)} MAD
+                      </Text>
+                    </HStack>
+                    {tauxAbattementDetention > 0 && plusValueBrute > 0 && (
+                      <>
+                        <HStack justify="space-between">
+                          <Text fontSize="sm" color="gray.600">
+                            - Abattement durée ({(tauxAbattementDetention * 100).toFixed(0)}%)
+                          </Text>
+                          <Text fontSize="sm" color="accent.600">-{formatNumber(abattementDetention)} MAD</Text>
+                        </HStack>
+                        <Divider />
+                        <HStack justify="space-between">
+                          <Text fontSize="sm" fontWeight="600" color="brand.700">= Plus-value après abattement</Text>
+                          <Text fontSize="sm" fontWeight="bold" color="brand.700">{formatNumber(plusValueApresAbattement)} MAD</Text>
+                        </HStack>
+                      </>
+                    )}
+                  </VStack>
+                </Box>
+
+                <Divider />
+
+                {/* Calcul impôt */}
+                <SimpleGrid columns={2} spacing={4}>
+                  <Stat>
+                    <StatLabel color="gray.600" fontSize="sm">TPI calculée (20%)</StatLabel>
+                    <StatNumber fontSize="xl" color="gray.700">
+                      {formatNumber(tpiCalculee)} MAD
+                    </StatNumber>
+                  </Stat>
+
+                  <Stat>
+                    <StatLabel color="gray.600" fontSize="sm">Cotisation min. (3%)</StatLabel>
+                    <StatNumber fontSize="xl" color="orange.600">
+                      {formatNumber(cotisationMinimale)} MAD
+                    </StatNumber>
+                  </Stat>
+                </SimpleGrid>
+
+                <Divider />
+
+                {/* Résultat final */}
+                {exonere ? (
+                  <Box p={5} bg="green.50" borderRadius="lg" borderWidth="1px" borderColor="green.200">
+                    <Text fontSize="sm" color="green.700" fontWeight="600" mb={2}>
+                      Exonération totale de TPI
+                    </Text>
+                    <Text fontSize="3xl" fontWeight="700" color="green.700">
+                      0 MAD
+                    </Text>
+                    <Text fontSize="sm" color="green.600" mt={2}>
+                      {messageExoneration}
+                    </Text>
+                  </Box>
+                ) : (
+                  <Box p={5} bg="red.50" borderRadius="lg" borderWidth="1px" borderColor="red.200">
+                    <Text fontSize="sm" color="red.700" fontWeight="600" mb={2}>
+                      {estCotisationMinimale
+                        ? 'TPI à payer (cotisation minimale appliquée)'
+                        : tpiExoneration > 0
+                          ? 'TPI à payer (exonération partielle)'
+                          : 'TPI à payer'}
+                    </Text>
+                    <Text fontSize="3xl" fontWeight="700" color="red.700">
+                      {formatNumber(impotFinal)} MAD
+                    </Text>
+                    {estCotisationMinimale && (
+                      <Text fontSize="sm" color="red.600" mt={2}>
+                        La cotisation minimale de 3% s'applique car elle est supérieure à la TPI calculée
+                      </Text>
+                    )}
+                    {tpiExoneration > 0 && (
+                      <Text fontSize="sm" color="orange.600" mt={2}>
+                        {messageExoneration}
+                      </Text>
+                    )}
+                  </Box>
+                )}
+
+                <Divider />
+
+                <Box p={5} bg="accent.50" borderRadius="lg" borderWidth="1px" borderColor="accent.200">
+                  <Text fontSize="sm" color="accent.700" fontWeight="600" mb={2}>
+                    Gain net après impôt
+                  </Text>
+                  <Text fontSize="3xl" fontWeight="700" color={netApresFiscalite >= 0 ? 'accent.700' : 'red.600'}>
+                    {netApresFiscalite >= 0 ? '+' : ''}{formatNumber(netApresFiscalite)} MAD
+                  </Text>
+                  <Text fontSize="sm" color="gray.600" mt={1}>
+                    Prix de vente - Prix de revient - TPI
+                  </Text>
+                </Box>
+
+                {/* Message d'information selon la situation */}
+                <Alert
+                  status={dureeDetention > 5 ? 'success' : dureeDetention >= 3 ? 'info' : 'warning'}
+                  borderRadius="md"
+                >
+                  <AlertIcon />
+                  <AlertDescription fontSize="sm">
+                    {dureeDetention > 5
+                      ? `Abattement de ${(tauxAbattementDetention * 100).toFixed(0)}% appliqué (${dureeDetention - 5} année(s) au-delà de 5 ans, plafonné à 20%).`
+                      : dureeDetention === 5
+                        ? 'Aucun abattement pour durée de détention (5 ans exactement). L\'abattement commence à partir de la 6ème année.'
+                        : `Aucun abattement (détention < 5 ans). Attendez encore ${5 - dureeDetention} an(s) pour bénéficier d'un abattement.`}
+                  </AlertDescription>
+                </Alert>
+              </VStack>
+            </CardBody>
+          </Card>
+
+          {/* Exonérations possibles */}
+          <Card bg={bgCard} borderColor={borderColor} borderWidth="1px">
+            <CardBody>
+              <Heading size="sm" mb={4} color="brand.700" fontWeight="600">
+                Cas d'exonération de la TPI
+              </Heading>
+              <VStack spacing={3} align="stretch">
+                <HStack align="start">
+                  <Badge colorScheme="green" mt={1}>1</Badge>
+                  <Text fontSize="sm" color="gray.600">
+                    <strong>Résidence principale</strong> : occupée 6+ ans et prix ≤ 4 000 000 MAD
+                  </Text>
+                </HStack>
+                <HStack align="start">
+                  <Badge colorScheme="green" mt={1}>2</Badge>
+                  <Text fontSize="sm" color="gray.600">
+                    <strong>Donation familiale</strong> : entre ascendants/descendants, époux, frères/sœurs
+                  </Text>
+                </HStack>
+                <HStack align="start">
+                  <Badge colorScheme="green" mt={1}>3</Badge>
+                  <Text fontSize="sm" color="gray.600">
+                    <strong>Logement social</strong> : après 4 ans d'occupation effective
+                  </Text>
+                </HStack>
+                <HStack align="start">
+                  <Badge colorScheme="green" mt={1}>4</Badge>
+                  <Text fontSize="sm" color="gray.600">
+                    <strong>Expropriation</strong> : pour cause d'utilité publique
+                  </Text>
+                </HStack>
+              </VStack>
+            </CardBody>
+          </Card>
+        </VStack>
       </SimpleGrid>
+
+      <Alert status="error" borderRadius="md" mb={4}>
+        <AlertIcon />
+        <AlertDescription>
+          <strong>Risque de rectification par la DGI :</strong> L'administration fiscale peut
+          estimer que votre prix de vente est sous-évalué et le <strong>rectifier à la hausse</strong>.
+          Dans ce cas, la TPI (y compris la cotisation minimale de 3%) sera calculée sur le{' '}
+          <strong>prix rectifié</strong>, pas sur votre prix déclaré. Pour sécuriser votre transaction,
+          vous pouvez demander un <strong>avis préalable à la DGI</strong> dans les 30 jours suivant
+          le compromis de vente.
+        </AlertDescription>
+      </Alert>
 
       <Alert status="warning" borderRadius="md">
         <AlertIcon />
         <AlertDescription>
-          <strong>Important :</strong> Ce calcul est simplifié. Certaines exonérations
-          peuvent s'appliquer (résidence principale, donations familiales, etc.). Consultez un
-          fiscaliste pour un calcul précis.
+          <strong>Important :</strong> Ce simulateur utilise des coefficients de réévaluation
+          approximatifs. Les coefficients officiels sont publiés chaque année par arrêté du
+          Ministère des Finances. La TPI doit être payée dans les 30 jours suivant la signature
+          de l'acte de vente. Un retard entraîne une pénalité de 10% + 5%/mois supplémentaire.
         </AlertDescription>
       </Alert>
     </Stack>
