@@ -542,13 +542,19 @@ function SimulateurContent() {
                     <Td isNumeric fontWeight="bold">{formatNumber(surface4 * prix4)} MAD</Td>
                   </Tr>
                 </Tbody>
-                <Tfoot bg="brand.700">
-                  <Tr>
-                    <Td color="white" fontWeight="bold">TOTAL</Td>
+                <Tfoot>
+                  <Tr bg="gray.100">
+                    <Td fontWeight="bold" color="gray.700">TOTAL</Td>
                     <Td></Td>
-                    <Td isNumeric color="white" fontWeight="bold">{formatNumber(totalSurface)} m²</Td>
+                    <Td isNumeric fontWeight="bold" color="gray.700">{formatNumber(totalSurface)} m²</Td>
+                    <Td isNumeric fontWeight="bold" color="gray.700">{formatNumber(Math.round(totalValeur / totalSurface))}</Td>
+                    <Td colSpan={4}></Td>
+                    <Td isNumeric fontWeight="bold" color="gray.700">{formatNumber(totalValeur)} MAD</Td>
+                  </Tr>
+                  <Tr bg="brand.700">
+                    <Td color="white" fontWeight="bold" colSpan={3}>Prix moyen au m²</Td>
+                    <Td isNumeric color="white" fontWeight="bold" fontSize="lg">{formatNumber(Math.round(totalValeur / totalSurface))} MAD/m²</Td>
                     <Td colSpan={5}></Td>
-                    <Td isNumeric color="white" fontWeight="bold">{formatNumber(totalValeur)} MAD</Td>
                   </Tr>
                 </Tfoot>
               </Table>
