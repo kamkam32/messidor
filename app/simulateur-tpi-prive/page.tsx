@@ -143,7 +143,8 @@ function SimulateurContent() {
   const [valeurHeritage, setValeurHeritage] = useState(20000)
   const [prixDGI, setPrixDGI] = useState(20000)
   const [anneeVente, setAnneeVente] = useState(2025)
-  const [commission, setCommission] = useState(0.5)
+  const [commissionVendeur, setCommissionVendeur] = useState(0.5)
+  const [commissionAcheteur, setCommissionAcheteur] = useState(2.5)
 
   // Lots - surfaces et prix
   const [surface1, setSurface1] = useState(1577)
@@ -281,12 +282,19 @@ function SimulateurContent() {
   const tpiAminaDGIPercent = totalTPIDGI > 0 ? (tpiAminaDGI / totalTPIDGI) * 100 : 0
   const tpiLeilaDGIPercent = totalTPIDGI > 0 ? (tpiLeilaDGI / totalTPIDGI) * 100 : 0
 
-  // Commission par personne
-  const commissionRate = commission / 100
-  const commissionAli = valeurAli * commissionRate
-  const commissionAmina = valeurAmina * commissionRate
-  const commissionLeila = valeurLeila * commissionRate
-  const totalCommission = totalValeur * commissionRate
+  // Commission par personne (vendeur)
+  const commissionVendeurRate = commissionVendeur / 100
+  const commissionAli = valeurAli * commissionVendeurRate
+  const commissionAmina = valeurAmina * commissionVendeurRate
+  const commissionLeila = valeurLeila * commissionVendeurRate
+  const totalCommissionVendeur = totalValeur * commissionVendeurRate
+
+  // Commission acheteur
+  const commissionAcheteurRate = commissionAcheteur / 100
+  const totalCommissionAcheteur = totalValeur * commissionAcheteurRate
+
+  // Prix moyen au m²
+  const prixMoyenM2 = totalSurface > 0 ? Math.round(totalValeur / totalSurface) : 0
 
   return (
     <Container maxW="container.xl" py={8}>
@@ -364,18 +372,26 @@ function SimulateurContent() {
                 />
               </FormControl>
               <FormControl>
-                <FormLabel fontSize="sm">Commission (%)</FormLabel>
+                <FormLabel fontSize="sm">Commission vendeur (%)</FormLabel>
                 <Input
                   type="number"
                   step="0.1"
-                  value={commission}
-                  onChange={(e) => setCommission(Number(e.target.value))}
+                  value={commissionVendeur}
+                  onChange={(e) => setCommissionVendeur(Number(e.target.value))}
                   size="sm"
-                  borderColor="purple.300"
-                  bg="purple.50"
                 />
               </FormControl>
-            </SimpleGrid>
+              <FormControl>
+                <FormLabel fontSize="sm">Commission acheteur (%)</FormLabel>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={commissionAcheteur}
+                  onChange={(e) => setCommissionAcheteur(Number(e.target.value))}
+                  size="sm"
+                />
+              </FormControl>
+              </SimpleGrid>
           </CardBody>
         </Card>
 
@@ -559,6 +575,102 @@ function SimulateurContent() {
                 </Tfoot>
               </Table>
             </Box>
+          </CardBody>
+        </Card>
+
+        {/* Récapitulatif transaction */}
+        <Card bg={bgCard}>
+          <CardBody>
+            <Heading size="md" mb={6} color="brand.700">
+              Récapitulatif de la transaction
+            </Heading>
+
+            <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
+              {/* Colonne 1 : Informations générales */}
+              <Card borderWidth="1px" borderColor="gray.200" shadow="sm">
+                <Box bg="gray.100" py={2} px={4}>
+                  <Text fontSize="sm" fontWeight="semibold" color="gray.600" textTransform="uppercase">Informations</Text>
+                </Box>
+                <CardBody py={4}>
+                  <VStack spacing={3} align="stretch">
+                    <HStack justify="space-between">
+                      <Text fontSize="sm" color="gray.600">Surface totale</Text>
+                      <Text fontSize="sm" fontWeight="semibold">{formatNumber(totalSurface)} m²</Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <Text fontSize="sm" color="gray.600">Prix moyen / m²</Text>
+                      <Text fontSize="sm" fontWeight="semibold">{formatNumber(prixMoyenM2)} MAD</Text>
+                    </HStack>
+                    <Divider />
+                    <HStack justify="space-between">
+                      <Text fontSize="md" fontWeight="semibold" color="gray.700">Prix de vente</Text>
+                      <Text fontSize="lg" fontWeight="bold" color="gray.800">{formatNumber(totalValeur)} MAD</Text>
+                    </HStack>
+                  </VStack>
+                </CardBody>
+              </Card>
+
+              {/* Colonne 2 : Côté Vendeur */}
+              <Card borderWidth="1px" borderColor="teal.200" shadow="sm">
+                <Box bg="teal.500" py={2} px={4}>
+                  <Text fontSize="sm" fontWeight="semibold" color="white" textTransform="uppercase">Côté Vendeur</Text>
+                </Box>
+                <CardBody py={4}>
+                  <VStack spacing={3} align="stretch">
+                    <HStack justify="space-between">
+                      <Text fontSize="sm" color="gray.600">Prix de vente</Text>
+                      <Text fontSize="sm" fontWeight="medium">{formatNumber(totalValeur)} MAD</Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <Text fontSize="sm" color="gray.600">TPI ({formatPercent((totalTPI / totalValeur) * 100)}%)</Text>
+                      <Text fontSize="sm" fontWeight="medium" color="gray.700">- {formatNumber(totalTPI)} MAD</Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <Text fontSize="sm" color="gray.600">Commission ({commissionVendeur}%)</Text>
+                      <Text fontSize="sm" fontWeight="medium" color="gray.700">- {formatNumber(totalCommissionVendeur)} MAD</Text>
+                    </HStack>
+                    <Divider />
+                    <Box bg="teal.50" p={3} borderRadius="md">
+                      <HStack justify="space-between">
+                        <Text fontSize="md" fontWeight="semibold" color="teal.700">Net à percevoir</Text>
+                        <Text fontSize="xl" fontWeight="bold" color="teal.700">{formatNumber(totalValeur - totalTPI - totalCommissionVendeur)} MAD</Text>
+                      </HStack>
+                      <Text fontSize="xs" color="teal.600" textAlign="right">{formatPercent(((totalValeur - totalTPI - totalCommissionVendeur) / totalValeur) * 100)}% du prix de vente</Text>
+                    </Box>
+                  </VStack>
+                </CardBody>
+              </Card>
+
+              {/* Colonne 3 : Côté Acheteur */}
+              <Card borderWidth="1px" borderColor="blue.200" shadow="sm">
+                <Box bg="blue.500" py={2} px={4}>
+                  <Text fontSize="sm" fontWeight="semibold" color="white" textTransform="uppercase">Côté Acheteur</Text>
+                </Box>
+                <CardBody py={4}>
+                  <VStack spacing={3} align="stretch">
+                    <HStack justify="space-between">
+                      <Text fontSize="sm" color="gray.600">Prix de vente</Text>
+                      <Text fontSize="sm" fontWeight="medium">{formatNumber(totalValeur)} MAD</Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <Text fontSize="sm" color="gray.600">Commission ({commissionAcheteur}%)</Text>
+                      <Text fontSize="sm" fontWeight="medium" color="gray.700">+ {formatNumber(totalCommissionAcheteur)} MAD</Text>
+                    </HStack>
+                    <Divider />
+                    <Box bg="blue.50" p={3} borderRadius="md" mb={3}>
+                      <HStack justify="space-between">
+                        <Text fontSize="md" fontWeight="semibold" color="blue.700">Coût total</Text>
+                        <Text fontSize="xl" fontWeight="bold" color="blue.700">{formatNumber(totalValeur + totalCommissionAcheteur)} MAD</Text>
+                      </HStack>
+                    </Box>
+                    <Box bg="blue.600" p={3} borderRadius="md" textAlign="center">
+                      <Text fontSize="xs" color="blue.100" textTransform="uppercase" mb={1}>Prix au m² (com incluse)</Text>
+                      <Text fontSize="2xl" fontWeight="bold" color="white">{formatNumber(Math.round((totalValeur + totalCommissionAcheteur) / totalSurface))} MAD/m²</Text>
+                    </Box>
+                  </VStack>
+                </CardBody>
+              </Card>
+            </SimpleGrid>
           </CardBody>
         </Card>
 
@@ -748,7 +860,7 @@ function SimulateurContent() {
                       <Text fontSize="sm" fontWeight="medium" color="gray.700">-{formatNumber(tpiAli)} MAD</Text>
                     </HStack>
                     <HStack justify="space-between">
-                      <Text fontSize="sm" color="gray.600">Commission ({commission}%)</Text>
+                      <Text fontSize="sm" color="gray.600">Commission ({commissionVendeur}%)</Text>
                       <Text fontSize="sm" fontWeight="medium" color="gray.700">-{formatNumber(commissionAli)} MAD</Text>
                     </HStack>
                     <Divider my={2} borderColor="gray.200" />
@@ -806,7 +918,7 @@ function SimulateurContent() {
                       <Text fontSize="sm" fontWeight="medium" color="gray.700">-{formatNumber(tpiAmina)} MAD</Text>
                     </HStack>
                     <HStack justify="space-between">
-                      <Text fontSize="sm" color="gray.600">Commission ({commission}%)</Text>
+                      <Text fontSize="sm" color="gray.600">Commission ({commissionVendeur}%)</Text>
                       <Text fontSize="sm" fontWeight="medium" color="gray.700">-{formatNumber(commissionAmina)} MAD</Text>
                     </HStack>
                     <Divider my={2} borderColor="gray.200" />
@@ -864,7 +976,7 @@ function SimulateurContent() {
                       <Text fontSize="sm" fontWeight="medium" color="gray.700">-{formatNumber(tpiLeila)} MAD</Text>
                     </HStack>
                     <HStack justify="space-between">
-                      <Text fontSize="sm" color="gray.600">Commission ({commission}%)</Text>
+                      <Text fontSize="sm" color="gray.600">Commission ({commissionVendeur}%)</Text>
                       <Text fontSize="sm" fontWeight="medium" color="gray.700">-{formatNumber(commissionLeila)} MAD</Text>
                     </HStack>
                     <Divider my={2} borderColor="gray.200" />
