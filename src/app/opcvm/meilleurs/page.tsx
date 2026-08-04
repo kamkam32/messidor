@@ -84,6 +84,7 @@ export default async function MeilleursOpcvmPage() {
       <PageHero
         eyebrow={`Classement 2026 · ${funds.length} OPCVM analysés`}
         title="Meilleurs OPCVM du Maroc 2026"
+        image="/images/heroes/abstract-finance.jpg"
         intro="Le classement des OPCVM marocains les plus performants, triés par rendement depuis le début de l'année. Performances 1 an et 3 ans, société de gestion et niveau de risque pour chaque fonds — mis à jour à partir des données ASFIM."
         breadcrumb={breadcrumb.map((b) => ({ name: b.name, href: b.path }))}
       />

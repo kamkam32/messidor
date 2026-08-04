@@ -44,6 +44,7 @@ export default function LexiquePage() {
       <PageHero
         eyebrow={`${GLOSSARY.length} définitions · Patrimoine & investissement`}
         title="Lexique du patrimoine"
+        image="/images/heroes/editorial-navy.jpg"
         intro="Les mots-clés de la gestion de patrimoine, des OPCVM et de la fiscalité marocaine, définis simplement. Un repère pour comprendre nos analyses et décider en connaissance de cause."
         breadcrumb={[
           { name: "Accueil", href: "/" },

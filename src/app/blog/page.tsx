@@ -33,6 +33,7 @@ export default function BlogIndex() {
       <PageHero
         eyebrow="Blog & guides"
         title="Comprendre pour mieux investir"
+        image="/images/heroes/editorial-navy.jpg"
         intro="Nos analyses et guides pratiques sur l'épargne, les OPCVM, la fiscalité et le patrimoine au Maroc."
         breadcrumb={[
           { name: "Accueil", href: "/" },

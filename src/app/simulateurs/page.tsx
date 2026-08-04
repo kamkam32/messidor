@@ -27,6 +27,7 @@ export default function SimulateursPage() {
       <PageHero
         eyebrow="Outils gratuits · Fiscalité marocaine 2025"
         title="Simulateurs patrimoniaux"
+        image="/images/heroes/abstract-finance.jpg"
         intro="Cinq calculateurs pour estimer votre fiscalité, projeter votre épargne et faire le point sur votre patrimoine — en quelques secondes, sans inscription."
         breadcrumb={BREADCRUMB}
       />

@@ -133,6 +133,7 @@ export default async function PaysPage({ params }: { params: Promise<{ pays: str
       <PageHero
         eyebrow={`Marocains du monde · ${country.name}`}
         title={`Investir au Maroc ${country.fromLabel}`}
+        image="/images/heroes/littoral-casablanca.jpg"
         intro={`Vous êtes parmi les ${country.demonym} et souhaitez faire fructifier votre épargne au Maroc ? Nous vous accompagnons à distance : rapatriement d'épargne, OPCVM & OPCI, fiscalité et régime de change.`}
         breadcrumb={[
           { name: "Accueil", href: "/" },

@@ -76,6 +76,7 @@ export default async function OpcvmPage() {
       <PageHero
         eyebrow={`${count}+ fonds suivis · Mise à jour quotidienne`}
         title="La base OPCVM du Maroc"
+        image="/images/heroes/abstract-finance.jpg"
         intro="Recherchez, filtrez et comparez les fonds OPCVM marocains. Performances, risque et société de gestion — pour bâtir une allocation éclairée."
         breadcrumb={[
           { name: "Accueil", href: "/" },

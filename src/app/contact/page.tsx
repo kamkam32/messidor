@@ -33,6 +33,7 @@ export default function ContactPage() {
       <PageHero
         eyebrow="Premier échange confidentiel"
         title="Parlons de votre patrimoine"
+        image="/images/heroes/marbre-navy.jpg"
         intro="Une question, un projet d'investissement ou l'envie d'un regard indépendant sur votre allocation ? Écrivez-nous — nous vous recontactons sous 24h."
         breadcrumb={breadcrumb}
       />

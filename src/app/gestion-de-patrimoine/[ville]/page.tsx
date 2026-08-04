@@ -129,6 +129,7 @@ export default async function VillePage({ params }: { params: Promise<{ ville: s
       <PageHero
         eyebrow={`Gestion de patrimoine · ${city.name}`}
         title={`Gestion de patrimoine à ${city.name}`}
+        image="/images/heroes/finance-aerial.jpg"
         intro={`Un conseil patrimonial indépendant et sur-mesure pour les particuliers et entrepreneurs de ${city.name} : sélection OPCVM & OPCI, optimisation fiscale et stratégie d'investissement alignée sur vos seuls intérêts.`}
         breadcrumb={[
           { name: "Accueil", href: "/" },
