@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { getFunds, getFundsCount, getClassifications, slugify } from "@/lib/funds";
 import { getCategoryContent } from "@/lib/opcvm-categories";
+import { getAllPosts } from "@/lib/blog";
 import { buildMetadata, breadcrumbGraph } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/site";
 import { PageHero } from "@/components/site/PageHero";
@@ -56,6 +57,16 @@ export default async function OpcvmPage() {
       acceptedAnswer: { "@type": "Answer", text: f.a },
     })),
   };
+
+  const allPosts = getAllPosts();
+  const relatedFiltered = allPosts.filter((p) => {
+    const hay = `${p.slug} ${p.title} ${(p.keywords || []).join(" ")}`
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .toLowerCase();
+    return ["opcvm", "bourse", "etf", "frais", "fiscalit"].some((m) => hay.includes(m));
+  });
+  const relatedPosts = (relatedFiltered.length > 0 ? relatedFiltered : allPosts).slice(0, 3);
 
   const top = funds.slice(0, 10);
   const itemList = {
@@ -140,6 +151,47 @@ export default async function OpcvmPage() {
                 <p className="mt-3 text-cream/70">{f.a}</p>
               </details>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* À lire aussi */}
+      <section className="border-t border-slate/40 bg-cream-light">
+        <div className="shell py-16 md:py-20">
+          <Reveal>
+            <p className="eyebrow text-gold-deep">À lire aussi</p>
+            <h2 className="mt-4 max-w-2xl font-display text-3xl leading-tight text-navy md:text-4xl">
+              Nos guides sur les OPCVM
+            </h2>
+          </Reveal>
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
+            {relatedPosts.map((p, i) => (
+              <Reveal key={p.slug} delay={(i % 3) * 0.08} className="h-full">
+                <Link
+                  href={`/blog/${p.slug}`}
+                  className="group flex h-full flex-col border border-slate/50 bg-cream p-6 transition-colors hover:bg-cream-light"
+                >
+                  {p.category && <span className="eyebrow text-gold-deep">{p.category}</span>}
+                  <h3 className="mt-3 font-display text-lg leading-tight text-navy transition-colors group-hover:text-gold-deep">
+                    {p.title}
+                  </h3>
+                  {p.excerpt && (
+                    <p className="mt-3 flex-1 text-sm leading-relaxed text-navy-soft line-clamp-3">{p.excerpt}</p>
+                  )}
+                  <span className="mt-5 inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-navy transition-transform group-hover:translate-x-1">
+                    Lire <ArrowRight size={13} />
+                  </span>
+                </Link>
+              </Reveal>
+            ))}
+          </div>
+          <div className="mt-10">
+            <Link
+              href="/guides"
+              className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-navy transition-colors hover:text-gold-deep"
+            >
+              Tous nos guides <ArrowRight size={13} />
+            </Link>
           </div>
         </div>
       </section>
