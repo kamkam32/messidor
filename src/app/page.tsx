@@ -56,12 +56,27 @@ export default async function HomePage() {
     <>
       {/* HERO */}
       <section className="relative flex min-h-[100svh] items-center overflow-hidden bg-navy-deep text-cream">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          aria-hidden
+          className="absolute inset-0 h-full w-full object-cover"
+        >
+          <source
+            src="https://bjiwkxqjovdnheotagtr.supabase.co/storage/v1/object/public/video/2314024-uhd_3840_2160_24fps(3)(1).mp4"
+            type="video/mp4"
+          />
+        </video>
+        {/* Voiles de lisibilité (le texte reste net sur la vidéo) */}
+        <div aria-hidden className="absolute inset-0 bg-navy-deep/70" />
         <div
           aria-hidden
-          className="absolute inset-0 opacity-70"
+          className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(120% 80% at 70% 10%, rgba(176,138,62,0.18) 0%, transparent 55%), linear-gradient(180deg, #091320 0%, #0E1A2B 60%, #091320 100%)",
+              "radial-gradient(120% 80% at 70% 10%, rgba(176,138,62,0.16) 0%, transparent 55%), linear-gradient(180deg, rgba(9,19,32,0.55) 0%, rgba(9,19,32,0.35) 45%, rgba(9,19,32,0.85) 100%)",
           }}
         />
         <div className="shell relative z-10 w-full py-32">
