@@ -17,6 +17,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: absoluteUrl("/opci"), lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: absoluteUrl("/simulateurs"), lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: absoluteUrl("/blog"), lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+    { url: absoluteUrl("/equipe"), lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: absoluteUrl("/contact"), lastModified: now, changeFrequency: "yearly", priority: 0.6 },
   ];
 

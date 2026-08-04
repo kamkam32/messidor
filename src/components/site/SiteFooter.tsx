@@ -24,6 +24,7 @@ const COLUMNS = [
     title: "Ressources",
     links: [
       { label: "Blog & guides", href: "/blog" },
+      { label: "L'équipe", href: "/equipe" },
       { label: "Contact", href: "/contact" },
       { label: "Espace client", href: "/espace-client" },
     ],
