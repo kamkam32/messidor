@@ -13,13 +13,9 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      // www -> apex (canonical sur le domaine nu)
-      {
-        source: "/:path*",
-        has: [{ type: "host", value: "www.messidor-patrimoine.com" }],
-        destination: "https://messidor-patrimoine.com/:path*",
-        permanent: true,
-      },
+      // NB : le domaine canonique est www (l'apex messidor-patrimoine.com
+      // pointe sur une page parquée GoDaddy, DNS non branché sur Vercel).
+      // Pas de redirection www->apex.
       // anciennes URLs dashboard -> nouvelles URLs publiques
       { source: "/dashboard/opcvm", destination: "/opcvm", permanent: true },
       { source: "/dashboard/opcvm/comparateur", destination: "/opcvm/comparateur", permanent: true },

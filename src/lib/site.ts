@@ -6,8 +6,8 @@
 export const SITE = {
   name: "Messidor Patrimoine",
   legalName: "Messidor Patrimoine",
-  // Domaine canonique = apex (les redirects www->apex sont dans next.config)
-  url: (process.env.NEXT_PUBLIC_SITE_URL || "https://messidor-patrimoine.com").replace(/\/$/, ""),
+  // Domaine canonique = www (l'apex nu pointe sur une page parquée GoDaddy)
+  url: (process.env.NEXT_PUBLIC_SITE_URL || "https://www.messidor-patrimoine.com").replace(/\/$/, ""),
   description:
     "Cabinet de conseil en gestion de patrimoine au Maroc. Sélection OPCVM & OPCI, simulateurs fiscaux 2025, stratégie d'investissement sur-mesure du marché financier marocain.",
   locale: "fr_MA",
