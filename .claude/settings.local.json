@@ -38,7 +38,9 @@
       "WebFetch(domain:agenz.ma)",
       "Bash(dir:*)",
       "WebFetch(domain:valfoncier.ma)",
-      "WebFetch(domain:www.keyla.ma)"
+      "WebFetch(domain:www.keyla.ma)",
+      "WebFetch(domain:status.supabase.com)",
+      "Bash(npx next:*)"
     ],
     "deny": [],
     "ask": []
