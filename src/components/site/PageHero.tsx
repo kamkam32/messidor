@@ -7,14 +7,28 @@ export function PageHero({
   title,
   intro,
   breadcrumb,
+  image,
 }: {
   eyebrow?: string;
   title: string;
   intro?: string;
   breadcrumb?: { name: string; href: string }[];
+  image?: string;
 }) {
   return (
     <section className="relative overflow-hidden bg-navy-deep text-cream">
+      {image && (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={image}
+            alt=""
+            aria-hidden
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div aria-hidden className="absolute inset-0 bg-navy-deep/75" />
+        </>
+      )}
       <div
         aria-hidden
         className="absolute inset-0 opacity-60"

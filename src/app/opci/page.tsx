@@ -141,6 +141,7 @@ export default async function OpciPage() {
       <PageHero
         eyebrow="Immobilier · Pierre-papier · Maroc"
         title="OPCI : investir dans l'immobilier autrement"
+        image="/images/heroes/architecture-luxe.jpg"
         intro="Les OPCI ouvrent l'accès à l'immobilier professionnel marocain sans les contraintes de la détention directe. Comprenez leur fonctionnement, leurs avantages et leur fiscalité — puis investissez accompagné."
         breadcrumb={[
           { name: "Accueil", href: "/" },

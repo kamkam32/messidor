@@ -24,6 +24,7 @@ export default function MreIndexPage() {
       <PageHero
         eyebrow="Marocains du monde (MRE)"
         title="Investir au Maroc, où que vous soyez"
+        image="/images/heroes/littoral-casablanca.jpg"
         intro="Depuis l'Europe, l'Amérique du Nord ou le Golfe, construisez et pilotez votre patrimoine marocain avec un accompagnement 100% à distance."
         breadcrumb={[
           { name: "Accueil", href: "/" },
