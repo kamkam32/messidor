@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Reveal } from "@/components/site/Reveal";
 
 /** Hero compact pour les pages internes (fond navy, eyebrow + titre + intro). */
@@ -19,12 +20,14 @@ export function PageHero({
     <section className="relative overflow-hidden bg-navy-deep text-cream">
       {image && (
         <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={image}
             alt=""
             aria-hidden
-            className="absolute inset-0 h-full w-full object-cover"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
           />
           <div aria-hidden className="absolute inset-0 bg-navy-deep/75" />
         </>
