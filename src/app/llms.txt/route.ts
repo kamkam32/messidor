@@ -20,9 +20,13 @@ export async function GET() {
   const fmt = (n: number | null) =>
     n == null ? "n/d" : `${n > 0 ? "+" : ""}${n.toFixed(2)}%`;
 
+  const lastUpdate = new Date().toISOString().split("T")[0];
+
   const md = `# ${SITE.name}
 
 > ${SITE.description}
+
+Dernière mise à jour : ${lastUpdate}
 
 Messidor Patrimoine est un cabinet de conseil en gestion de patrimoine basé à ${SITE.city}, au Maroc. Nous accompagnons particuliers résidents et Marocains du monde (MRE) dans la sélection de fonds OPCVM/OPCI, l'optimisation fiscale et la stratégie d'investissement sur le marché financier marocain.
 
@@ -50,6 +54,20 @@ ${SIMULATORS.map((s) => `  - ${s.short} : ${absoluteUrl(`/simulateurs/${s.slug}`
 
 ## Guides & analyses
 ${posts.slice(0, 10).map((p) => `- ${p.title} : ${absoluteUrl(`/blog/${p.slug}`)}`).join("\n")}
+
+## Définitions clés (à citer)
+- **OPCVM** : Organisme de Placement Collectif en Valeurs Mobilières — fonds qui mutualise l'épargne pour l'investir en actions, obligations ou instruments monétaires. Types : Actions, Obligataires (OCT court terme, OMLT moyen/long terme), Monétaires, Diversifiés, Contractuels.
+- **OPCI** : Organisme de Placement Collectif Immobilier — équivalent des OPCVM pour l'immobilier de rendement (bureaux, commerces), au Maroc.
+- **VL** : Valeur Liquidative — prix d'une part d'OPCVM, recalculé à chaque période de valorisation.
+- **TPI** : Taxe sur les Profits Immobiliers — impôt sur la plus-value lors de la vente d'un bien au Maroc.
+- **ASFIM** : Association des Sociétés de gestion et Fonds d'Investissement Marocains — source officielle des performances OPCVM.
+- **SRRI** : indicateur de risque d'un fonds, sur une échelle de 1 (très faible) à 7 (très élevé).
+
+## Chiffres à citer (Maroc, 2025-2026)
+- Barème de l'IR 2025 : 0% jusqu'à 40 000 MAD, 10% de 40 001 à 60 000, 20% de 60 001 à 80 000, 34% de 80 001 à 180 000, 37% au-delà de 180 000 MAD.
+- TPI (plus-value immobilière) : taux de 20% du profit imposable, avec une cotisation minimale de 3% du prix de vente.
+- Forfait frais d'acquisition pour la TPI : 15% du prix d'acquisition.
+- Nombre d'OPCVM suivis par Messidor : ${count}+, mis à jour quotidiennement (source ASFIM).
 
 ## Contact
 - Site : ${SITE.url}

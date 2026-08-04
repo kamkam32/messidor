@@ -78,6 +78,29 @@ export async function getTopFunds(limit = 10, type: FundType = "OPCVM"): Promise
   return getFunds({ type, limit, orderBy: "ytd_performance", ascending: false });
 }
 
+/** Fonds de la même classification (pour les "à comparer aussi"), hors fonds courant. */
+export async function getRelatedFunds(
+  classification: string | null,
+  excludeId: string,
+  limit = 4
+): Promise<Fund[]> {
+  try {
+    let q = supabaseAnon
+      .from("funds")
+      .select(LIST_COLUMNS)
+      .eq("is_active", true)
+      .eq("type", "OPCVM")
+      .neq("id", excludeId)
+      .order("ytd_performance", { ascending: false, nullsFirst: false })
+      .limit(limit);
+    if (classification) q = q.eq("classification", classification);
+    const { data } = await q;
+    return (data as Fund[]) ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export async function getFundBySlug(slug: string): Promise<Fund | null> {
   try {
     const { data } = await supabaseAnon.from("funds").select(LIST_COLUMNS).eq("slug", slug).maybeSingle();

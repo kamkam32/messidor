@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { getFundBySlug, getFundHistory, getFunds, getAllFundSlugs } from "@/lib/funds";
+import { getFundBySlug, getFundHistory, getRelatedFunds, getFunds, getAllFundSlugs, slugify } from "@/lib/funds";
 import { buildMetadata, breadcrumbGraph } from "@/lib/seo";
 import { absoluteUrl, SITE } from "@/lib/site";
 import { formatPct, perfColorClass, formatMAD, formatNumber, riskLabel } from "@/lib/format";
@@ -59,8 +59,9 @@ export default async function FundPage({ params }: { params: Promise<{ slug: str
 
   const [history, related] = await Promise.all([
     getFundHistory(fund.id),
-    getFunds({ type: "OPCVM", limit: 4 }),
+    getRelatedFunds(fund.classification, fund.id, 4),
   ]);
+  const catSlug = fund.classification ? slugify(fund.classification) : null;
 
   const financialProduct = {
     "@context": "https://schema.org",
@@ -281,8 +282,22 @@ export default async function FundPage({ params }: { params: Promise<{ slug: str
       {related.length > 0 && (
         <section className="border-t border-slate/40 bg-cream-light">
           <div className="shell py-16">
-            <p className="eyebrow text-gold-deep">À comparer aussi</p>
-            <h2 className="mt-3 font-display text-2xl text-navy">Autres fonds performants</h2>
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="eyebrow text-gold-deep">À comparer aussi</p>
+                <h2 className="mt-3 font-display text-2xl text-navy">
+                  {fund.classification ? `Autres fonds ${fund.classification.toLowerCase()}` : "Autres fonds performants"}
+                </h2>
+              </div>
+              {catSlug && (
+                <Link
+                  href={`/opcvm/categorie/${catSlug}`}
+                  className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-navy transition-transform hover:translate-x-1"
+                >
+                  Voir toute la catégorie <ArrowLeft size={13} className="rotate-180" />
+                </Link>
+              )}
+            </div>
             <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {related
                 .filter((f) => f.id !== fund.id)
