@@ -70,7 +70,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: false, error: fundsError.message }, { status: 500 });
   }
 
-  const norm = (s: string) => s.toLowerCase().replace(/\s+/g, " ").trim();
+  const norm = (s: string) =>
+    s
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "") // supprime les accents
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
   const results = { matched: 0, upserted: 0, notMatched: 0, errors: [] as string[] };
   const now = new Date().toISOString();
 
