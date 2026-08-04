@@ -210,23 +210,31 @@ function safeParsePercentage(value: string | number | null | undefined): number 
   return isNaN(parsed) ? undefined : parsed;
 }
 
+/**
+ * Télécharge le tableau des performances ASFIM pour une date donnée.
+ * Nouvelle API ASFIM (depuis 2026) : fundshare.asfim.ma/api/performances/export/?date=YYYY-MM-DD
+ * (l'ancien chemin statique /static/tableau-des-performances/ est obsolète).
+ */
 export async function downloadOPCVMFile(
   date: Date,
-  type: "quotidien" | "hebdomadaire" = "quotidien"
+  _type: "quotidien" | "hebdomadaire" = "quotidien"
 ): Promise<{ buffer: Buffer; fileName: string; date: string } | null> {
   try {
     const dd = String(date.getDate()).padStart(2, "0");
     const mm = String(date.getMonth() + 1).padStart(2, "0");
     const yyyy = date.getFullYear();
-    const fileName =
-      type === "quotidien"
-        ? `Tableau des performances quotidiennes au ${dd}-${mm}-${yyyy}.xlsx`
-        : `Tableau des Performances Hebdomadaires au ${dd}-${mm}-${yyyy}.xlsx`;
-    const url = `https://asfim.ma/static/tableau-des-performances/${encodeURIComponent(fileName)}`;
+    const isoDate = `${yyyy}-${mm}-${dd}`;
+    // Nom de fichier reconstruit (contient la date -> exploité par extractDateFromFileName)
+    const fileName = `Tableau des performances quotidiennes au ${dd}-${mm}-${yyyy}.xlsx`;
+    const url = `https://fundshare.asfim.ma/api/performances/export/?date=${isoDate}`;
     const response = await fetch(url);
     if (!response.ok) return null;
+    const contentType = response.headers.get("content-type") || "";
+    // L'API renvoie 200 même sans données certains jours -> on filtre sur le type xlsx et une taille plausible
+    if (!contentType.includes("spreadsheet") && !contentType.includes("officedocument")) return null;
     const buffer = Buffer.from(await response.arrayBuffer());
-    return { buffer, fileName, date: `${yyyy}-${mm}-${dd}` };
+    if (buffer.length < 5000) return null; // fichier vide/placeholder
+    return { buffer, fileName, date: isoDate };
   } catch {
     return null;
   }
