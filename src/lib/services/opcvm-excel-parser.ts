@@ -232,13 +232,19 @@ export async function downloadOPCVMFile(
   }
 }
 
-export async function downloadTodayOPCVMFile(): Promise<{ buffer: Buffer; fileName: string } | null> {
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  for (const date of [today, yesterday]) {
+/**
+ * Récupère le fichier quotidien le plus récent disponible, en remontant
+ * jusqu'à `maxDaysBack` jours (résilient aux week-ends / jours fériés / gaps ASFIM).
+ */
+export async function downloadTodayOPCVMFile(
+  maxDaysBack = 10
+): Promise<{ buffer: Buffer; fileName: string; date: string } | null> {
+  const base = new Date();
+  for (let i = 0; i <= maxDaysBack; i++) {
+    const date = new Date(base);
+    date.setDate(date.getDate() - i);
     const result = await downloadOPCVMFile(date, "quotidien");
-    if (result) return { buffer: result.buffer, fileName: result.fileName };
+    if (result) return result;
   }
   return null;
 }
