@@ -63,7 +63,7 @@ export default async function HomePage() {
               "radial-gradient(120% 80% at 70% 10%, rgba(176,138,62,0.18) 0%, transparent 55%), linear-gradient(180deg, #091320 0%, #0E1A2B 60%, #091320 100%)",
           }}
         />
-        <div className="shell relative z-10 py-32">
+        <div className="shell relative z-10 w-full py-32">
           <Reveal>
             <p className="eyebrow text-gold-light">Cabinet de gestion de patrimoine · Maroc</p>
           </Reveal>
