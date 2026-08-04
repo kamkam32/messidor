@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { Fund } from "@/lib/funds";
 import { formatPct, perfColorClass, riskLabel, riskColorClass } from "@/lib/format";
+import { CompanyLogo } from "@/components/opcvm/CompanyLogo";
 
 export function FundCard({ fund, rank }: { fund: Fund; rank?: number }) {
   const href = fund.slug ? `/opcvm/${fund.slug}` : "#";
@@ -30,14 +31,19 @@ export function FundCard({ fund, rank }: { fund: Fund; rank?: number }) {
         </span>
       </div>
 
-      <h3 className="mt-3 font-display text-lg leading-tight text-navy transition-colors group-hover:text-gold-deep">
-        {fund.name}
-      </h3>
-      {fund.management_company && (
-        <p className="mt-1 text-xs uppercase tracking-wide text-navy-mute">
-          {fund.management_company}
-        </p>
-      )}
+      <div className="mt-3 flex items-start gap-3">
+        <CompanyLogo company={fund.management_company} size={40} />
+        <div className="min-w-0">
+          <h3 className="font-display text-lg leading-tight text-navy transition-colors group-hover:text-gold-deep">
+            {fund.name}
+          </h3>
+          {fund.management_company && (
+            <p className="mt-1 truncate text-xs uppercase tracking-wide text-navy-mute">
+              {fund.management_company}
+            </p>
+          )}
+        </div>
+      </div>
 
       <div className="mt-5 border border-slate/40 bg-cream-light p-4 text-center">
         <p className="eyebrow text-navy-mute">Performance YTD</p>

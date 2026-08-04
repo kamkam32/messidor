@@ -31,7 +31,7 @@ const COLUMNS = [
 ];
 
 export function SiteFooter() {
-  const year = 2026;
+  const year = new Date().getFullYear();
   return (
     <footer className="bg-navy-deep text-cream">
       <div className="shell py-16 md:py-20">

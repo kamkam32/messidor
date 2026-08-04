@@ -15,7 +15,7 @@
   --color-navy:         #0E1A2B;  /* texte principal / fonds sombres */
   --color-navy-deep:    #091320;  /* fond sombre le plus profond */
   --color-navy-soft:    #35435A;  /* texte secondaire */
-  --color-navy-mute:    #6B7789;  /* captions / tertiaire */
+  --color-navy-mute:    #5A6577;  /* captions / tertiaire (WCAG AA sur crème) */
 
   --color-slate:        #C3C9D2;  /* filet neutre par défaut */
   --color-slate-light:  #D9DDE3;

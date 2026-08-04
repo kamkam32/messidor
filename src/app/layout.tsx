@@ -60,6 +60,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr" className={`${fraunces.variable} ${hanken.variable}`}>
       <body className="flex min-h-screen flex-col bg-cream text-navy">
+        {/* Garde-fou : si JS désactivé/échec d'hydratation, le contenu animé (Reveal, opacity:0) reste visible */}
+        <noscript>
+          <style>{`[style*="opacity:0"]{opacity:1!important;transform:none!important}`}</style>
+        </noscript>
         <JsonLd data={organizationGraph()} />
         <SiteHeader />
         <main className="flex-1">{children}</main>

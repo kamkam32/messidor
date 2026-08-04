@@ -40,18 +40,27 @@ export function buildMetadata({
   };
 }
 
-/** Graphe JSON-LD sitewide : Organization (FinancialService) + WebSite. */
+/** Graphe JSON-LD sitewide : Organization (FinancialService + LocalBusiness) + WebSite. */
 export function organizationGraph() {
   return {
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": "FinancialService",
+        "@type": ["FinancialService", "LocalBusiness"],
         "@id": `${SITE.url}/#organization`,
         name: SITE.name,
+        legalName: SITE.legalName,
         url: SITE.url,
+        logo: `${SITE.url}/images/logomessidor.jpg`,
+        image: `${SITE.url}/images/logomessidor.jpg`,
+        email: SITE.email,
+        telephone: SITE.phone,
         description: SITE.description,
-        areaServed: { "@type": "Country", name: "Maroc" },
+        priceRange: "€€€",
+        areaServed: [
+          { "@type": "Country", name: "Maroc" },
+          { "@type": "Country", name: "France" },
+        ],
         knowsAbout: [
           "Gestion de patrimoine",
           "OPCVM",
@@ -59,6 +68,7 @@ export function organizationGraph() {
           "Fiscalité marocaine",
           "Investissement Maroc",
           "Bourse de Casablanca",
+          "Épargne MRE",
         ],
         founder: SITE.founders.map((f) => ({ "@type": "Person", name: f.name })),
         address: {
@@ -75,6 +85,14 @@ export function organizationGraph() {
         name: SITE.name,
         inLanguage: "fr",
         publisher: { "@id": `${SITE.url}/#organization` },
+        potentialAction: {
+          "@type": "SearchAction",
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: `${SITE.url}/opcvm?q={search_term_string}`,
+          },
+          "query-input": "required name=search_term_string",
+        },
       },
     ],
   };

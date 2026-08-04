@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import type { Fund } from "@/lib/funds";
 import { FundCard } from "@/components/opcvm/FundCard";
@@ -22,6 +22,12 @@ export function OpcvmExplorer({ funds }: { funds: Fund[] }) {
   const [classif, setClassif] = useState("");
   const [sort, setSort] = useState<SortKey>("ytd_performance");
   const [limit, setLimit] = useState(PAGE_SIZE);
+
+  // Pré-remplit la recherche depuis ?q= (SearchAction / liens entrants)
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("q");
+    if (q) setQuery(q);
+  }, []);
 
   const classifications = useMemo(() => {
     const set = new Set<string>();

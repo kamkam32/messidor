@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ArrowRight, LineChart, Landmark, ShieldCheck, Coins } from "lucide-react";
 import { ButtonLink } from "@/components/ui/Button";
 import { Reveal } from "@/components/site/Reveal";
@@ -122,7 +123,7 @@ export default async function HomePage() {
         <div className="mt-14 grid gap-px overflow-hidden border border-slate/50 bg-slate/50 md:grid-cols-2">
           {SERVICES.map((s, i) => (
             <Reveal key={s.title} delay={(i % 2) * 0.08} className="h-full">
-              <a
+              <Link
                 href={s.href}
                 className="group flex h-full flex-col bg-cream p-8 transition-colors hover:bg-cream-light md:p-10"
               >
@@ -132,7 +133,7 @@ export default async function HomePage() {
                 <span className="mt-6 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-navy transition-transform group-hover:translate-x-1">
                   En savoir plus <ArrowRight size={14} />
                 </span>
-              </a>
+              </Link>
             </Reveal>
           ))}
         </div>

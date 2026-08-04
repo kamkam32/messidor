@@ -8,6 +8,7 @@ import { absoluteUrl, SITE } from "@/lib/site";
 import { formatPct, perfColorClass, formatMAD, formatNumber, riskLabel } from "@/lib/format";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { FundChart } from "@/components/opcvm/FundChart";
+import { CompanyLogo } from "@/components/opcvm/CompanyLogo";
 import { ButtonLink } from "@/components/ui/Button";
 import { Reveal } from "@/components/site/Reveal";
 
@@ -64,13 +65,43 @@ export default async function FundPage({ params }: { params: Promise<{ slug: str
   const financialProduct = {
     "@context": "https://schema.org",
     "@type": "FinancialProduct",
+    "@id": absoluteUrl(`/opcvm/${slug}/#product`),
     name: fund.name,
     category: fund.classification ?? "OPCVM",
     url: absoluteUrl(`/opcvm/${slug}`),
     provider: fund.management_company
       ? { "@type": "Organization", name: fund.management_company }
-      : undefined,
-    ...(fund.isin_code ? { identifier: fund.isin_code } : {}),
+      : { "@id": `${SITE.url}/#organization` },
+    ...(fund.updated_at ? { dateModified: fund.updated_at } : {}),
+    ...(fund.isin_code
+      ? { identifier: { "@type": "PropertyValue", propertyID: "ISIN", value: fund.isin_code } }
+      : {}),
+    additionalProperty: [
+      fund.ytd_performance != null && {
+        "@type": "PropertyValue",
+        name: "Performance YTD",
+        value: fund.ytd_performance,
+        unitText: "%",
+      },
+      fund.perf_1y != null && {
+        "@type": "PropertyValue",
+        name: "Performance 1 an",
+        value: fund.perf_1y,
+        unitText: "%",
+      },
+      fund.risk_level != null && {
+        "@type": "PropertyValue",
+        name: "Niveau de risque (SRRI)",
+        value: fund.risk_level,
+        maxValue: 7,
+      },
+      fund.management_fees != null && {
+        "@type": "PropertyValue",
+        name: "Frais de gestion",
+        value: fund.management_fees,
+        unitText: "%",
+      },
+    ].filter(Boolean),
   };
 
   const faq = {
@@ -137,9 +168,25 @@ export default async function FundPage({ params }: { params: Promise<{ slug: str
             <ArrowLeft size={14} /> Tous les fonds
           </Link>
           {fund.classification && <p className="eyebrow text-gold-light">{fund.classification}</p>}
-          <h1 className="mt-4 max-w-3xl font-display text-4xl leading-tight md:text-6xl">{fund.name}</h1>
-          {fund.management_company && (
-            <p className="mt-3 text-sm uppercase tracking-wide text-cream/60">{fund.management_company}</p>
+          <div className="mt-4 flex items-center gap-4">
+            <CompanyLogo company={fund.management_company} size={56} />
+            <div>
+              <h1 className="max-w-3xl font-display text-3xl leading-tight md:text-5xl">{fund.name}</h1>
+              {fund.management_company && (
+                <p className="mt-1 text-sm uppercase tracking-wide text-cream/60">{fund.management_company}</p>
+              )}
+            </div>
+          </div>
+          {fund.updated_at && (
+            <p className="mt-4 text-xs text-cream/50">
+              Données au{" "}
+              {new Date(fund.updated_at).toLocaleDateString("fr-FR", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}{" "}
+              · Source : ASFIM
+            </p>
           )}
           <div className="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-4">
             {[
@@ -149,7 +196,7 @@ export default async function FundPage({ params }: { params: Promise<{ slug: str
               { l: "Risque", v: riskLabel(fund.risk_level), c: "text-cream" },
             ].map((s) => (
               <div key={s.l}>
-                <p className="eyebrow text-cream/40">{s.l}</p>
+                <p className="eyebrow text-cream/60">{s.l}</p>
                 <p className={`mt-1 font-display text-2xl md:text-3xl ${s.c}`}>{s.v}</p>
               </div>
             ))}

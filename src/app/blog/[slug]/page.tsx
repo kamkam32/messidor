@@ -56,12 +56,15 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
     headline: post.title,
     description: post.excerpt,
     datePublished: post.date || undefined,
-    author: { "@type": "Organization", name: SITE.name },
+    dateModified: post.date || undefined,
+    author: { "@type": "Person", name: post.author },
     publisher: {
       "@type": "Organization",
       name: SITE.name,
       url: SITE.url,
+      logo: { "@type": "ImageObject", url: `${SITE.url}/images/logomessidor.jpg` },
     },
+    inLanguage: "fr",
     mainEntityOfPage: absoluteUrl(`/blog/${slug}`),
     ...(post.image ? { image: post.image } : {}),
   };

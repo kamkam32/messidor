@@ -13,8 +13,8 @@ export const SITE = {
   locale: "fr_MA",
   lang: "fr",
   email: "kamil@messidorai.com",
-  phone: "+212 6 00 00 00 00",
-  whatsapp: "212600000000", // format international sans "+"
+  phone: "+33 6 19 06 12 15",
+  whatsapp: "33619061215", // format international sans "+"
   calendly: "https://calendly.com/kamil-messidor",
   city: "Casablanca",
   country: "MA",
