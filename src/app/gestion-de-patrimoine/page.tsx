@@ -167,7 +167,7 @@ export default function GestionDePatrimoinePage() {
       <PageHero
         eyebrow="Conseil en gestion de patrimoine · Maroc"
         title="Développer, protéger et transmettre votre patrimoine"
-        image="/images/heroes/casablanca-finance.jpg"
+        image="/images/heroes/finance-aerial.jpg"
         intro="Un accompagnement indépendant et sur-mesure : du conseil patrimonial à la sélection des meilleurs fonds, de l'optimisation fiscale aux opportunités privées. Au service de vos objectifs, sans conflit d'intérêt."
         breadcrumb={[
           { name: "Accueil", href: "/" },
