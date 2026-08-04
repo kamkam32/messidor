@@ -156,6 +156,42 @@ export default async function SimulateurOutilPage({
     })),
   };
 
+  // Guide "HowTo" généré génériquement à partir du simulateur (surface de réponse IA / GEO).
+  const howToSteps = [
+    {
+      name: "Renseigner vos données",
+      text: `Saisissez les informations demandées par le simulateur « ${sim.short} » (montants, durée, situation) directement dans le formulaire.`,
+    },
+    {
+      name: "Lancer le calcul",
+      text: "Le résultat se met à jour automatiquement à partir des règles et barèmes en vigueur au Maroc. Aucune inscription n'est requise.",
+    },
+    {
+      name: "Lire et interpréter le résultat",
+      text: `Consultez l'estimation fournie par le simulateur ${sim.title} : elle donne un ordre de grandeur indicatif, à affiner selon votre situation réelle.`,
+    },
+    {
+      name: "Être accompagné par un conseiller",
+      text: "Transformez cette estimation en stratégie : un conseiller Messidor Patrimoine analyse votre situation et vous accompagne de façon personnalisée.",
+    },
+  ];
+
+  const howTo = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: `Comment calculer ${sim.short.toLowerCase()} avec le simulateur Messidor`,
+    description: sim.description,
+    inLanguage: "fr",
+    totalTime: "PT2M",
+    step: howToSteps.map((s, i) => ({
+      "@type": "HowToStep",
+      position: i + 1,
+      name: s.name,
+      text: s.text,
+      url: absoluteUrl(`/simulateurs/${sim.slug}#etape-${i + 1}`),
+    })),
+  };
+
   return (
     <>
       <PageHero
@@ -168,6 +204,7 @@ export default async function SimulateurOutilPage({
         data={[
           webApp,
           faqSchema,
+          howTo,
           breadcrumbGraph(breadcrumb.map((b) => ({ name: b.name, path: b.href }))),
         ]}
       />

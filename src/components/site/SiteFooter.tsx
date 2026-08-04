@@ -25,6 +25,7 @@ const COLUMNS = [
     title: "Ressources",
     links: [
       { label: "Blog & guides", href: "/blog" },
+      { label: "FAQ", href: "/faq" },
       { label: "Lexique patrimoine", href: "/lexique" },
       { label: "Investir MRE", href: "/mre" },
       { label: "L'équipe", href: "/equipe" },
