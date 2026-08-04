@@ -69,11 +69,25 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
     ...(post.image ? { image: post.image } : {}),
   };
 
+  const faqLd =
+    post.faq.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: post.faq.map((f) => ({
+            "@type": "Question",
+            name: f.q,
+            acceptedAnswer: { "@type": "Answer", text: f.a },
+          })),
+        }
+      : null;
+
   return (
     <>
       <JsonLd
         data={[
           articleLd,
+          ...(faqLd ? [faqLd] : []),
           breadcrumbGraph([
             { name: "Accueil", path: "/" },
             { name: "Blog", path: "/blog" },

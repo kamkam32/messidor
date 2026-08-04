@@ -15,6 +15,11 @@ export interface Heading {
   level: number;
 }
 
+export interface FaqItem {
+  q: string;
+  a: string;
+}
+
 export interface BlogPost {
   slug: string;
   title: string;
@@ -26,6 +31,51 @@ export interface BlogPost {
   keywords: string[];
   content: string;
   headings: Heading[];
+  faq: FaqItem[];
+}
+
+function stripMarkdown(s: string): string {
+  return s
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/\*([^*]+)\*/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/<[^>]+>/g, "")
+    .trim();
+}
+
+/** Extrait la section "Questions fréquentes" (### Q / réponse) pour le schéma FAQPage. */
+function extractFaq(content: string): FaqItem[] {
+  const lines = content.split("\n");
+  const out: FaqItem[] = [];
+  let inFaq = false;
+  let q: string | null = null;
+  let a: string[] = [];
+  const flush = () => {
+    if (q && a.length) out.push({ q: stripMarkdown(q), a: stripMarkdown(a.join(" ")) });
+    q = null;
+    a = [];
+  };
+  for (const line of lines) {
+    if (/^##\s+Questions\s+fr[ée]quentes/i.test(line)) {
+      inFaq = true;
+      continue;
+    }
+    if (!inFaq) continue;
+    if (/^##\s+/.test(line)) {
+      flush();
+      break;
+    }
+    const h3 = line.match(/^###\s+(.+?)\s*$/);
+    if (h3) {
+      flush();
+      q = h3[1];
+      continue;
+    }
+    if (q && line.trim()) a.push(line.trim());
+  }
+  flush();
+  return out;
 }
 
 export function getAllPosts(): BlogPost[] {
@@ -48,6 +98,7 @@ export function getAllPosts(): BlogPost[] {
         keywords: data.keywords || [],
         content,
         headings: [],
+        faq: [],
       } as BlogPost;
     });
   return posts.sort((a, b) => (a.date < b.date ? 1 : -1));
@@ -77,6 +128,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
     const fileContents = fs.readFileSync(path.join(postsDirectory, `${slug}.md`), "utf8");
     const { data, content } = matter(fileContents);
     const headings = extractHeadings(content);
+    const faq = extractFaq(content);
     const processed = await remark()
       .use(remarkGfm)
       .use(remarkRehype, { allowDangerousHtml: true })
@@ -94,6 +146,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
       keywords: data.keywords || [],
       content: processed.toString(),
       headings,
+      faq,
     };
   } catch {
     return null;
