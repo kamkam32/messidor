@@ -16,7 +16,7 @@ export function AuthShell({
   footer?: ReactNode;
 }) {
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-navy-deep px-6 py-24 text-cream">
+    <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-navy-deep px-6 pb-24 pt-28 text-cream">
       <div
         aria-hidden
         className="absolute inset-0 opacity-60"
@@ -49,7 +49,7 @@ export function AuthShell({
           )}
         </div>
       </div>
-    </main>
+    </section>
   );
 }
 

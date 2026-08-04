@@ -134,3 +134,6 @@ body {
 .prose-messidor th, .prose-messidor td { border: 1px solid var(--color-slate); padding: 0.6rem 0.8rem; text-align: left; }
 .prose-messidor th { background: var(--color-cream-dark); font-weight: 600; color: var(--color-navy); }
 .prose-messidor blockquote { border-left: 2px solid var(--color-gold); padding-left: 1rem; font-style: italic; color: var(--color-navy-soft); margin: 1.5rem 0; }
+
+/* --- Utilitaire : réserve d'espace pour le FAB WhatsApp (pages courtes) --- */
+.pb-fab { padding-bottom: 6rem; }

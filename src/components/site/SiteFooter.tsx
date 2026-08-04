@@ -6,6 +6,7 @@ const COLUMNS = [
     title: "Investir",
     links: [
       { label: "Base OPCVM", href: "/opcvm" },
+      { label: "Meilleurs OPCVM 2026", href: "/opcvm/meilleurs" },
       { label: "Comparateur de fonds", href: "/opcvm/comparateur" },
       { label: "OPCI au Maroc", href: "/opci" },
       { label: "Gestion de patrimoine", href: "/gestion-de-patrimoine" },
@@ -24,6 +25,8 @@ const COLUMNS = [
     title: "Ressources",
     links: [
       { label: "Blog & guides", href: "/blog" },
+      { label: "Lexique patrimoine", href: "/lexique" },
+      { label: "Investir MRE", href: "/mre" },
       { label: "L'équipe", href: "/equipe" },
       { label: "Contact", href: "/contact" },
       { label: "Espace client", href: "/espace-client" },

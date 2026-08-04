@@ -44,7 +44,7 @@ export default async function EspaceClientPage() {
   }
 
   return (
-    <main className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-cream">
       {/* En-tête */}
       <section className="relative overflow-hidden bg-navy-deep text-cream">
         <div
@@ -102,6 +102,6 @@ export default async function EspaceClientPage() {
           </p>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

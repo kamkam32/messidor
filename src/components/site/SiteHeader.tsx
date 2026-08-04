@@ -34,6 +34,15 @@ export function SiteHeader() {
     };
   }, [open]);
 
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open]);
+
   return (
     <>
       <header
@@ -96,6 +105,8 @@ export function SiteHeader() {
 
           <button
             aria-label="Menu"
+            aria-expanded={open}
+            aria-controls="mobile-menu"
             onClick={() => setOpen((v) => !v)}
             className={cx("lg:hidden", solid ? "text-navy" : "text-cream")}
           >
@@ -106,7 +117,12 @@ export function SiteHeader() {
 
       {/* Menu mobile plein écran (hors <header> pour éviter le containing block du blur) */}
       {open && (
-        <div className="fixed inset-0 z-40 flex flex-col bg-navy-deep px-6 pt-24 lg:hidden">
+        <div
+          id="mobile-menu"
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-40 flex flex-col bg-navy-deep px-6 pt-24 lg:hidden"
+        >
           <nav className="flex flex-col gap-6">
             {NAV.map((item) => (
               <Link
