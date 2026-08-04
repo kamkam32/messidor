@@ -5,6 +5,7 @@ const COLUMNS = [
   {
     title: "Investir",
     links: [
+      { label: "Investir au Maroc — le guide", href: "/investir-au-maroc" },
       { label: "Base OPCVM", href: "/opcvm" },
       { label: "Meilleurs OPCVM 2026", href: "/opcvm/meilleurs" },
       { label: "Comparateur de fonds", href: "/opcvm/comparateur" },
