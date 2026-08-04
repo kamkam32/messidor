@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { parseOPCVMExcel, downloadTodayOPCVMFile } from "@/lib/services/opcvm-excel-parser";
+import { parseOPCVMExcel, downloadOPCVMFile } from "@/lib/services/opcvm-excel-parser";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,15 +21,31 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Service role non configuré" }, { status: 500 });
   }
 
-  const download = await downloadTodayOPCVMFile();
-  if (!download) {
+  // Cherche le fichier le plus récent qui contient réellement des données
+  // (les fichiers du jour existent souvent avec l'en-tête mais 0 fonds tant
+  //  qu'ASFIM ne les a pas finalisés -> on remonte jusqu'à trouver des lignes).
+  let download: { buffer: Buffer; fileName: string; date: string } | null = null;
+  let parsed: { date: string; funds: import("@/lib/services/opcvm-excel-parser").OPCVMPerformanceData[] } | null = null;
+  const base = new Date();
+  for (let i = 0; i <= 12; i++) {
+    const d = new Date(base);
+    d.setDate(d.getDate() - i);
+    const dl = await downloadOPCVMFile(d, "quotidien");
+    if (!dl) continue;
+    const p = await parseOPCVMExcel(dl.buffer, dl.fileName);
+    if (p.funds.length > 0) {
+      download = dl;
+      parsed = p;
+      break;
+    }
+  }
+
+  if (!download || !parsed) {
     return NextResponse.json(
-      { success: false, error: "Fichier ASFIM introuvable (aujourd'hui/hier)" },
+      { success: false, error: "Aucun fichier ASFIM avec données sur les 12 derniers jours" },
       { status: 404 }
     );
   }
-
-  const parsed = await parseOPCVMExcel(download.buffer, download.fileName);
 
   // Archivage best-effort dans le bucket Storage
   try {
