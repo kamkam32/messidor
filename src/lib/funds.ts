@@ -122,6 +122,28 @@ export async function getManagementCompanies(): Promise<{ name: string; count: n
   }
 }
 
+/** Classifications distinctes (Actions, Monétaire…) avec compte. */
+export async function getClassifications(): Promise<{ name: string; count: number }[]> {
+  try {
+    const { data } = await supabaseAnon
+      .from("funds")
+      .select("classification")
+      .eq("is_active", true)
+      .eq("type", "OPCVM")
+      .not("classification", "is", null);
+    const counts = new Map<string, number>();
+    for (const row of (data ?? []) as { classification: string }[]) {
+      const k = row.classification.trim();
+      counts.set(k, (counts.get(k) ?? 0) + 1);
+    }
+    return [...counts.entries()]
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+  } catch {
+    return [];
+  }
+}
+
 /** Perf history d'un fonds. */
 export interface PerfPoint {
   date: string;

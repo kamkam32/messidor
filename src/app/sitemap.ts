@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { SITE, absoluteUrl } from "@/lib/site";
-import { getAllFundSlugs, getManagementCompanies, slugify } from "@/lib/funds";
+import { getAllFundSlugs, getManagementCompanies, getClassifications, slugify } from "@/lib/funds";
 import { getAllPosts } from "@/lib/blog";
 import { SIMULATORS } from "@/lib/simulators";
 
@@ -27,11 +27,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.75,
   }));
 
-  const [fundSlugs, companies, posts] = await Promise.all([
+  const [fundSlugs, companies, classifications, posts] = await Promise.all([
     getAllFundSlugs(),
     getManagementCompanies(),
+    getClassifications(),
     Promise.resolve(getAllPosts()),
   ]);
+
+  const categoryEntries: MetadataRoute.Sitemap = classifications
+    .filter((c) => c.count >= 2)
+    .map((c) => ({
+      url: absoluteUrl(`/opcvm/categorie/${slugify(c.name)}`),
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    }));
 
   const fundEntries: MetadataRoute.Sitemap = fundSlugs.map((slug) => ({
     url: absoluteUrl(`/opcvm/${slug}`),
@@ -59,6 +69,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticEntries,
     ...simulatorEntries,
+    ...categoryEntries,
     ...fundEntries,
     ...companyEntries,
     ...postEntries,
