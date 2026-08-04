@@ -4,7 +4,7 @@ import { parseOPCVMExcel, downloadOPCVMFile } from "@/lib/services/opcvm-excel-p
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 /**
  * Cron quotidien : télécharge le fichier ASFIM du jour, parse, et met à jour
@@ -72,48 +72,52 @@ export async function GET(request: NextRequest) {
 
   const norm = (s: string) => s.toLowerCase().replace(/\s+/g, " ").trim();
   const results = { matched: 0, upserted: 0, notMatched: 0, errors: [] as string[] };
+  const now = new Date().toISOString();
+
+  // Index de correspondance O(1)
+  const byIsin = new Map<string, string>();
+  const byCode = new Map<string, string>();
+  const byName = new Map<string, string>();
+  for (const f of dbFunds!) {
+    if (f.isin_code) byIsin.set(f.isin_code, f.id);
+    if (f.code) byCode.set(f.code, f.id);
+    if (f.name) byName.set(norm(f.name), f.id);
+  }
+
+  const historyRows: Record<string, unknown>[] = [];
+  const fundUpdates: { id: string; values: Record<string, unknown> }[] = [];
 
   for (const ex of parsed.funds) {
-    let fund =
-      (ex.isinCode && dbFunds!.find((f) => f.isin_code === ex.isinCode)) ||
-      (ex.code && dbFunds!.find((f) => f.code === ex.code)) ||
-      dbFunds!.find((f) => norm(f.name) === norm(ex.name));
-
-    if (!fund) {
+    const fundId =
+      (ex.isinCode && byIsin.get(ex.isinCode)) ||
+      (ex.code && byCode.get(ex.code)) ||
+      byName.get(norm(ex.name));
+    if (!fundId) {
       results.notMatched++;
       continue;
     }
     results.matched++;
-
-    const { error: perfError } = await supabaseAdmin.from("fund_performance_history").upsert(
-      {
-        fund_id: fund.id,
-        date: parsed.date,
-        nav: ex.nav,
-        asset_value: ex.assetValue,
-        perf_1d: ex.perf1d,
-        perf_1w: ex.perf1w,
-        perf_1m: ex.perf1m,
-        perf_3m: ex.perf3m,
-        perf_6m: ex.perf6m,
-        perf_ytd: ex.perfYtd,
-        perf_1y: ex.perf1y,
-        perf_2y: ex.perf2y,
-        perf_3y: ex.perf3y,
-        perf_5y: ex.perf5y,
-        source_file: download.fileName,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "fund_id,date" }
-    );
-    if (perfError) {
-      results.errors.push(`${fund.name}: ${perfError.message}`);
-      continue;
-    }
-
-    await supabaseAdmin
-      .from("funds")
-      .update({
+    historyRows.push({
+      fund_id: fundId,
+      date: parsed.date,
+      nav: ex.nav,
+      asset_value: ex.assetValue,
+      perf_1d: ex.perf1d,
+      perf_1w: ex.perf1w,
+      perf_1m: ex.perf1m,
+      perf_3m: ex.perf3m,
+      perf_6m: ex.perf6m,
+      perf_ytd: ex.perfYtd,
+      perf_1y: ex.perf1y,
+      perf_2y: ex.perf2y,
+      perf_3y: ex.perf3y,
+      perf_5y: ex.perf5y,
+      source_file: download.fileName,
+      updated_at: now,
+    });
+    fundUpdates.push({
+      id: fundId,
+      values: {
         nav: ex.nav,
         asset_value: ex.assetValue,
         perf_1d: ex.perf1d,
@@ -126,10 +130,28 @@ export async function GET(request: NextRequest) {
         perf_2y: ex.perf2y,
         perf_3y: ex.perf3y,
         perf_5y: ex.perf5y,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", fund.id);
-    results.upserted++;
+        updated_at: now,
+      },
+    });
+  }
+
+  // 1) Bulk upsert de l'historique (par lots de 500)
+  for (let i = 0; i < historyRows.length; i += 500) {
+    const chunk = historyRows.slice(i, i + 500);
+    const { error } = await supabaseAdmin
+      .from("fund_performance_history")
+      .upsert(chunk, { onConflict: "fund_id,date" });
+    if (error) results.errors.push(`history[${i}]: ${error.message}`);
+  }
+
+  // 2) Update des dernières valeurs sur funds (en parallèle, par lots de 25)
+  for (let i = 0; i < fundUpdates.length; i += 25) {
+    const chunk = fundUpdates.slice(i, i + 25);
+    const res = await Promise.all(
+      chunk.map((u) => supabaseAdmin!.from("funds").update(u.values).eq("id", u.id))
+    );
+    results.upserted += res.filter((r) => !r.error).length;
+    res.forEach((r) => r.error && results.errors.push(r.error.message));
   }
 
   return NextResponse.json({
