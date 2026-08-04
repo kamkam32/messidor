@@ -21,11 +21,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Service role non configuré" }, { status: 500 });
   }
 
-  // Cherche le fichier le plus récent qui contient réellement des données
-  // (les fichiers du jour existent souvent avec l'en-tête mais 0 fonds tant
-  //  qu'ASFIM ne les a pas finalisés -> on remonte jusqu'à trouver des lignes).
+  // Sur les 12 derniers jours, on récupère le fichier le PLUS COMPLET
+  // (les fichiers du jour sont souvent vides ou partiels — seuls les fonds à
+  //  VL quotidienne sont remplis ; le fichier hebdomadaire contient tout l'univers).
+  // On s'arrête dès qu'un fichier "complet" (>= 400 fonds) est trouvé, sinon on
+  // garde le plus fourni rencontré.
+  type Parsed = { date: string; funds: import("@/lib/services/opcvm-excel-parser").OPCVMPerformanceData[] };
   let download: { buffer: Buffer; fileName: string; date: string } | null = null;
-  let parsed: { date: string; funds: import("@/lib/services/opcvm-excel-parser").OPCVMPerformanceData[] } | null = null;
+  let parsed: Parsed | null = null;
   const base = new Date();
   for (let i = 0; i <= 12; i++) {
     const d = new Date(base);
@@ -33,11 +36,12 @@ export async function GET(request: NextRequest) {
     const dl = await downloadOPCVMFile(d, "quotidien");
     if (!dl) continue;
     const p = await parseOPCVMExcel(dl.buffer, dl.fileName);
-    if (p.funds.length > 0) {
-      download = dl;
+    if (p.funds.length === 0) continue;
+    if (!parsed || p.funds.length > parsed.funds.length) {
       parsed = p;
-      break;
+      download = dl;
     }
+    if (p.funds.length >= 400) break; // fichier complet
   }
 
   if (!download || !parsed) {
