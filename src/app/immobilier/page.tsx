@@ -231,8 +231,8 @@ export default function ImmobilierPage() {
       <PageHero
         eyebrow="Conseil immobilier · Biens d'exception"
         title="L'immobilier d'exception, accompagné de bout en bout"
-        image="/images/heroes/immobilier-prestige.jpg"
-        imagePosition="center 62%"
+        image="/images/heroes/immobilier-villa.jpg"
+        imagePosition="center"
         overlayClassName="bg-navy-deep/45"
         intro="Acquisition, cession et recherche sur-mesure de biens rares au Maroc. Messidor Patrimoine met la rigueur d'un family office au service de vos projets immobiliers les plus exigeants — dans la discrétion la plus absolue."
         breadcrumb={[
