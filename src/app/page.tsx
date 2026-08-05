@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, LineChart, Landmark, ShieldCheck, Coins } from "lucide-react";
 import { ButtonLink } from "@/components/ui/Button";
 import { Reveal } from "@/components/site/Reveal";
@@ -47,6 +48,21 @@ const STEPS = [
   { n: "01", title: "Bilan", text: "Nous cartographions votre patrimoine, vos objectifs et votre horizon." },
   { n: "02", title: "Stratégie", text: "Nous concevons une allocation claire, chiffrée et fiscalement optimisée." },
   { n: "03", title: "Suivi", text: "Nous pilotons dans la durée et ajustons au fil des marchés et de votre vie." },
+];
+
+const FOUNDERS = [
+  {
+    name: "Tarik Belghazi",
+    role: "Associé",
+    photo: "/images/tarik.jpg",
+    text: "Une connaissance fine des marchés financiers et de la fiscalité marocaine, au service de votre stratégie.",
+  },
+  {
+    name: "Kamil Alami",
+    role: "Associé",
+    photo: "/images/kamil.jpg",
+    text: "Un accompagnement sur-mesure et pédagogique des particuliers et des MRE dans leurs investissements.",
+  },
 ];
 
 export default async function HomePage() {
@@ -173,6 +189,54 @@ export default async function HomePage() {
               </Reveal>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* FONDATEURS */}
+      <section className="border-t border-slate/40 bg-cream-light">
+        <div className="shell py-20 md:py-28">
+          <Reveal>
+            <p className="eyebrow text-gold-deep">Le cabinet</p>
+            <h2 className="mt-4 max-w-2xl font-display text-3xl leading-tight tracking-[-0.01em] text-navy md:text-5xl">
+              Des associés engagés à vos côtés
+            </h2>
+            <p className="mt-5 max-w-2xl text-lg leading-relaxed text-navy-soft">
+              Messidor Patrimoine, ce sont des professionnels qui connaissent le marché
+              financier marocain et s&apos;engagent dans la durée auprès de leurs clients.
+            </p>
+          </Reveal>
+
+          <div className="mt-14 grid gap-10 sm:grid-cols-2">
+            {FOUNDERS.map((f, i) => (
+              <Reveal key={f.name} delay={(i % 2) * 0.08}>
+                <div className="flex items-start gap-6">
+                  <div className="relative h-28 w-24 shrink-0 overflow-hidden border border-slate/50 bg-cream sm:h-32 sm:w-28">
+                    <Image
+                      src={f.photo}
+                      alt={`${f.name}, ${f.role} de Messidor Patrimoine`}
+                      fill
+                      sizes="112px"
+                      className="object-cover"
+                    />
+                  </div>
+                  <div>
+                    <h3 className="font-display text-2xl text-navy">{f.name}</h3>
+                    <p className="mt-1 eyebrow text-gold-deep">{f.role}</p>
+                    <p className="mt-3 text-[15px] leading-relaxed text-navy-soft">{f.text}</p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+
+          <Reveal delay={0.1}>
+            <Link
+              href="/equipe"
+              className="mt-12 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-navy transition-transform hover:translate-x-1"
+            >
+              Rencontrer l&apos;équipe <ArrowRight size={14} />
+            </Link>
+          </Reveal>
         </div>
       </section>
 
