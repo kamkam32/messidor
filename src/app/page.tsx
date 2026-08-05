@@ -60,7 +60,7 @@ const FOUNDERS = [
   {
     name: "Kamil Alami",
     role: "Associé",
-    photo: "/images/kamil.jpg",
+    photo: "/images/kamil-portrait.png",
     text: "Un accompagnement sur-mesure et pédagogique des particuliers et des MRE dans leurs investissements.",
   },
 ];

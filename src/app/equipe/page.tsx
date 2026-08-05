@@ -25,7 +25,7 @@ const TEAM = [
   {
     name: "Kamil Alami",
     role: "Associé",
-    photo: "/images/kamil.jpg",
+    photo: "/images/kamil-portrait.png",
     bio: "Associé de Messidor Patrimoine, Kamil conseille particuliers et MRE sur la sélection de fonds OPCVM/OPCI et l'optimisation de leur allocation, avec une approche sur-mesure et pédagogique.",
   },
 ];
