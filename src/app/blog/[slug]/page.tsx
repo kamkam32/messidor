@@ -66,7 +66,14 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
     },
     inLanguage: "fr",
     mainEntityOfPage: absoluteUrl(`/blog/${slug}`),
+    ...(post.category ? { articleSection: post.category } : {}),
+    ...(post.keywords && post.keywords.length ? { keywords: post.keywords.join(", ") } : {}),
+    isAccessibleForFree: true,
     ...(post.image ? { image: post.image } : {}),
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["h1", ".prose-messidor"],
+    },
   };
 
   const faqLd =

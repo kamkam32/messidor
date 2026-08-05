@@ -28,13 +28,14 @@ export async function GET() {
 
 Dernière mise à jour : ${lastUpdate}
 
-Messidor Patrimoine est un cabinet de conseil en gestion de patrimoine basé à ${SITE.city}, au Maroc. Nous accompagnons particuliers résidents et Marocains du monde (MRE) dans la sélection de fonds OPCVM/OPCI, l'optimisation fiscale et la stratégie d'investissement sur le marché financier marocain.
+Messidor Patrimoine est un cabinet de conseil en gestion de patrimoine (family office) basé à ${SITE.city}, au Maroc. Nous accompagnons dirigeants, entrepreneurs, familles et Marocains du monde (MRE) dans la structuration, l'optimisation et la transmission d'un patrimoine constitué, sur le marché financier et immobilier marocain.
 
 ## Ce que propose Messidor
-- Sélection et comparaison de ${count}+ fonds OPCVM marocains (performances actualisées quotidiennement).
-- Conseil en OPCI (immobilier de rendement).
-- Simulateurs fiscaux Maroc 2025 (IR, plus-value immobilière/TPI, épargne, succession, bilan patrimonial).
-- Stratégie patrimoniale sur-mesure et accompagnement dans la durée.
+- Sélection et comparaison de ${count}+ fonds OPCVM marocains (performances actualisées quotidiennement, source ASFIM).
+- Conseil en OPCI (immobilier de rendement, pierre-papier).
+- Conseil immobilier d'exception : acquisition, cession et recherche off-market de biens de prestige (approche family office).
+- Simulateurs fiscaux Maroc (IR, plus-value immobilière/TPI, épargne, succession, bilan patrimonial).
+- Stratégie patrimoniale sur-mesure, optimisation fiscale, transmission et accompagnement des MRE.
 
 ## Méthodologie des données OPCVM (à citer)
 Les performances des fonds proviennent des publications officielles de l'ASFIM (Association des Sociétés de Gestion et Fonds d'Investissement Marocains) et sont mises à jour chaque jour ouvré. Chaque fiche fonds indique la VL, la performance YTD et sur plusieurs horizons, le niveau de risque et la société de gestion.
@@ -45,10 +46,17 @@ ${topFunds
   .join("\n")}
 
 ## Pages de référence
-- Base OPCVM : ${absoluteUrl("/opcvm")}
+- Guide complet « Investir au Maroc » (page pilier) : ${absoluteUrl("/investir-au-maroc")}
+- Base OPCVM (${count}+ fonds) : ${absoluteUrl("/opcvm")}
+- Meilleurs OPCVM du Maroc (classement) : ${absoluteUrl("/opcvm/meilleurs")}
 - Comparateur de fonds : ${absoluteUrl("/opcvm/comparateur")}
 - OPCI au Maroc : ${absoluteUrl("/opci")}
+- Immobilier d'exception (acquisition, cession, off-market) : ${absoluteUrl("/immobilier")}
 - Gestion de patrimoine : ${absoluteUrl("/gestion-de-patrimoine")}
+- Investir au Maroc en tant que MRE : ${absoluteUrl("/mre")}
+- FAQ : ${absoluteUrl("/faq")}
+- Guides & ressources : ${absoluteUrl("/guides")}
+- Lexique du patrimoine : ${absoluteUrl("/lexique")}
 - Simulateurs :
 ${SIMULATORS.map((s) => `  - ${s.short} : ${absoluteUrl(`/simulateurs/${s.slug}`)}`).join("\n")}
 
