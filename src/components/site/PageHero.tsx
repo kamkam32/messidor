@@ -10,6 +10,7 @@ export function PageHero({
   breadcrumb,
   image,
   imagePosition = "center",
+  overlayClassName = "bg-navy-deep/75",
 }: {
   eyebrow?: string;
   title: string;
@@ -17,6 +18,7 @@ export function PageHero({
   breadcrumb?: { name: string; href: string }[];
   image?: string;
   imagePosition?: string;
+  overlayClassName?: string;
 }) {
   return (
     <section className="relative overflow-hidden bg-navy-deep text-cream">
@@ -32,7 +34,13 @@ export function PageHero({
             className="object-cover"
             style={{ objectPosition: imagePosition }}
           />
-          <div aria-hidden className="absolute inset-0 bg-navy-deep/75" />
+          <div aria-hidden className={`absolute inset-0 ${overlayClassName}`} />
+          {/* Dégradé bas pour la lisibilité même avec un voile léger */}
+          <div
+            aria-hidden
+            className="absolute inset-0"
+            style={{ background: "linear-gradient(90deg, rgba(9,19,32,0.55) 0%, rgba(9,19,32,0.15) 55%, transparent 100%)" }}
+          />
         </>
       )}
       <div
