@@ -9,12 +9,14 @@ export function PageHero({
   intro,
   breadcrumb,
   image,
+  imagePosition = "center",
 }: {
   eyebrow?: string;
   title: string;
   intro?: string;
   breadcrumb?: { name: string; href: string }[];
   image?: string;
+  imagePosition?: string;
 }) {
   return (
     <section className="relative overflow-hidden bg-navy-deep text-cream">
@@ -28,6 +30,7 @@ export function PageHero({
             priority
             sizes="100vw"
             className="object-cover"
+            style={{ objectPosition: imagePosition }}
           />
           <div aria-hidden className="absolute inset-0 bg-navy-deep/75" />
         </>

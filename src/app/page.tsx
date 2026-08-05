@@ -108,9 +108,10 @@ export default async function HomePage() {
           </Reveal>
           <Reveal delay={0.16}>
             <p className="mt-8 max-w-xl text-lg leading-relaxed text-cream/75">
-              Messidor Patrimoine vous accompagne dans la construction et la
-              préservation de votre richesse, avec une expertise sur-mesure du
-              marché financier marocain.
+              Messidor Patrimoine accompagne dirigeants, entrepreneurs et
+              familles dans la structuration, l&apos;optimisation et la
+              transmission d&apos;un patrimoine constitué — sur le marché
+              financier et immobilier marocain.
             </p>
           </Reveal>
           <Reveal delay={0.24}>
