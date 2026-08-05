@@ -211,6 +211,186 @@ export const GLOSSARY: GlossaryTerm[] = [
     ],
     related: ["souscription-rachat", "vl", "opcvm", "benchmark"],
   },
+  {
+    slug: "gestion-de-patrimoine",
+    term: "Gestion de patrimoine",
+    short:
+      "La gestion de patrimoine est l'ensemble des conseils et arbitrages visant à organiser, développer et transmettre les actifs financiers, immobiliers et professionnels d'un particulier ou d'une famille, en tenant compte de sa situation fiscale et de ses objectifs.",
+    body: [
+      "La gestion de patrimoine dépasse le simple placement : elle articule bilan patrimonial, allocation d'actifs, optimisation fiscale, prévoyance et transmission. L'objectif est de faire correspondre la structure des actifs aux projets de vie du détenteur — revenus complémentaires, préparation de la retraite, protection des proches ou financement d'un projet.",
+      "Au Maroc, cette discipline combine placements financiers (OPCVM, actions, obligations), immobilier (direct ou via OPCI) et la prise en compte de l'impôt sur le revenu, de la TPI et des règles de transmission. Une bonne gestion repose sur un diagnostic complet avant toute recommandation.",
+      "Le conseiller en gestion de patrimoine agit comme coordinateur : il hiérarchise les priorités, propose une allocation cohérente avec l'horizon de placement et la tolérance au risque, puis ajuste dans le temps. La démarche est continue, non ponctuelle, car la situation du client et les marchés évoluent.",
+    ],
+    related: ["allocation-d-actifs", "family-office", "diversification", "ir"],
+  },
+  {
+    slug: "family-office",
+    term: "Family Office",
+    short:
+      "Un family office est une structure dédiée à la gestion globale et coordonnée du patrimoine d'une famille fortunée, couvrant investissements, fiscalité, immobilier, gouvernance et transmission entre générations.",
+    body: [
+      "Le family office centralise la gestion des intérêts patrimoniaux d'une famille, souvent au-delà d'un certain seuil de patrimoine. Il coordonne les différents métiers — gestion financière, conseil fiscal, juridique, immobilier — autour d'une vision unique et de long terme, dans l'intérêt de la famille.",
+      "On distingue le single family office, dédié à une seule famille, du multi family office, qui mutualise ses services entre plusieurs familles pour en réduire le coût. Sa valeur ajoutée tient à l'indépendance, à la confidentialité et à la continuité du suivi sur plusieurs générations.",
+      "Au Maroc, cette approche répond aux besoins de familles disposant d'un patrimoine diversifié — entreprises, immobilier, placements financiers, actifs à l'étranger. Le family office structure la gouvernance familiale, prépare la transmission et veille à la cohérence globale de l'allocation d'actifs.",
+    ],
+    related: ["gestion-de-patrimoine", "allocation-d-actifs", "diversification"],
+  },
+  {
+    slug: "allocation-d-actifs",
+    term: "Allocation d'actifs",
+    short:
+      "L'allocation d'actifs est la répartition d'un patrimoine entre grandes classes de placements — actions, obligations, monétaire, immobilier — en fonction de l'horizon, des objectifs et de la tolérance au risque de l'investisseur.",
+    body: [
+      "L'allocation d'actifs est la décision structurante d'une stratégie d'investissement : elle détermine le poids accordé à chaque classe d'actifs. C'est elle, plus que le choix de tel ou tel titre, qui explique l'essentiel du couple rendement-risque d'un portefeuille sur la durée.",
+      "On distingue l'allocation stratégique, cible de long terme alignée sur les objectifs et l'horizon de placement, et l'allocation tactique, qui ajuste temporairement les pondérations selon les conditions de marché. Un profil prudent privilégiera le monétaire et l'obligataire, un profil dynamique surpondérera les actions.",
+      "Au Maroc, l'allocation peut s'appuyer sur les OPCVM (Actions, Obligations, Monétaires, Diversifiés) et l'immobilier via les OPCI, combinés selon le profil. La diversification entre classes d'actifs peu corrélées vise à lisser les performances et à réduire le risque global.",
+    ],
+    related: ["diversification", "gestion-de-patrimoine", "horizon-de-placement", "opcvm"],
+  },
+  {
+    slug: "diversification",
+    term: "Diversification",
+    short:
+      "La diversification consiste à répartir ses placements entre plusieurs actifs, secteurs ou zones géographiques afin de réduire le risque global d'un portefeuille sans nécessairement sacrifier son rendement attendu.",
+    body: [
+      "La diversification repose sur un principe simple : ne pas concentrer son épargne sur un seul actif. En combinant des placements dont les performances ne varient pas de manière identique, les baisses des uns sont partiellement compensées par la tenue des autres, ce qui atténue les à-coups du portefeuille.",
+      "Elle s'exerce à plusieurs niveaux : entre classes d'actifs (actions, obligations, monétaire, immobilier), au sein d'une classe (secteurs, émetteurs), et géographiquement. Les OPCVM offrent une diversification immédiate, puisqu'un seul fonds détient déjà un portefeuille de nombreux titres.",
+      "La diversification réduit le risque spécifique — celui lié à un émetteur ou un secteur — mais ne supprime pas le risque de marché, qui affecte l'ensemble des actifs. Elle constitue néanmoins un pilier de toute allocation d'actifs équilibrée.",
+    ],
+    related: ["allocation-d-actifs", "opcvm", "volatilite", "gestion-de-patrimoine"],
+  },
+  {
+    slug: "interets-composes",
+    term: "Intérêts composés",
+    short:
+      "Les intérêts composés désignent le mécanisme par lequel les gains d'un placement sont réinvestis et génèrent à leur tour des gains, produisant une croissance qui s'accélère avec le temps.",
+    body: [
+      "Le principe des intérêts composés est que les intérêts d'une période s'ajoutent au capital et produisent eux-mêmes des intérêts la période suivante. Contrairement aux intérêts simples, calculés uniquement sur le capital initial, la base de calcul augmente à chaque cycle, d'où un effet cumulatif puissant.",
+      "L'impact dépend fortement de la durée et du taux : plus l'horizon de placement est long, plus la part des gains issus du réinvestissement devient importante. C'est pourquoi commencer tôt et laisser fructifier sont deux leviers déterminants d'une stratégie patrimoniale.",
+      "Dans un OPCVM de capitalisation, les revenus sont automatiquement réinvestis dans le fonds, ce qui matérialise concrètement les intérêts composés sur la valeur liquidative. À l'inverse, un fonds de distribution verse les revenus, qu'il revient alors à l'investisseur de réinvestir s'il souhaite bénéficier de ce mécanisme.",
+    ],
+    related: ["capitalisation-distribution", "horizon-de-placement", "rendement", "vl"],
+  },
+  {
+    slug: "obligation",
+    term: "Obligation",
+    short:
+      "Une obligation est un titre de créance représentant une part d'un emprunt émis par un État ou une entreprise, qui donne droit au remboursement du capital à l'échéance et au versement d'intérêts (le coupon).",
+    body: [
+      "En achetant une obligation, l'investisseur prête de l'argent à l'émetteur — l'État marocain via le Trésor, ou une entreprise. En contrepartie, il perçoit des intérêts périodiques, appelés coupons, et récupère le montant prêté (le nominal) à l'échéance prévue.",
+      "Le cours d'une obligation sur le marché évolue en sens inverse des taux d'intérêt : lorsque les taux montent, la valeur des obligations existantes baisse, et inversement. La qualité de l'émetteur détermine par ailleurs le risque de crédit, c'est-à-dire le risque de non-remboursement.",
+      "Au Maroc, les obligations sont une composante majeure des OPCVM Obligations et Monétaires. Considérées comme moins volatiles que les actions, elles servent à sécuriser une allocation et à générer un revenu régulier, tout en restant exposées au risque de taux et de crédit.",
+    ],
+    related: ["action", "monetaire", "opcvm", "rendement"],
+  },
+  {
+    slug: "action",
+    term: "Action",
+    short:
+      "Une action est un titre de propriété représentant une part du capital d'une entreprise, qui confère à son détenteur un droit sur les bénéfices (dividendes) et, pour les sociétés cotées, la possibilité de la revendre en bourse.",
+    body: [
+      "Détenir une action, c'est être copropriétaire d'une entreprise à hauteur des titres possédés. L'actionnaire peut percevoir une part des bénéfices sous forme de dividende et dispose généralement d'un droit de vote en assemblée générale. La valeur de l'action reflète les perspectives de l'entreprise et l'appréciation du marché.",
+      "L'action offre un potentiel de gain double : la plus-value en cas de hausse du cours et le dividende éventuel. En contrepartie, elle présente un risque plus élevé que l'obligation, car sa valeur peut fortement varier et le capital n'est pas garanti.",
+      "Au Maroc, les actions se négocient à la Bourse de Casablanca, dont le MASI mesure la tendance d'ensemble. Les OPCVM Actions permettent d'y investir de façon diversifiée et gérée, sans sélectionner soi-même chaque valeur.",
+    ],
+    related: ["obligation", "dividende", "masi", "opcvm"],
+  },
+  {
+    slug: "monetaire",
+    term: "Monétaire",
+    short:
+      "Un placement monétaire investit dans des titres de créance à très court terme et à faible risque, visant la préservation du capital et une rémunération proche des taux du marché monétaire.",
+    body: [
+      "Les placements monétaires portent sur des instruments de dette de courte durée : bons du Trésor à court terme, titres de créance négociables, dépôts. Leur horizon très bref les rend peu sensibles aux variations de taux, d'où une faible volatilité et un objectif prioritaire de sécurité du capital.",
+      "Au Maroc, les OPCVM Monétaires figurent parmi les catégories les moins risquées, souvent notées 1 sur l'échelle SRRI. Ils servent de solution d'attente pour une trésorerie disponible ou de poche de sécurité au sein d'une allocation d'actifs.",
+      "Leur rendement, corrélé aux taux courts, est généralement modeste et n'a pas vocation à protéger contre l'inflation sur le long terme. Le placement monétaire privilégie la liquidité et la stabilité plutôt que la performance.",
+    ],
+    related: ["obligation", "liquidite", "srri", "opcvm"],
+  },
+  {
+    slug: "dividende",
+    term: "Dividende",
+    short:
+      "Un dividende est la part des bénéfices d'une entreprise distribuée à ses actionnaires, généralement en numéraire et proposée à l'approbation de l'assemblée générale.",
+    body: [
+      "Le dividende récompense l'actionnaire en lui reversant une fraction des résultats de l'entreprise. Son montant est proposé par les dirigeants puis voté en assemblée générale ; une société peut aussi choisir de ne pas en distribuer pour réinvestir ses bénéfices dans son développement.",
+      "Rapporté au cours de l'action, le dividende détermine le rendement du dividende, indicateur suivi par les investisseurs en quête de revenus réguliers. Au Maroc, les dividendes versés aux personnes physiques font l'objet d'une imposition, le plus souvent sous forme de retenue à la source.",
+      "Pour un OPCVM Actions, les dividendes encaissés sur les titres détenus alimentent le résultat du fonds : ils sont soit réinvestis (fonds de capitalisation), soit reversés aux porteurs (fonds de distribution). Les indices de rendement, comme certaines déclinaisons du MASI, intègrent ces dividendes.",
+    ],
+    related: ["action", "capitalisation-distribution", "masi", "rendement"],
+  },
+  {
+    slug: "capitalisation-distribution",
+    term: "Capitalisation / Distribution",
+    short:
+      "Un fonds de capitalisation réinvestit automatiquement les revenus qu'il perçoit, tandis qu'un fonds de distribution les reverse périodiquement aux porteurs de parts ; c'est un choix entre croissance du capital et perception de revenus.",
+    body: [
+      "La distinction porte sur le sort des revenus encaissés par un OPCVM — dividendes, coupons, intérêts. Dans un fonds de capitalisation, ces revenus sont réintégrés au portefeuille : ils font mécaniquement progresser la valeur liquidative et bénéficient de l'effet des intérêts composés.",
+      "Dans un fonds de distribution, les revenus sont versés à intervalles réguliers aux porteurs. Ce mode convient à l'investisseur qui recherche un complément de revenus, tandis que la capitalisation privilégie la croissance de l'épargne sur le long terme, sans flux à percevoir.",
+      "Le choix dépend des objectifs et de l'horizon : constitution d'un capital ou génération de revenus. Il a aussi des implications fiscales, la taxation intervenant au moment de la distribution ou de la cession selon les cas. Le règlement du fonds précise sa nature.",
+    ],
+    related: ["interets-composes", "dividende", "vl", "opcvm"],
+  },
+  {
+    slug: "horizon-de-placement",
+    term: "Horizon de placement",
+    short:
+      "L'horizon de placement est la durée pendant laquelle un investisseur prévoit de conserver son épargne avant d'en avoir besoin ; il conditionne le niveau de risque acceptable et le choix des supports.",
+    body: [
+      "L'horizon de placement traduit l'échéance d'un projet : quelques mois pour une réserve de précaution, plusieurs années pour préparer un achat ou la retraite. Il constitue le premier paramètre à définir avant toute décision d'allocation, car il détermine la capacité à supporter les fluctuations de marché.",
+      "Plus l'horizon est long, plus l'investisseur peut accepter de volatilité : le temps permet de lisser les cycles et d'espérer un rendement supérieur, notamment via les actions. À l'inverse, un horizon court impose des supports stables et liquides comme les fonds monétaires.",
+      "Aligner le support sur l'horizon est une règle de bon sens patrimonial : placer sur un fonds Actions une somme nécessaire dans six mois expose à devoir vendre au mauvais moment. L'horizon guide ainsi le curseur entre sécurité et performance dans l'allocation d'actifs.",
+    ],
+    related: ["allocation-d-actifs", "volatilite", "liquidite", "srri"],
+  },
+  {
+    slug: "liquidite",
+    term: "Liquidité",
+    short:
+      "La liquidité désigne la facilité et la rapidité avec lesquelles un placement peut être converti en argent disponible sans perte de valeur significative.",
+    body: [
+      "Un actif liquide se vend rapidement et à un prix proche de sa valeur ; un actif peu liquide, comme un bien immobilier, demande du temps et peut nécessiter une décote pour trouver preneur. La liquidité est un critère essentiel pour adapter un placement à ses besoins de trésorerie.",
+      "Au Maroc, la plupart des OPCVM offrent une liquidité élevée : les parts se rachètent à la valeur liquidative selon une périodicité souvent quotidienne. Les fonds monétaires sont parmi les plus liquides, tandis que l'immobilier, y compris via les OPCI, présente une liquidité plus contrainte.",
+      "La liquidité doit se penser au regard de l'horizon de placement : une épargne susceptible d'être mobilisée rapidement gagne à rester sur des supports liquides. Un placement offrant un rendement supérieur en échange d'une liquidité réduite ne convient qu'à une épargne dont on n'a pas besoin à court terme.",
+    ],
+    related: ["monetaire", "souscription-rachat", "horizon-de-placement", "opci"],
+  },
+  {
+    slug: "volatilite",
+    term: "Volatilité",
+    short:
+      "La volatilité mesure l'ampleur des variations de la valeur d'un placement autour de sa moyenne ; plus elle est élevée, plus le prix fluctue et plus le risque perçu est important.",
+    body: [
+      "La volatilité quantifie l'instabilité d'un actif : un placement très volatil connaît de fortes hausses et baisses, tandis qu'un placement peu volatil évolue de façon plus régulière. Statistiquement, elle correspond à l'écart-type des variations de valeur sur une période donnée.",
+      "Elle est au cœur de l'évaluation du risque d'un OPCVM : l'indicateur SRRI, noté de 1 à 7, repose principalement sur la volatilité historique de la valeur liquidative. Un fonds Actions affiche généralement une volatilité supérieure à celle d'un fonds obligataire ou monétaire.",
+      "La volatilité n'est pas synonyme de perte : elle mesure l'amplitude des mouvements, dans les deux sens. Sur un horizon long, une volatilité élevée peut s'accompagner d'un rendement supérieur ; c'est pourquoi elle se juge toujours au regard de la durée de placement et de la tolérance au risque.",
+    ],
+    related: ["srri", "action", "rendement", "diversification"],
+  },
+  {
+    slug: "rendement",
+    term: "Rendement",
+    short:
+      "Le rendement est le gain rapporté par un placement sur une période, exprimé en pourcentage du montant investi ; il peut provenir des revenus perçus (coupons, dividendes, loyers) et de la plus-value.",
+    body: [
+      "Le rendement mesure ce que rapporte un placement relativement à sa mise de départ. Il combine, selon le support, les revenus courants — intérêts d'obligations, dividendes d'actions, loyers immobiliers — et la variation de valeur de l'actif entre l'achat et la vente.",
+      "Il convient de distinguer le rendement brut du rendement net : ce dernier tient compte des frais (gestion, souscription, rachat) et de la fiscalité, seuls déterminants du gain réellement perçu. Deux placements affichant un même rendement brut peuvent offrir des résultats nets très différents.",
+      "Le rendement s'apprécie toujours en regard du risque assumé : un rendement élevé rémunère généralement une volatilité ou une illiquidité plus fortes. Comparer un placement à son benchmark et sur un horizon cohérent permet de juger si le rendement obtenu justifie le risque pris.",
+    ],
+    related: ["volatilite", "benchmark", "frais-de-gestion", "interets-composes"],
+  },
+  {
+    slug: "mre",
+    term: "MRE (Marocain Résidant à l'Étranger)",
+    short:
+      "Un MRE (Marocain Résidant à l'Étranger) est un ressortissant marocain établi hors du Maroc ; il bénéficie de dispositifs spécifiques pour investir et placer son épargne au Maroc, notamment via des comptes en devises ou en dirhams convertibles.",
+    body: [
+      "Les Marocains résidant à l'étranger constituent une population importante et un pilier de l'épargne investie au Maroc. Ils peuvent y détenir des placements financiers et immobiliers, souvent dans une logique de préparation du retour, de constitution d'un patrimoine ou de soutien à la famille.",
+      "Pour faciliter ces flux, le régime de change marocain, encadré par l'Office des Changes, prévoit des comptes spécifiques — en devises ou en dirhams convertibles — permettant de rapatrier des fonds tout en préservant, sous conditions, la possibilité de les retransférer. Ces dispositifs visent à sécuriser l'investissement des MRE.",
+      "En gestion de patrimoine, la situation d'un MRE appelle une attention particulière : articulation entre la fiscalité de son pays de résidence et celle du Maroc, choix des supports (OPCVM, OPCI, immobilier) et modalités de transfert des capitaux. Un accompagnement adapté aide à structurer un patrimoine transfrontalier cohérent.",
+    ],
+    related: ["gestion-de-patrimoine", "opcvm", "opci", "diversification"],
+  },
 ];
 
 /** Récupère un terme par son slug, ou undefined si inconnu. */
