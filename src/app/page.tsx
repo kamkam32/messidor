@@ -26,9 +26,9 @@ const SERVICES = [
   },
   {
     icon: Landmark,
-    title: "OPCI & immobilier",
-    text: "Accéder à l'immobilier de rendement marocain via les OPCI, sans les contraintes de la détention en direct.",
-    href: "/opci",
+    title: "Immobilier d'exception",
+    text: "De la pierre-papier (OPCI) aux biens de prestige : acquisition, cession et recherche sur-mesure, avec une approche family office.",
+    href: "/immobilier",
   },
   {
     icon: Coins,

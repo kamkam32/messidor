@@ -10,6 +10,7 @@ const COLUMNS = [
       { label: "Meilleurs OPCVM 2026", href: "/opcvm/meilleurs" },
       { label: "Comparateur de fonds", href: "/opcvm/comparateur" },
       { label: "OPCI au Maroc", href: "/opci" },
+      { label: "Immobilier d'exception", href: "/immobilier" },
       { label: "Gestion de patrimoine", href: "/gestion-de-patrimoine" },
     ],
   },

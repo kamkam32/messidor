@@ -37,6 +37,7 @@ export const NAV = [
   { label: "Gestion de patrimoine", href: "/gestion-de-patrimoine" },
   { label: "OPCVM", href: "/opcvm" },
   { label: "OPCI", href: "/opci" },
+  { label: "Immobilier", href: "/immobilier" },
   { label: "Simulateurs", href: "/simulateurs" },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },

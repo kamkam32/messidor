@@ -18,6 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: absoluteUrl("/opcvm"), lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: absoluteUrl("/opcvm/comparateur"), lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: absoluteUrl("/opci"), lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    { url: absoluteUrl("/immobilier"), lastModified: now, changeFrequency: "monthly", priority: 0.85 },
     { url: absoluteUrl("/simulateurs"), lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: absoluteUrl("/blog"), lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: absoluteUrl("/guides"), lastModified: now, changeFrequency: "weekly", priority: 0.7 },
